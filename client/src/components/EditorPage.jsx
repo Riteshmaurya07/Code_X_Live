@@ -154,7 +154,7 @@ function EditorPage() {
         {/* Client panel */}
         <div className="col-md-2 bg-dark text-light d-flex flex-column">
           <img
-            src="/images/codecast.png"
+            src="/images/codeXlive.png"
             alt="Logo"
             className="img-fluid mx-auto"
             style={{ maxWidth: "150px", marginTop: "-43px" }}
