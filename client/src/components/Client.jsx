@@ -3,14 +3,28 @@ import Avatar from "react-avatar";
 
 function Client({ username }) {
   return (
-    <div className="d-flex align-items-center mb-3">
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      padding: "6px 4px",
+      borderRadius: "6px",
+      gap: "8px",
+    }}>
       <Avatar
         name={username}
-        size={50}
-        round="14px"
-        className="me-3"
+        size={28}
+        round="6px"
+        textSizeRatio={2.5}
       />
-      <span className="mx-2">{username}</span>
+      <span style={{
+        fontSize: "0.82rem",
+        color: "var(--text-secondary)",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+      }}>
+        {username}
+      </span>
     </div>
   );
 }
