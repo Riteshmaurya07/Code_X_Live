@@ -48,7 +48,7 @@ const langModeMap = {
 };
 
 const Editor = forwardRef(function Editor(
-  { socket, roomId, onCodeChange, theme, language, initialValue },
+  { socket, roomId, fileId, onCodeChange, theme, language, initialValue, readOnly },
   ref
 ) {
   const editorRef = useRef(null);
@@ -56,6 +56,8 @@ const Editor = forwardRef(function Editor(
 
   const socketRef = useRef(socket);
   const roomIdRef = useRef(roomId);
+  const fileIdRef = useRef(fileId);
+  const languageRef = useRef(language);
 
   useImperativeHandle(ref, () => ({
     setValue: (val) => {
@@ -76,6 +78,14 @@ const Editor = forwardRef(function Editor(
     roomIdRef.current = roomId;
   }, [roomId]);
 
+  useEffect(() => {
+    fileIdRef.current = fileId;
+  }, [fileId]);
+
+  useEffect(() => {
+    languageRef.current = language;
+  }, [language]);
+
   // Initialize CodeMirror ONCE
   useEffect(() => {
     if (!textareaRef.current) return;
@@ -88,6 +98,7 @@ const Editor = forwardRef(function Editor(
       matchBrackets: true,
       lineNumbers: true,
       styleActiveLine: true,
+      readOnly: false,
       extraKeys: {
         "Ctrl-Space": "autocomplete",
       },
@@ -110,14 +121,18 @@ const Editor = forwardRef(function Editor(
 
       const currentSocket = socketRef.current;
       const currentRoomId = roomIdRef.current;
+      const currentFileId = fileIdRef.current;
+      const currentLanguage = languageRef.current;
 
-      if (origin !== "setValue" && currentSocket && currentRoomId) {
+      if (origin !== "setValue" && currentSocket && currentRoomId && currentFileId) {
         // Debounce socket emission (300ms)
         if (emitTimer) clearTimeout(emitTimer);
         emitTimer = setTimeout(() => {
           currentSocket.emit(ACTIONS.CODE_CHANGE, {
             roomId: currentRoomId,
+            fileId: currentFileId,
             code,
+            language: currentLanguage
           });
         }, 300);
       }
@@ -154,25 +169,24 @@ const Editor = forwardRef(function Editor(
     editorRef.current.setOption("mode", mode);
   }, [language]);
 
-  // Listen for CODE_CHANGE from server
+  // React to file switches (initialValue changes)
   useEffect(() => {
-    if (!socket) return;
+    if (!editorRef.current) return;
+    const currentVal = editorRef.current.getValue();
+    // Only update if the value actually differs to avoid resetting cursor
+    if (initialValue != null && initialValue !== currentVal) {
+      editorRef.current.setValue(initialValue);
+    }
+  }, [initialValue]);
 
-    const handleCodeChange = ({ code }) => {
-      if (code != null && editorRef.current) {
-        editorRef.current.setValue(code);
-      }
-    };
-
-    socket.on(ACTIONS.CODE_CHANGE, handleCodeChange);
-
-    return () => {
-      socket.off(ACTIONS.CODE_CHANGE, handleCodeChange);
-    };
-  }, [socket]);
+  // React to readOnly changes
+  useEffect(() => {
+    if (!editorRef.current) return;
+    editorRef.current.setOption("readOnly", readOnly ? true : false);
+  }, [readOnly]);
 
   return (
-    <div style={{ height: "100%", width: "100%" }}>
+    <div className={`editor-wrapper ${readOnly ? "editor-readonly" : ""}`} style={{ height: "100%", width: "100%" }}>
       <textarea ref={textareaRef} id="realtimeEditor" />
     </div>
   );

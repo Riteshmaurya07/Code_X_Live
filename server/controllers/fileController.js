@@ -2,6 +2,7 @@ const File = require("../models/File");
 const Version = require("../models/Version");
 const ActivityLog = require("../models/ActivityLog");
 const logger = require("../utils/logger");
+const ACTIONS = require("../Actions");
 
 // Create a new file in a project
 const createFile = async (req, res, next) => {
@@ -29,6 +30,12 @@ const createFile = async (req, res, next) => {
       action: "file_created",
       details: `Created file: ${name}`,
     });
+
+    // Emit FILE_CREATED to all users in the room (projectId is the roomId)
+    const io = req.app.get("io");
+    if (io) {
+      io.to(projectId).emit(ACTIONS.FILE_CREATED, { file });
+    }
 
     logger.info(`File created: ${name} in project ${projectId}`);
     res.status(201).json(file);
@@ -85,6 +92,17 @@ const updateFile = async (req, res, next) => {
       action: "file_saved",
       details: `Saved file: ${file.name}`,
     });
+
+    // Emit FILE_RENAMED if name was changed
+    if (name) {
+      const io = req.app.get("io");
+      if (io) {
+        io.to(String(file.project)).emit(ACTIONS.FILE_RENAMED, {
+          fileId: file._id,
+          newName: file.name,
+        });
+      }
+    }
 
     logger.info(`File saved: ${file.name} (version snapshot created)`);
     res.json(file);
@@ -183,6 +201,14 @@ const deleteFile = async (req, res, next) => {
       action: "file_deleted",
       details: `Deleted file: ${file.name}`,
     });
+
+    // Emit FILE_DELETED to all users in the room
+    const io = req.app.get("io");
+    if (io) {
+      io.to(String(file.project)).emit(ACTIONS.FILE_DELETED, {
+        fileId: file._id,
+      });
+    }
 
     logger.info(`File deleted: ${file.name}`);
     res.json({ success: true, message: "File deleted" });
