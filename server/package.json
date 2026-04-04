@@ -1,21 +1,32 @@
 {
   "name": "server",
-  "version": "1.0.0",
-  "description": "the is a realtime codeshare",
+  "version": "2.0.0",
+  "description": "CodeXLive - AI-powered real-time collaborative code editor backend",
   "main": "index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "dev": "nodemon index.js",
+    "prod": "NODE_ENV=production node index.js"
   },
   "author": "Yadvendra Shukla",
   "license": "ISC",
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "axios": "^1.13.2",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.22.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.23.0",
+    "prettier": "^3.4.2",
     "python-shell": "^5.0.0",
     "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "winston": "^3.17.0"
   }
 }
