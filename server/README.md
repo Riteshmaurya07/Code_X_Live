@@ -1,126 +1,75 @@
-# 📌 CodeXLive — Real-Time Collaborative Code Editor
+# ⚙️ CodeXAlive — Backend Express Core
 
-CodeXLive is a real-time collaborative coding platform built with **React (Vite)**, **Node.js**, **Socket.io**, and the **JDoodle Compiler API**.  
-Multiple users can join a room, write code together, and run programs in various languages — all in real time.
-
----
-
-## 🚀 Features
-
-### 📝 Real-Time Collaborative Editor  
-- Multiple users can edit code in the same room  
-- Changes sync instantly using **Socket.io**
-
-### 💻 Multi-Language Code Compiler  
-Supports languages like:  
-`Python3`, `Java`, `C`, `C++`, `NodeJS`, `Go`, `Ruby`, `PHP`, `Swift`, `Rust`, `SQL`, `C#`, `Bash`, and more  
-- Execution powered by **JDoodle API**  
-- Output displayed in a bottom panel
-
-### 🎨 Light / Dark Mode  
-- Switchable CodeMirror themes
-
-### 👥 Active User List  
-- Shows all users connected to the same room in real time
-
-### 🔗 Sharable Room IDs  
-- Generate unique Room IDs  
-- Copy and share easily
+The CodeXAlive backend is a robust Node.js and Socket.io server that handles real-time collaboration, project management, and user authentication.
 
 ---
 
-## 🏗 Tech Stack
+## 🛠️ Core Modules
 
-### Frontend
-- React (Vite)
-- CodeMirror 5
-- Bootstrap
-- React Hot Toast
-- Socket.io-client
-- Axios
+### 🔐 User Authentication (JWT)
+- **Safe Authentication**: JSON Web Tokens for secure session management.
+- **Bcrypt Hash**: Secure password storage in MongoDB.
+- **Access Control**: Protected API endpoints for project and profile management.
 
-### Backend
-- Node.js
-- Express
-- Socket.io
-- Axios (JDoodle API)
-- CORS
+### 🔌 Real-Time Socket.io Handler
+- **Live Sync**: Event-driven architecture for code updates and cursor tracking.
+- **Admin Control Flow**: Handle participant permissions (Kick, Ban, Rejoin).
+- **In-Memory State Map**: Efficient tracking of active rooms and administrators.
+- **Waiting Room Logic**: Intercept join attempts for non-contributors to trigger the approval workflow.
 
----
+### 📝 Project Management
+- **CRUD Operations**: Create, Read, Update, and Delete projects with Mongoose models.
+- **Visibility Toggles**: Switch projects between Public and Private status.
+- **GitHub Integration**: Direct imports from the GitHub API into backend storage.
+- **Activity Logging**: Track project changes and file histories.
 
-## 📂 Project Structure
-
-CodeXLive/
-│
-├── client/
-│ ├── public/
-│ ├── src/
-│ │ ├── components/
-│ │ ├── Actions.js
-│ │ ├── Socket.js
-│ │ ├── App.jsx
-│ │ ├── main.jsx
-│ │ ├── index.css
-│ ├── vite.config.js
-│ └── package.json
-│
-└── server/
-├── Actions.js
-├── index.js
-├── .env
-└── package.json
-
-
+### 💻 Code Compiler & AI
+- **JDoodle Integration**: Secure API proxy for code execution.
+- **Gemini AI Controller**: AI-powered assistant for coding help and debugging.
 
 ---
 
-## ⚙️ Installation & Setup
+## 🚀 Getting Started
 
-### 1️⃣ Clone the repository
-
+### 1️⃣ Install Dependencies
 ```bash
-git clone https://github.com/your-username/CodeXLive.git
-cd CodeXLive
-
-
-#Backend Setup (Server)
-cd server
 npm install
+```
 
-
-*Create .env in server/:
-
+### 2️⃣ Configure Environment
+Create a `.env` file in the root of the `server` directory:
+```env
 PORT=5000
-JDOODLE_CLIENT_ID=your_id
-JDOODLE_CLIENT_SECRET=your_secret
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+JDOODLE_CLIENT_ID=your_jdoodle_id
+JDOODLE_CLIENT_SECRET=your_jdoodle_secret
+GEMINI_API_KEY=your_gemini_key
+```
 
-
-* Run Server
-node index.js
-
-** Server URL
-http://localhost:5000
-
-
-## Frontend Setup (client)
-cd client
-npm install
-
-** Create .env in client/:
-VITE_BACKEND_URL=http://localhost:5000
-
-
-** Run frontend:
+### 3️⃣ Development Server
+```bash
 npm run dev
+```
 
-**frontend Url
-http://localhost:3000
+---
 
+## 🏗️ Folder Structure
 
-##Environment Variables Summary
-PORT=5000
-JDOODLE_CLIENT_ID=
-JDOODLE_CLIENT_SECRET=
+- `/controllers`: Logic for processing requests and interaction with databases.
+- `/models`: Mongoose schemas (User, Project, File, Version, etc.).
+- `/routes`: Definition of all API endpoints.
+- `/sockets`: Event listeners and broadcasters for collaborative coding.
+- `/middleware`: Reusable logic for auth verification and error handling.
+- `/utils`: Utility functions, including logging and encryption.
+- `index.js`: Main entry point for the Express and Socket.io server.
 
-**Client
-VITE_BACKEND_URL=http://localhost:5000
+---
+
+## 🧩 Key Libraries
+- **Express**: Node.js web application framework.
+- **Socket.io**: real-time bi-directional communication.
+- **Mongoose**: Clean schemas for MongoDB interaction.
+- **JSON Web Token**: Secure identity and access management.
+- **Bcryptjs**: Password hashing library.
+- **Dotenv**: Environment variable loader.

@@ -1,5 +1,8 @@
 const Project = require("../models/Project");
 const File = require("../models/File");
+const Version = require("../models/Version");
+const ActivityLog = require("../models/ActivityLog");
+const Session = require("../models/Session");
 
 // Create a new project
 const createProject = async (req, res) => {
@@ -35,10 +38,11 @@ const createProject = async (req, res) => {
 const getProjects = async (req, res) => {
   try {
     const projects = await Project.find({
-      $or: [{ owner: req.user._id }, { collaborators: req.user._id }],
+      $or: [{ owner: req.user._id }, { "collaborators.user": req.user._id }],
     })
       .sort({ updatedAt: -1 })
-      .populate("owner", "username");
+      .populate("owner", "username")
+      .populate("collaborators.user", "username");
 
     res.json(projects);
   } catch (err) {
@@ -47,13 +51,25 @@ const getProjects = async (req, res) => {
   }
 };
 
-// Get a single project with its files
 const getProject = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id).populate(
-      "owner",
-      "username"
-    );
+    const { id } = req.params;
+    let project;
+
+    // Try finding by ObjectID first (default behavior)
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      project = await Project.findById(id).populate("owner", "username");
+    }
+
+    // If not found by ID, try finding by custom roomId slug
+    if (!project) {
+      project = await Project.findOne({ roomId: id }).populate("owner", "username");
+    }
+
+    // Finally, fallback to shareToken in case someone directly navigates to /editor/:shareToken
+    if (!project) {
+      project = await Project.findOne({ shareToken: id }).populate("owner", "username");
+    }
 
     if (!project) {
       return res.status(404).json({ error: "Project not found" });
@@ -104,8 +120,11 @@ const deleteProject = async (req, res) => {
     }
 
     await File.deleteMany({ project: project._id });
+    await Version.deleteMany({ project: project._id });
+    await ActivityLog.deleteMany({ project: project._id });
+    await Session.deleteMany({ project: project._id });
 
-    res.json({ message: "Project deleted" });
+    res.json({ message: "Project and all associated data deleted successfully." });
   } catch (err) {
     console.error("Delete project error:", err.message);
     res.status(500).json({ error: "Failed to delete project" });

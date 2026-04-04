@@ -1,11 +1,17 @@
 import { io } from "socket.io-client";
 
-export const initSocket = async () => {
+export const initSocket = async (inviteToken) => {
+  const token = localStorage.getItem("token");
+
   const options = {
     forceNew: true,
     reconnectionAttempts: Infinity,
     timeout: 10000,
     transports: ["websocket"],
+    auth: {
+      token,
+      inviteToken,
+    },
   };
 
   // Vite environment variable

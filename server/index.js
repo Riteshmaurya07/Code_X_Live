@@ -22,6 +22,7 @@ const sharingRoutes = require("./routes/sharingRoutes");
 const activityRoutes = require("./routes/activityRoutes");
 const formatRoutes = require("./routes/formatRoutes");
 const githubRoutes = require("./routes/githubRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const server = http.createServer(app);
 
@@ -33,7 +34,7 @@ if (process.env.NODE_ENV === "production") {
 // Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
@@ -48,7 +49,7 @@ app.use((req, res, next) => {
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
@@ -58,6 +59,7 @@ setupSocket(io);
 
 // API Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/projects", activityRoutes); // Nested under /api/projects/:id/activity
 app.use("/api/files", fileRoutes);
