@@ -1,16 +1,68 @@
-# React + Vite
+# 🖥️ CodeXAlive — Frontend React Core
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The CodeXAlive frontend is built using **React (Vite 5)** and **TailwindCSS**, providing a high-performance, real-time interface for collaborative coding.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🎨 Feature Modules
 
-## React Compiler
+### 🛠️ Editor Interface (CodeMirror 6)
+- **Real-Time Sync**: Using Socket.io for immediate updates.
+- **Syntax Highlighting**: Supports CodeMirror modes for diverse programming languages.
+- **Multi-File Explorer**: Dynamic file system for managing project files.
+- **Output Panel**: Real-time console for program execution.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 👥 User & Room Management
+- **Dashboard**: Centralized hub for user projects and collaborations.
+- **Admin Sidebar**: Exclusive controls for the project owner (Kick, Ban, Rejoin).
+- **Waiting Room UI**: A dedicated interface for pending requests.
+- **Public Profile View**: GitHub-style public contributor dashboards.
 
-## Expanding the ESLint configuration
+### 🤖 Intellect AI Integration
+- **AI Chat Panel**: Interactive AI assistant to help you code.
+- **Code Explain/Debug**: One-click AI context for the active file.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🚀 Getting Started
+
+### 1️⃣ Install Dependencies
+```bash
+npm install
+```
+
+### 2️⃣ Configure Environment
+Create a `.env` file in the root of the `client` directory:
+```env
+VITE_BACKEND_URL=http://localhost:5000
+```
+
+### 3️⃣ Development Server
+```bash
+npm run dev
+```
+
+### 4️⃣ Build for Production
+```bash
+npm run build
+```
+
+---
+
+## 🏗️ Folder Structure
+
+- `/src/components`: UI components (Editor, Dashboard, Layout, etc.)
+- `/src/hooks`: Custom React hooks for global state and logic.
+- `/src/pages`: Main application views (Home, Login, Dashboard, etc.)
+- `/src/services`: API and Socket client initialization.
+- `/src/ui`: Reusable atomic UI components like Buttons, Modals, and Tooltips.
+- `/src/Actions.js`: Shared constant definitions for socket events.
+
+---
+
+## 🧩 Key Libraries
+- **CodeMirror**: Specialized code editor engine.
+- **Socket.io-client**: Real-time WebSocket communication.
+- **React Router Dom**: Client-side navigation.
+- **Axios**: HTTP client for API requests.
+- **React Hot Toast**: Elegant notification system.

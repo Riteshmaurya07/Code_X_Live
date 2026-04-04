@@ -35,6 +35,15 @@ const ACTIONS = {
   SEND_PRIVATE_MESSAGE: "send-private-message",
   RECEIVE_PRIVATE_MESSAGE: "receive-private-message",
   CHAT_HISTORY: "chat-history",
+
+  // Room & Role events
+  CREATE_ROOM: "create-room",
+  ROOM_CREATED: "room-created",
+  PROMOTE_TO_EDITOR: "promote-to-editor",
+  DEMOTE_TO_VIEWER: "demote-to-viewer",
+  ROLE_UPDATED: "role-updated",
+  INVALID_INVITE: "invalid-invite",
+  WAIT_FOR_APPROVAL: "wait-for-approval",
 };
 
 module.exports = ACTIONS;

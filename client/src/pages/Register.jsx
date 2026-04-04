@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { registerUser } from "../services/authService";
 import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
@@ -11,6 +11,7 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
 
   const handleRegister = async (e) => {
@@ -34,7 +35,9 @@ function Register() {
       const userData = await registerUser(username, email, password);
       login(userData);
       toast.success("Account created successfully!");
-      navigate("/dashboard");
+      
+      const returnUrl = searchParams.get("returnUrl") || "/dashboard";
+      navigate(returnUrl);
     } catch (err) {
       toast.error(err.response?.data?.error || "Registration failed");
     } finally {

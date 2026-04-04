@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { loginUser } from "../services/authService";
 import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
@@ -9,6 +9,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
 
   const handleLogin = async (e) => {
@@ -23,7 +24,9 @@ function Login() {
       const userData = await loginUser(email, password);
       login(userData);
       toast.success("Login successful!");
-      navigate("/dashboard");
+      
+      const returnUrl = searchParams.get("returnUrl") || "/dashboard";
+      navigate(returnUrl);
     } catch (err) {
       toast.error(err.response?.data?.error || "Login failed");
     } finally {

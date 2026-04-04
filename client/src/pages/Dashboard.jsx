@@ -9,6 +9,9 @@ import {
   importGitHubRepo,
 } from "../services/projectService";
 import toast from "react-hot-toast";
+import Navbar from "../components/layout/Navbar";
+import ProjectCard from "../components/Dashboard/ProjectCard";
+import NewProjectForm from "../components/Dashboard/NewProjectForm";
 
 const LANGUAGES = [
   "javascript",
@@ -115,97 +118,25 @@ function Dashboard() {
 
   return (
     <div className="dashboard-page">
-      <nav className="dashboard-nav">
-        <div className="nav-brand">
-          <img src="/images/codeXlive.png" alt="Logo" className="nav-logo" />
-        </div>
-        <div className="nav-actions">
-          <span className="nav-user">Hi, {user?.username}</span>
-          <button className="btn-outline" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </nav>
+      <Navbar variant="dashboard" />
 
       <div className="dashboard-content">
-        <div className="dashboard-header">
-          <h1>Your Projects</h1>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <button
-              className="btn-outline"
-              onClick={() => { setShowGitHubImport(!showGitHubImport); setShowNewProject(false); }}
-            >
-              📦 Import GitHub
-            </button>
-            <button
-              className="btn-primary"
-              onClick={() => { setShowNewProject(!showNewProject); setShowGitHubImport(false); }}
-            >
-              + New Project
-            </button>
-          </div>
-        </div>
-
-        {/* New project form */}
-        {showNewProject && (
-          <form className="new-project-form" onSubmit={handleCreateProject}>
-            <input
-              type="text"
-              value={newProjectName}
-              onChange={(e) => setNewProjectName(e.target.value)}
-              placeholder="Project name"
-              autoFocus
-            />
-            <select
-              value={newProjectLang}
-              onChange={(e) => setNewProjectLang(e.target.value)}
-            >
-              {LANGUAGES.map((lang) => (
-                <option key={lang} value={lang}>
-                  {lang}
-                </option>
-              ))}
-            </select>
-            <button type="submit" className="btn-primary">
-              Create
-            </button>
-            <button
-              type="button"
-              className="btn-outline"
-              onClick={() => setShowNewProject(false)}
-            >
-              Cancel
-            </button>
-          </form>
-        )}
-
-        {/* GitHub import form */}
-        {showGitHubImport && (
-          <form className="new-project-form" onSubmit={handleGitHubImport}>
-            <input
-              type="text"
-              value={githubUrl}
-              onChange={(e) => setGithubUrl(e.target.value)}
-              placeholder="https://github.com/owner/repo"
-              autoFocus
-              style={{ flex: 2 }}
-            />
-            <button
-              type="submit"
-              className="btn-primary"
-              disabled={importing}
-            >
-              {importing ? "Importing..." : "Import"}
-            </button>
-            <button
-              type="button"
-              className="btn-outline"
-              onClick={() => setShowGitHubImport(false)}
-            >
-              Cancel
-            </button>
-          </form>
-        )}
+        <NewProjectForm
+          showNewProject={showNewProject}
+          setShowNewProject={setShowNewProject}
+          newProjectName={newProjectName}
+          setNewProjectName={setNewProjectName}
+          newProjectLang={newProjectLang}
+          setNewProjectLang={setNewProjectLang}
+          onHandleCreateProject={handleCreateProject}
+          languages={LANGUAGES}
+          showGitHubImport={showGitHubImport}
+          setShowGitHubImport={setShowGitHubImport}
+          githubUrl={githubUrl}
+          setGithubUrl={setGithubUrl}
+          onHandleGitHubImport={handleGitHubImport}
+          importing={importing}
+        />
 
         {/* Quick join room */}
         <div className="quick-join-section">
@@ -225,45 +156,15 @@ function Dashboard() {
         ) : (
           <div className="projects-grid">
             {projects.map((project) => (
-              <div key={project._id} className="project-card">
-                <div className="project-card-header">
-                  <h3>{project.name}</h3>
-                  <span className="lang-badge">{project.language}</span>
-                </div>
-                <div className="project-card-meta">
-                  <span>
-                    Updated{" "}
-                    {new Date(project.updatedAt).toLocaleDateString()}
-                  </span>
-                  {project.collaborators?.length > 0 && (
-                    <span> · {project.collaborators.length} collaborator(s)</span>
-                  )}
-                </div>
-                <div className="project-card-actions">
-                  <button
-                    className="btn-primary btn-sm"
-                    onClick={() =>
-                      navigate(`/editor/${project.roomId || project._id}`, {
-                        state: { username: user.username, projectId: project._id },
-                      })
-                    }
-                  >
-                    Open
-                  </button>
-                  <button
-                    className="btn-outline btn-sm"
-                    onClick={() => setShareProjectId(project._id)}
-                  >
-                    Share
-                  </button>
-                  <button
-                    className="btn-danger btn-sm"
-                    onClick={() => handleDeleteProject(project._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
+              <ProjectCard
+                key={project._id}
+                project={project}
+                onOpen={(p) => navigate(`/editor/${p.roomId || p._id}`, {
+                  state: { username: user.username, projectId: p._id },
+                })}
+                onShare={setShareProjectId}
+                onDelete={handleDeleteProject}
+              />
             ))}
           </div>
         )}
