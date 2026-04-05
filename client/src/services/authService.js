@@ -1,4 +1,8 @@
 import api from "./api";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider, githubProvider } from "../config/firebaseConfig";
+
+// ── Local auth ──
 
 export const loginUser = async (email, password) => {
   const { data } = await api.post("/api/auth/login", { email, password });
@@ -18,3 +22,18 @@ export const getProfile = async () => {
   const { data } = await api.get("/api/auth/profile");
   return data;
 };
+
+// ── Firebase OAuth ──
+
+const firebaseOAuthLogin = async (provider) => {
+  // Sign in with Firebase popup
+  const result = await signInWithPopup(auth, provider);
+  // Get the Firebase ID token
+  const idToken = await result.user.getIdToken();
+  // Send to our backend for JWT generation
+  const { data } = await api.post("/api/auth/firebase", { idToken });
+  return data;
+};
+
+export const loginWithGoogle = () => firebaseOAuthLogin(googleProvider);
+export const loginWithGitHub = () => firebaseOAuthLogin(githubProvider);
