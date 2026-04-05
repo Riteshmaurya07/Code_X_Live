@@ -14,6 +14,7 @@
     "bootstrap": "^5.3.8",
     "codemirror": "^5.65.16",
     "dotenv": "^17.2.3",
+    "firebase": "^12.11.0",
     "react": "^19.2.1",
     "react-avatar": "^5.0.4",
     "react-dom": "^19.2.1",
