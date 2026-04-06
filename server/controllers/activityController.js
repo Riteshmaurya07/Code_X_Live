@@ -1,6 +1,7 @@
 const ActivityLog = require("../models/ActivityLog");
 const User = require("../models/User");
 const Project = require("../models/Project");
+const logger = require("../utils/logger");
 
 // Get activity log for a project
 const getProjectActivity = async (req, res, next) => {
@@ -45,7 +46,7 @@ const logActivity = async (projectId, userId, username, action, details) => {
     });
   } catch (err) {
     // Silently fail — activity logging should never block operations
-    console.error("Activity log error:", err.message);
+    logger.error(`Activity log error: ${err.message}`);
   }
 };
 

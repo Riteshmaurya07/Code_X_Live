@@ -1,12 +1,12 @@
-# 🚀 CodeXAlive — Real-Time Collaborative Coding & Social Ecosystem
+# 🚀 CodeXLive — Real-Time Collaborative Coding & Social Ecosystem
 
-CodeXAlive is a high-performance, feature-rich collaborative IDE that integrates professional project management with a robust developer social network. Inspired by tools like GitHub and VS Code Live Share, it allows developers to pair program in real-time, track their coding activity via heatmaps, and build a professional developer presence.
+CodeXLive is a high-performance, feature-rich collaborative IDE that integrates professional project management with a robust developer social network. Inspired by tools like GitHub and VS Code Live Share, it allows developers to pair program in real-time, track their coding activity via heatmaps, and build a professional developer presence.
 
 ---
 
 ## 📺 Project Overview
 
-CodeXAlive goes beyond a simple editor. It offers a full suite of tools including multi-file synchronization, a global notification system, interactive developer profiles, and an AI-powered coding assistant.
+CodeXLive goes beyond a simple editor. It offers a full suite of tools including multi-file synchronization, a global notification system, interactive developer profiles, and an AI-powered coding assistant.
 
 ### ✨ Key Features
 
@@ -62,8 +62,8 @@ CodeXAlive goes beyond a simple editor. It offers a full suite of tools includin
 
 ### 2️⃣ Clone the Repository
 ```bash
-git clone https://github.com/your-username/CodeXAlive.git
-cd CodeXAlive
+git clone https://github.com/your-username/CodeXLive.git
+cd CodeXLive
 ```
 
 ### 3️⃣ Backend Setup
