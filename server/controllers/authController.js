@@ -37,7 +37,7 @@ const register = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (err) {
-    console.error("Register error:", err.message);
+    logger.error(`Register error: ${err.message}`);
     res.status(500).json({ error: "Registration failed" });
   }
 };
@@ -77,7 +77,7 @@ const login = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (err) {
-    console.error("Login error:", err.message);
+    logger.error(`Login error: ${err.message}`);
     res.status(500).json({ error: "Login failed" });
   }
 };

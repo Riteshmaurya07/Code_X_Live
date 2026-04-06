@@ -4,6 +4,7 @@ const Version = require("../models/Version");
 const ActivityLog = require("../models/ActivityLog");
 const { logActivity } = require("./activityController");
 const Session = require("../models/Session");
+const logger = require("../utils/logger");
 
 // Create a new project
 const createProject = async (req, res) => {
@@ -39,7 +40,7 @@ const createProject = async (req, res) => {
 
     res.status(201).json(project);
   } catch (err) {
-    console.error("Create project error:", err.message);
+    logger.error(`Create project error: ${err.message}`);
     res.status(500).json({ error: "Failed to create project" });
   }
 };
@@ -56,7 +57,7 @@ const getProjects = async (req, res) => {
 
     res.json(projects);
   } catch (err) {
-    console.error("Get projects error:", err.message);
+    logger.error(`Get projects error: ${err.message}`);
     res.status(500).json({ error: "Failed to fetch projects" });
   }
 };
@@ -91,7 +92,7 @@ const getProject = async (req, res) => {
 
     res.json({ project, files });
   } catch (err) {
-    console.error("Get project error:", err.message);
+    logger.error(`Get project error: ${err.message}`);
     res.status(500).json({ error: "Failed to fetch project" });
   }
 };
@@ -112,7 +113,7 @@ const updateProject = async (req, res) => {
 
     res.json(project);
   } catch (err) {
-    console.error("Update project error:", err.message);
+    logger.error(`Update project error: ${err.message}`);
     res.status(500).json({ error: "Failed to update project" });
   }
 };
@@ -136,7 +137,7 @@ const deleteProject = async (req, res) => {
 
     res.json({ message: "Project and all associated data deleted successfully." });
   } catch (err) {
-    console.error("Delete project error:", err.message);
+    logger.error(`Delete project error: ${err.message}`);
     res.status(500).json({ error: "Failed to delete project" });
   }
 };

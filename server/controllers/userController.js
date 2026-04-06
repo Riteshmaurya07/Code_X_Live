@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const { createNotification } = require("./notificationController");
 const { logActivity } = require("./activityController");
+const logger = require("../utils/logger");
 
 // Get a public user profile and their public projects
 const getUserProfile = async (req, res) => {
@@ -41,7 +42,7 @@ const getUserProfile = async (req, res) => {
       publicProjects: projects,
     });
   } catch (err) {
-    console.error("Get user profile error:", err.message);
+    logger.error(`Get user profile error: ${err.message}`);
     res.status(500).json({ error: "Failed to fetch user profile" });
   }
 };
@@ -91,7 +92,7 @@ const followUser = async (req, res) => {
 
     res.json({ success: true, message: "User followed successfully" });
   } catch (err) {
-    console.error("Follow error:", err);
+    logger.error(`Follow error: ${err.message}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -114,7 +115,7 @@ const unfollowUser = async (req, res) => {
 
     res.json({ success: true, message: "User unfollowed successfully" });
   } catch (err) {
-    console.error("Unfollow error:", err);
+    logger.error(`Unfollow error: ${err.message}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -141,7 +142,7 @@ const searchUsers = async (req, res) => {
 
     res.json(users);
   } catch (err) {
-    console.error("Search error:", err);
+    logger.error(`Search error: ${err.message}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -174,7 +175,7 @@ const getFollowers = async (req, res) => {
 
     res.json(followersData);
   } catch (err) {
-    console.error("Get followers error:", err);
+    logger.error(`Get followers error: ${err.message}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -207,7 +208,7 @@ const getFollowing = async (req, res) => {
 
     res.json(followingData);
   } catch (err) {
-    console.error("Get following error:", err);
+    logger.error(`Get following error: ${err.message}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };

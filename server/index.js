@@ -11,6 +11,13 @@ const connectDB = require("./config/db");
 const { setupSocket } = require("./sockets/socketHandler");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./utils/logger");
+const checkEnv = require("./config/checkEnv");
+const helmet = require("helmet");
+const compression = require("compression");
+const rateLimit = require("express-rate-limit");
+
+// Check environment variables before starting
+checkEnv();
 
 // Route imports
 const authRoutes = require("./routes/authRoutes");
@@ -33,12 +40,36 @@ if (process.env.NODE_ENV === "production") {
 }
 
 // Middleware
+app.use(helmet());
+app.use(compression());
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.NODE_ENV === "production" ? process.env.CLIENT_URL : "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   })
 );
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again after 15 minutes",
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Apply rate limiting to all requests
+app.use(limiter);
+
+// Stricter rate limit for authentication routes
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // Limit each IP to 10 login/register attempts per hour
+  message: "Too many authentication attempts, please try again after an hour",
+});
+app.use("/api/auth", authLimiter);
+
 app.use(express.json({ limit: "10mb" }));
 
 // Request logging
@@ -50,7 +81,7 @@ app.use((req, res, next) => {
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: process.env.NODE_ENV === "production" ? process.env.CLIENT_URL : "*",
     methods: ["GET", "POST"],
   },
 });
