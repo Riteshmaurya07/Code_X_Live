@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { registerUser } from "../services/authService";
+import { registerUser, loginWithGoogle, loginWithGitHub } from "../services/authService";
 import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
 
@@ -35,11 +35,26 @@ function Register() {
       const userData = await registerUser(username, email, password);
       login(userData);
       toast.success("Account created successfully!");
-      
+
       const returnUrl = searchParams.get("returnUrl") || "/dashboard";
       navigate(returnUrl);
     } catch (err) {
       toast.error(err.response?.data?.error || "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider) => {
+    setIsLoading(true);
+    try {
+      const userData = provider === "google" ? await loginWithGoogle() : await loginWithGitHub();
+      login(userData);
+      toast.success("Login successful!");
+      const returnUrl = searchParams.get("returnUrl") || "/dashboard";
+      navigate(returnUrl);
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Social login failed");
     } finally {
       setIsLoading(false);
     }
@@ -58,6 +73,27 @@ function Register() {
             <h2>Create Account</h2>
             <p>Join CodeXLive today</p>
           </div>
+
+          <div className="social-auth">
+            <button
+              className="social-btn"
+              onClick={() => handleSocialLogin("google")}
+              disabled={isLoading}
+              type="button"
+            >
+              <span>G</span> Google
+            </button>
+            <button
+              className="social-btn"
+              onClick={() => handleSocialLogin("github")}
+              disabled={isLoading}
+              type="button"
+            >
+              <span>GH</span> GitHub
+            </button>
+          </div>
+
+          <div className="auth-divider">or continue with email</div>
 
           <form onSubmit={handleRegister} className="auth-form">
             <div className="form-group">

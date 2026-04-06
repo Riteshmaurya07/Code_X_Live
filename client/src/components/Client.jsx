@@ -8,7 +8,6 @@ function Client({ username, isAdmin, isCurrentUser, isAdminUser, permission, onK
 
   const canManage = isAdmin && !isCurrentUser && !isAdminUser;
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -37,24 +36,12 @@ function Client({ username, isAdmin, isCurrentUser, isAdminUser, permission, onK
     setShowConfirm(false);
   };
 
-  const handleSetEditor = () => {
-    onSetPermission(username, "editor");
-    setShowMenu(false);
-  };
+  const handleSetEditor = () => { onSetPermission(username, "editor"); setShowMenu(false); };
+  const handleSetViewer = () => { onSetPermission(username, "viewer"); setShowMenu(false); };
 
-  const handleSetViewer = () => {
-    onSetPermission(username, "viewer");
-    setShowMenu(false);
-  };
-
-  // Badge configuration
   const getBadge = () => {
-    if (isAdminUser) {
-      return { label: "Admin", className: "role-badge role-admin" };
-    }
-    if (permission === "viewer") {
-      return { label: "Viewer", className: "role-badge role-viewer" };
-    }
+    if (isAdminUser) return { label: "Admin", className: "role-badge role-admin" };
+    if (permission === "viewer") return { label: "Viewer", className: "role-badge role-viewer" };
     return { label: "Editor", className: "role-badge role-editor" };
   };
 
@@ -62,31 +49,15 @@ function Client({ username, isAdmin, isCurrentUser, isAdminUser, permission, onK
 
   return (
     <>
-      <div
-        className="client-item"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          padding: "6px 4px",
-          borderRadius: "6px",
-          gap: "8px",
-          position: "relative",
-        }}
-      >
-        {/* Avatar — click to open admin menu */}
+      <div className="client-item">
         <div
-          style={{ position: "relative", cursor: canManage ? "pointer" : "default" }}
+          className="client-avatar-wrap"
+          style={{ cursor: canManage ? "pointer" : "default" }}
           onClick={() => canManage && setShowMenu(!showMenu)}
           ref={menuRef}
         >
-          <Avatar
-            name={username}
-            size={28}
-            round="6px"
-            textSizeRatio={2.5}
-          />
+          <Avatar name={username} size={28} round="6px" textSizeRatio={2.5} />
 
-          {/* Admin dropdown menu */}
           {showMenu && canManage && (
             <div className="permission-menu">
               <button
@@ -112,77 +83,29 @@ function Client({ username, isAdmin, isCurrentUser, isAdminUser, permission, onK
           )}
         </div>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <span style={{
-            fontSize: "0.82rem",
-            color: "var(--text-secondary)",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            display: "block",
-          }}>
+        <div className="client-info">
+          <span className="client-name">
             {username}
-            {isCurrentUser && (
-              <span style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginLeft: "4px" }}>
-                (you)
-              </span>
-            )}
+            {isCurrentUser && <span className="client-you-tag">(you)</span>}
           </span>
-
-          {/* Role badge */}
-          <span className={badge.className}>
-            {badge.label}
-          </span>
+          <span className={badge.className}>{badge.label}</span>
         </div>
 
-        <div style={{ display: "flex", gap: "2px", alignItems: "center" }}>
-          {/* Quick message button — visible for other users */}
+        <div className="client-actions">
           {!isCurrentUser && (
             <button
-              className="action-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onMessageUser) onMessageUser(username);
-              }}
+              className="client-action-btn"
+              onClick={(e) => { e.stopPropagation(); if (onMessageUser) onMessageUser(username); }}
               title={`Direct Message ${username}`}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "0.85rem",
-                padding: "2px 4px",
-                borderRadius: "4px",
-                opacity: 0,
-                transition: "opacity 0.2s, background 0.2s",
-                color: "var(--text-muted)",
-                lineHeight: 1,
-              }}
             >
               💬
             </button>
           )}
-
-          {/* Quick kick button — visible on hover for admin viewing non-admin users */}
           {canManage && (
             <button
-              className="kick-btn action-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(!showMenu);
-              }}
+              className="client-action-btn danger"
+              onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
               title={`Manage ${username}`}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "0.85rem",
-                padding: "2px 4px",
-                borderRadius: "4px",
-                opacity: 0,
-                transition: "opacity 0.2s, background 0.2s",
-                color: "var(--text-muted)",
-                lineHeight: 1,
-              }}
             >
               ⋮
             </button>
@@ -190,7 +113,6 @@ function Client({ username, isAdmin, isCurrentUser, isAdminUser, permission, onK
         </div>
       </div>
 
-      {/* Confirmation modal */}
       {showConfirm && (
         <div className="kick-confirm-overlay" onClick={handleCancel}>
           <div className="kick-confirm-modal" onClick={(e) => e.stopPropagation()}>
@@ -199,17 +121,13 @@ function Client({ username, isAdmin, isCurrentUser, isAdminUser, permission, onK
             <p>
               Remove <strong>{username}</strong> from this session?
               <br />
-              <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+              <span className="client-you-tag">
                 They will be banned from rejoining until approved.
               </span>
             </p>
             <div className="kick-confirm-actions">
-              <button className="kick-cancel-btn" onClick={handleCancel}>
-                Cancel
-              </button>
-              <button className="kick-confirm-btn" onClick={handleConfirm}>
-                Remove
-              </button>
+              <button className="kick-cancel-btn" onClick={handleCancel}>Cancel</button>
+              <button className="kick-confirm-btn" onClick={handleConfirm}>Remove</button>
             </div>
           </div>
         </div>

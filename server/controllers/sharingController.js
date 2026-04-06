@@ -6,6 +6,7 @@ const ActivityLog = require("../models/ActivityLog");
 const logger = require("../utils/logger");
 const { sendMail } = require("../config/mailer");
 const { invitationEmail, acceptedEmail, declinedEmail } = require("../utils/emailTemplates");
+const { createNotification } = require("./notificationController");
 
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 
@@ -91,6 +92,20 @@ const inviteCollaborator = async (req, res, next) => {
     } catch (emailErr) {
       logger.warn(`Email notification failed for invitation: ${emailErr.message}`);
       // Don't fail the invitation if email fails
+    }
+
+    // In-app Notification
+    try {
+      await createNotification(req, {
+        recipient: user._id,
+        type: "invitation",
+        message: `${req.user.username} invited you to collaborate on "${project.name}" as ${role || "editor"}`,
+        relatedUser: req.user._id,
+        relatedProject: projectId,
+        actionUrl: `/dashboard`,
+      });
+    } catch (notifErr) {
+      logger.warn(`In-app notification dispatch failed: ${notifErr.message}`);
     }
 
     // Log activity
@@ -194,9 +209,19 @@ const acceptInvitation = async (req, res, next) => {
         const projectUrl = `${CLIENT_URL}/editor/${project.roomId || project._id}`;
         const html = acceptedEmail(req.user.username, invitation.project.name, projectUrl);
         await sendMail(owner.email, `${req.user.username} accepted your invitation for "${invitation.project.name}"`, html);
+
+        // In-app Notification to the owner
+        await createNotification(req, {
+          recipient: project.owner,
+          type: "system",
+          message: `${req.user.username} accepted your invitation to collaborate on "${project.name}"`,
+          relatedUser: req.user._id,
+          relatedProject: project._id,
+          actionUrl: `/editor/${project.roomId || project._id}`,
+        });
       }
-    } catch (emailErr) {
-      logger.warn(`Acceptance email notification failed: ${emailErr.message}`);
+    } catch (err) {
+      logger.warn(`Acceptance notification failed: ${err.message}`);
     }
 
     // Log activity
@@ -251,9 +276,19 @@ const declineInvitation = async (req, res, next) => {
       if (owner) {
         const html = declinedEmail(req.user.username, invitation.project.name);
         await sendMail(owner.email, `${req.user.username} declined your invitation for "${invitation.project.name}"`, html);
+
+        // In-app Notification to the owner
+        await createNotification(req, {
+          recipient: invitation.project.owner,
+          type: "system",
+          message: `${req.user.username} declined your invitation for "${invitation.project.name}"`,
+          relatedUser: req.user._id,
+          relatedProject: invitation.project._id,
+          actionUrl: `/dashboard`,
+        });
       }
-    } catch (emailErr) {
-      logger.warn(`Decline email notification failed: ${emailErr.message}`);
+    } catch (err) {
+      logger.warn(`Decline notification failed: ${err.message}`);
     }
 
     logger.info(`${req.user.username} declined invitation for project ${invitation.project.name}`);

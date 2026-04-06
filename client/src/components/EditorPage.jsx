@@ -18,6 +18,7 @@ import {
 } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
+import { useTheme } from "../hooks/useTheme";
 import api from "../services/api";
 import { getProject, formatCode as formatCodeAPI } from "../services/projectService";
 import { useFileTree } from "../hooks/editor/useFileTree";
@@ -30,6 +31,7 @@ const LANGUAGES = [
 
 function EditorPage() {
   const { user: authUser } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const { roomId } = useParams();
@@ -37,7 +39,7 @@ function EditorPage() {
   const username = authUser?.username;
 
   // --- UI State ---
-  const [theme, setTheme] = useState("dark");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showChatPanel, setShowChatPanel] = useState(false);
@@ -50,7 +52,6 @@ function EditorPage() {
   // --- Project State ---
   const [projectId, setProjectId] = useState(() => {
     if (location.state?.projectId) return location.state.projectId;
-    // Allow any roomId that isn't null, as the backend will handle ID vs Slug
     return roomId || null;
   });
   const [projectLoaded, setProjectLoaded] = useState(false);
@@ -175,7 +176,7 @@ function EditorPage() {
 
   if (!projectLoaded) {
     return (
-      <div className="editor-page" data-theme={theme}>
+      <div className="editor-page">
         <div className="loading-screen">
           <p>Loading project...</p>
         </div>
@@ -186,7 +187,7 @@ function EditorPage() {
   const activeFile = files.find(f => f._id === activeFileId);
 
   return (
-    <div className="editor-page" data-theme={theme}>
+    <div className="editor-page">
       <EditorModals 
         kickedModal={kickedModal}
         bannedModal={bannedModal}
@@ -197,6 +198,8 @@ function EditorPage() {
       />
 
       <EditorSidebar 
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
         files={files}
         activeFileId={activeFileId}
         onSelectFile={setActiveFileId}
@@ -221,7 +224,7 @@ function EditorPage() {
       <div className="editor-main">
         <EditorToolbar 
           theme={theme}
-          onToggleTheme={() => setTheme(prev => prev === "dark" ? "light" : "dark")}
+          onToggleTheme={toggleTheme}
           selectedLanguage={selectedLanguage}
           onSelectLanguage={setSelectedLanguage}
           languages={LANGUAGES}
@@ -239,6 +242,7 @@ function EditorPage() {
           unreadChatCount={Object.values(unreadChatCounts).reduce((a, b) => a + b, 0)}
           showAIPanel={showAIPanel}
           onToggleAI={() => { setShowAIPanel(!showAIPanel); setShowHistory(false); setShowChatPanel(false); }}
+          onToggleSidebar={() => setSidebarOpen(prev => !prev)}
         />
 
         {isReadOnly && <div className="readonly-banner">👁 View Only</div>}

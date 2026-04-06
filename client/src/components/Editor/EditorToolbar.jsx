@@ -1,33 +1,22 @@
 import React from 'react';
 import Button from '../ui/Button';
 
-/**
- * Top bar for the EditorPage, managing theme, language, and primary actions.
- */
 const EditorToolbar = ({
-  theme,
-  onToggleTheme,
-  selectedLanguage,
-  onSelectLanguage,
-  languages,
-  activeFileName,
-  saveStatus,
-  isDbFile,
-  onSave,
-  onFormat,
-  showHistory,
-  onToggleHistory,
-  onToggleChat,
-  showChatPanel,
-  onRun,
-  isCompiling,
-  unreadChatCount,
-  showAIPanel,
-  onToggleAI
+  theme, onToggleTheme,
+  selectedLanguage, onSelectLanguage, languages,
+  activeFileName, saveStatus, isDbFile,
+  onSave, onFormat, showHistory, onToggleHistory,
+  onToggleChat, showChatPanel, onRun, isCompiling,
+  unreadChatCount, showAIPanel, onToggleAI,
+  onToggleSidebar
 }) => {
   return (
     <div className="editor-toolbar">
       <div className="toolbar-left">
+        {/* Mobile sidebar hamburger */}
+        <button className="sidebar-toggle" onClick={onToggleSidebar} title="Toggle sidebar">
+          ☰
+        </button>
         <Button variant="outline" size="sm" onClick={onToggleTheme}>
           {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
         </Button>
@@ -37,9 +26,7 @@ const EditorToolbar = ({
           onChange={(e) => onSelectLanguage(e.target.value)}
         >
           {languages.map((lang) => (
-            <option key={lang} value={lang}>
-              {lang}
-            </option>
+            <option key={lang} value={lang}>{lang}</option>
           ))}
         </select>
         <span className="active-file-name">
@@ -81,9 +68,7 @@ const EditorToolbar = ({
         >
           💬 Chat
           {unreadChatCount > 0 && !showChatPanel && (
-            <span className="chat-badge">
-              {unreadChatCount}
-            </span>
+            <span className="chat-badge">{unreadChatCount}</span>
           )}
         </Button>
         <Button

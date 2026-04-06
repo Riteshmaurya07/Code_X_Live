@@ -4,7 +4,7 @@ const activityLogSchema = new mongoose.Schema({
   project: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Project",
-    required: true,
+    required: false, // Made optional to support global user actions
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -32,6 +32,10 @@ const activityLogSchema = new mongoose.Schema({
       "collaborator_removed",
       "project_updated",
       "github_import",
+      "user_followed",
+      "user_login",
+      "project_created",
+      "invitation_received"
     ],
     required: true,
   },
@@ -42,5 +46,6 @@ const activityLogSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 activityLogSchema.index({ project: 1, createdAt: -1 });
+activityLogSchema.index({ user: 1, createdAt: -1 });
 
 module.exports = mongoose.model("ActivityLog", activityLogSchema);

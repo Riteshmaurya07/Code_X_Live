@@ -8,6 +8,8 @@ import Dashboard from "./pages/Dashboard";
 import PublicProfile from "./pages/PublicProfile";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { ThemeProvider } from "./hooks/useTheme";
+import { GlobalSocketProvider } from "./hooks/useGlobalSocket";
 
 // Protected route wrapper
 function ProtectedRoute({ children }) {
@@ -22,7 +24,6 @@ function ProtectedRoute({ children }) {
   }
 
   if (!user) {
-    // Preserve current URL so user returns here after login
     const currentUrl = window.location.pathname + window.location.search;
     return <Navigate to={`/login?returnUrl=${encodeURIComponent(currentUrl)}`} />;
   }
@@ -43,13 +44,11 @@ function JoinHandler() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // If it's a temporary socket invite link (has ?token=)
     if (token) {
       navigate(`/editor/${roomId}?token=${token}`, { replace: true });
       return;
     }
 
-    // Otherwise, it's a permanent project share token from ShareModal
     const redeemShareToken = async () => {
       try {
         const res = await api.post(`/api/sharing/join/${roomId}`);
@@ -70,7 +69,7 @@ function JoinHandler() {
   }, [roomId, token, navigate]);
 
   return (
-    <div className="loading-screen" style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div className="loading-screen">
       <p style={{ color: "var(--text-muted)" }}>Joining project...</p>
     </div>
   );
@@ -90,7 +89,6 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      {/* Handle invite links */}
       <Route 
         path="/join/:roomId" 
         element={
@@ -99,7 +97,6 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
-      {/* Protect the editor */}
       <Route 
         path="/editor/:roomId" 
         element={
@@ -108,9 +105,24 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
-      {/* Public profile page */}
       <Route 
         path="/profile/:username" 
+        element={
+          <ProtectedRoute>
+            <PublicProfile />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile/:username/followers" 
+        element={
+          <ProtectedRoute>
+            <PublicProfile />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile/:username/following" 
         element={
           <ProtectedRoute>
             <PublicProfile />
@@ -123,12 +135,16 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <div>
-        <Toaster position="top-center" />
-      </div>
-      <AppRoutes />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <GlobalSocketProvider>
+          <div>
+            <Toaster position="top-center" />
+          </div>
+          <AppRoutes />
+        </GlobalSocketProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
