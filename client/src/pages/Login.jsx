@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { loginUser } from "../services/authService";
+import { loginUser, loginWithGoogle, loginWithGitHub } from "../services/authService";
 import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
 
@@ -34,6 +34,21 @@ function Login() {
     }
   };
 
+  const handleSocialLogin = async (provider) => {
+    setIsLoading(true);
+    try {
+      const userData = provider === "google" ? await loginWithGoogle() : await loginWithGitHub();
+      login(userData);
+      toast.success("Login successful!");
+      const returnUrl = searchParams.get("returnUrl") || "/dashboard";
+      navigate(returnUrl);
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Social login failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="auth-page">
       <div className="auth-container">
@@ -47,6 +62,27 @@ function Login() {
             <h2>Welcome Back</h2>
             <p>Sign in to your account</p>
           </div>
+
+          <div className="social-auth">
+            <button
+              className="social-btn"
+              onClick={() => handleSocialLogin("google")}
+              disabled={isLoading}
+              type="button"
+            >
+              <span>G</span> Google
+            </button>
+            <button
+              className="social-btn"
+              onClick={() => handleSocialLogin("github")}
+              disabled={isLoading}
+              type="button"
+            >
+              <span>GH</span> GitHub
+            </button>
+          </div>
+
+          <div className="auth-divider">or continue with email</div>
 
           <form onSubmit={handleLogin} className="auth-form">
             <div className="form-group">

@@ -5,90 +5,71 @@ import MembersList from './MembersList';
 import PendingRequests from './PendingRequests';
 import Button from '../ui/Button';
 
-/**
- * Left sidebar for the EditorPage, managing navigation, files, and users.
- */
 const EditorSidebar = ({
-  files,
-  activeFileId,
-  onSelectFile,
-  onCreateFile,
-  onDeleteFile,
-  onRenameFile,
-  clients,
-  username,
-  adminUsername,
-  isAdmin,
-  permissions,
-  approvalRequests,
-  onApproveRejoin,
-  onDenyRejoin,
-  onKick,
-  onSetPermission,
-  onMessageUser,
-  onCopyRoomId,
-  onLeaveRoom
+  isOpen, onClose,
+  files, activeFileId, onSelectFile, onCreateFile, onDeleteFile, onRenameFile,
+  clients, username, adminUsername, isAdmin, permissions,
+  approvalRequests, onApproveRejoin, onDenyRejoin,
+  onKick, onSetPermission, onMessageUser,
+  onCopyRoomId, onLeaveRoom
 }) => {
   return (
-    <div className="editor-sidebar">
-      <Logo className="sidebar-logo" />
-      <hr />
-      
-      {/* Scrollable middle section */}
-      <div className="sidebar-scroll-content">
-        <FileExplorer
-          files={files}
-          activeFileId={activeFileId}
-          onSelectFile={onSelectFile}
-          onCreateFile={onCreateFile}
-          onDeleteFile={onDeleteFile}
-          onRenameFile={onRenameFile}
-        />
+    <>
+      {/* Mobile overlay backdrop */}
+      <div
+        className={`sidebar-overlay ${isOpen ? 'visible' : ''}`}
+        onClick={onClose}
+      />
 
+      <div className={`editor-sidebar ${isOpen ? 'open' : ''}`}>
+        <Logo className="sidebar-logo" />
         <hr />
+        
+        <div className="sidebar-scroll-content">
+          <FileExplorer
+            files={files}
+            activeFileId={activeFileId}
+            onSelectFile={(id) => { onSelectFile(id); if (onClose) onClose(); }}
+            onCreateFile={onCreateFile}
+            onDeleteFile={onDeleteFile}
+            onRenameFile={onRenameFile}
+          />
 
-        <MembersList 
-          clients={clients}
-          username={username}
-          adminUsername={adminUsername}
-          isAdmin={isAdmin}
-          permissions={permissions}
-          onKick={onKick}
-          onSetPermission={onSetPermission}
-          onMessageUser={onMessageUser}
-        />
+          <hr />
 
-        {isAdmin && approvalRequests && approvalRequests.length > 0 && (
-          <>
-            <hr />
-            <PendingRequests 
-              approvalRequests={approvalRequests}
-              onApproveRejoin={onApproveRejoin}
-              onDenyRejoin={onDenyRejoin}
-            />
-          </>
-        )}
+          <MembersList 
+            clients={clients}
+            username={username}
+            adminUsername={adminUsername}
+            isAdmin={isAdmin}
+            permissions={permissions}
+            onKick={onKick}
+            onSetPermission={onSetPermission}
+            onMessageUser={onMessageUser}
+          />
+
+          {isAdmin && approvalRequests && approvalRequests.length > 0 && (
+            <>
+              <hr />
+              <PendingRequests 
+                approvalRequests={approvalRequests}
+                onApproveRejoin={onApproveRejoin}
+                onDenyRejoin={onDenyRejoin}
+              />
+            </>
+          )}
+        </div>
+
+        <div className="sidebar-footer">
+          <Button variant="outline" fullWidth onClick={onCopyRoomId}>
+            Copy Room ID
+          </Button>
+          <Button variant="danger" fullWidth onClick={onLeaveRoom}>
+            Leave Room
+          </Button>
+        </div>
       </div>
-
-      {/* Fixed bottom actions */}
-      <div className="sidebar-footer">
-        <Button 
-          variant="outline" 
-          fullWidth 
-          onClick={onCopyRoomId} 
-          className="mb-2"
-        >
-          Copy Room ID
-        </Button>
-        <Button 
-          variant="danger" 
-          fullWidth 
-          onClick={onLeaveRoom}
-        >
-          Leave Room
-        </Button>
-      </div>
-    </div>
+    </>
   );
 };
 

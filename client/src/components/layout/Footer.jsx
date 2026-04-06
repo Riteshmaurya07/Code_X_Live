@@ -14,6 +14,11 @@ const Footer = () => {
         <div className="footer-info">
           <p>Built by <strong>Team CodeX</strong></p>
           <p className="text-muted">UIET Kanpur</p>
+          <div className="footer-links" style={{ marginTop: '0.5rem' }}>
+            <a href="https://github.com/Riteshmaurya07/Code_X_Live" target="_blank" rel="noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>
+              GitHub Repository
+            </a>
+          </div>
         </div>
       </div>
     </footer>

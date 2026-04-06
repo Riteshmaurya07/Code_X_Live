@@ -6,6 +6,7 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 
 const userSocketMap = {};
+const globalUserSockets = new Map(); // userId -> socketId
 
 // Admin Room Control — in-memory structures (reset on server restart)
 const roomBanList = new Map();   // roomId → Set of banned usernames
@@ -68,6 +69,14 @@ const setupSocket = (io) => {
 
   io.on("connection", (socket) => {
     logger.info(`Socket connected: ${socket.id} (user: ${socket.user?.username})`);
+
+    // Register user globally on connect (even outside a room)
+    socket.on("REGISTER_USER", (userId) => {
+      if (userId) {
+        globalUserSockets.set(userId.toString(), socket.id);
+        logger.info(`User ${socket.user?.username} (${userId}) registered globally`);
+      }
+    });
 
     // CREATE_ROOM: Generate invite token for a new room
     socket.on(ACTIONS.CREATE_ROOM, ({ roomId }) => {
@@ -638,8 +647,21 @@ const setupSocket = (io) => {
       if (username) {
         logger.info(`${username} disconnected (${socket.id})`);
       }
+
+      // Cleanup global registration
+      if (socket.user?.id) {
+        const uid = socket.user.id.toString();
+        if (globalUserSockets.get(uid) === socket.id) {
+          globalUserSockets.delete(uid);
+        }
+      }
     });
   });
 };
 
-module.exports = setupSocket;
+const getSocketIdByUserId = (userId) => {
+  if (!userId) return null;
+  return globalUserSockets.get(userId.toString());
+};
+
+module.exports = { setupSocket, getSocketIdByUserId };

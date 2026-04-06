@@ -2,6 +2,7 @@ const Project = require("../models/Project");
 const File = require("../models/File");
 const Version = require("../models/Version");
 const ActivityLog = require("../models/ActivityLog");
+const { logActivity } = require("./activityController");
 const Session = require("../models/Session");
 
 // Create a new project
@@ -26,6 +27,15 @@ const createProject = async (req, res) => {
       content: "// Start coding here\n",
       language: language || "javascript",
     });
+
+    // Log activity
+    await logActivity(
+      project._id,
+      req.user._id,
+      req.user.username,
+      "project_created",
+      `Created project "${name}"`
+    );
 
     res.status(201).json(project);
   } catch (err) {

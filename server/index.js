@@ -8,7 +8,7 @@ const cors = require("cors");
 
 
 const connectDB = require("./config/db");
-const setupSocket = require("./sockets/socketHandler");
+const { setupSocket } = require("./sockets/socketHandler");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./utils/logger");
 
@@ -23,6 +23,7 @@ const activityRoutes = require("./routes/activityRoutes");
 const formatRoutes = require("./routes/formatRoutes");
 const githubRoutes = require("./routes/githubRoutes");
 const userRoutes = require("./routes/userRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const server = http.createServer(app);
 
@@ -60,6 +61,7 @@ setupSocket(io);
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/projects", activityRoutes); // Nested under /api/projects/:id/activity
 app.use("/api/files", fileRoutes);

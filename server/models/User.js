@@ -10,6 +10,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       minlength: 3,
     },
+    fullName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     email: {
       type: String,
       required: true,
@@ -40,6 +45,14 @@ const userSchema = new mongoose.Schema(
       enum: ["local", "google", "github"],
       default: "local",
     },
+    followers: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }],
+    following: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }],
   },
   { timestamps: true }
 );

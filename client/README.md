@@ -1,26 +1,31 @@
 # 🖥️ CodeXAlive — Frontend React Core
 
-The CodeXAlive frontend is built using **React (Vite 5)** and **TailwindCSS**, providing a high-performance, real-time interface for collaborative coding.
+The CodeXAlive frontend is a high-performance, real-time interface built with **React (Vite 5)**. It features a custom **Design Token System** for a premium, glassmorphic UI that scales across mobile and desktop.
 
 ---
 
 ## 🎨 Feature Modules
 
-### 🛠️ Editor Interface (CodeMirror 6)
-- **Real-Time Sync**: Using Socket.io for immediate updates.
-- **Syntax Highlighting**: Supports CodeMirror modes for diverse programming languages.
-- **Multi-File Explorer**: Dynamic file system for managing project files.
-- **Output Panel**: Real-time console for program execution.
+### 🛠️ Collaborative Editor (CodeMirror 6)
+- **Real-Time Sync**: Instant WebSocket synchronization via Socket.io.
+- **Support for 20+ Languages**: Full syntax highlighting and intelligent auto-indent.
+- **Integrated Compiler**: Execute and view code output natively.
+- **Admin Controls**: Owners can manage room access, kick/ban participants, and approve join requests.
 
-### 👥 User & Room Management
-- **Dashboard**: Centralized hub for user projects and collaborations.
-- **Admin Sidebar**: Exclusive controls for the project owner (Kick, Ban, Rejoin).
-- **Waiting Room UI**: A dedicated interface for pending requests.
-- **Public Profile View**: GitHub-style public contributor dashboards.
+### 📊 Social & Activity Dashboard (New!)
+- **Activity Heatmap**: A custom 365-day contribution matrix displaying daily coding intensity.
+- **Developer Stats**: Streak counting, active days tracking, and collaboration metrics.
+- **Follower Network**: Interactive lists for followers and following with real-time updates.
+- **Project Invitations**: A dedicated dashboard panel to accept or decline collaboration invites.
+
+### 🔔 Notification System
+- **Global Dropdown**: A Navbar-integrated bell icon with real-time unread badges.
+- **Live Dispatch**: Instant unread counts and clickable alerts for social and project events.
+- **Deep Linking**: Notifications lead directly to user profiles or project dashboards.
 
 ### 🤖 Intellect AI Integration
-- **AI Chat Panel**: Interactive AI assistant to help you code.
-- **Code Explain/Debug**: One-click AI context for the active file.
+- **Contextual Assistance**: AI-powered code explanation and debugging directly in the sidebar.
+- **Gemini Pro**: High-fidelity AI responses for boilerplate generation and architectural advice.
 
 ---
 
@@ -32,9 +37,12 @@ npm install
 ```
 
 ### 2️⃣ Configure Environment
-Create a `.env` file in the root of the `client` directory:
+Create a `.env` file in the `client` directory:
 ```env
 VITE_BACKEND_URL=http://localhost:5000
+VITE_FIREBASE_API_KEY=your_key
+VITE_FIREBASE_AUTH_DOMAIN=your_domain
+VITE_FIREBASE_PROJECT_ID=your_id
 ```
 
 ### 3️⃣ Development Server
@@ -42,27 +50,21 @@ VITE_BACKEND_URL=http://localhost:5000
 npm run dev
 ```
 
-### 4️⃣ Build for Production
-```bash
-npm run build
-```
-
 ---
 
 ## 🏗️ Folder Structure
 
-- `/src/components`: UI components (Editor, Dashboard, Layout, etc.)
-- `/src/hooks`: Custom React hooks for global state and logic.
-- `/src/pages`: Main application views (Home, Login, Dashboard, etc.)
-- `/src/services`: API and Socket client initialization.
-- `/src/ui`: Reusable atomic UI components like Buttons, Modals, and Tooltips.
-- `/src/Actions.js`: Shared constant definitions for socket events.
+- `/src/components/profile`: Specialized social dashboard components (Heatmap, Stats, Timeline).
+- `/src/components/layout`: Core navigation, footer, and notification dropdowns.
+- `/src/hooks`: Global state hooks (useAuth, useSocket, useTheme).
+- `/src/services`: API abstraction layers (sharingService, userService, projectService).
+- `/src/styles`: Design tokens, social-specific CSS, and editor styling.
 
 ---
 
 ## 🧩 Key Libraries
-- **CodeMirror**: Specialized code editor engine.
-- **Socket.io-client**: Real-time WebSocket communication.
-- **React Router Dom**: Client-side navigation.
-- **Axios**: HTTP client for API requests.
-- **React Hot Toast**: Elegant notification system.
+- **CodeMirror 6**: The core editor engine.
+- **Socket.io-client**: Real-time WebSocket layer.
+- **Firebase Auth**: Social login providers (Google/GitHub).
+- **React Hot Toast**: Elegant, accessible UI notifications.
+- **Lucide React**: Modern iconography system.
