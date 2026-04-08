@@ -5,7 +5,7 @@ services:
     build: ./server
     container_name: codex_backend
     ports:
-      - "5001:5000"
+      - "5000:5000"
     env_file:
       - ./server/.env
     restart: unless-stopped
