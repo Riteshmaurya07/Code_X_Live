@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./server
+    container_name: codex_backend
+    ports:
+      - "5001:5000"
+    env_file:
+      - ./server/.env
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./client
+      args:
+        VITE_BACKEND_URL: http://backend:5000
+    container_name: codex_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

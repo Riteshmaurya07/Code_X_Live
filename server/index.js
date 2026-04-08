@@ -112,13 +112,8 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Serve static files in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../client/dist")));
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../client/dist/index.html"));
-  });
-}
+// The frontend is deployed independently, so we no longer serve static assets here.
+
 
 // Centralized error handler (must be LAST middleware)
 app.use(errorHandler);
