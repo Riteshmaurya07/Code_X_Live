@@ -3,6 +3,7 @@ const Project = require("../models/Project");
 const { createNotification } = require("./notificationController");
 const { logActivity } = require("./activityController");
 const logger = require("../utils/logger");
+const { cloudinary } = require("../config/cloudinary");
 
 // Get a public user profile and their public projects
 const getUserProfile = async (req, res) => {
@@ -35,6 +36,7 @@ const getUserProfile = async (req, res) => {
         username: user.username,
         fullName: user.fullName || "",
         email: user.email,
+        avatar: user.avatar || "",
         createdAt: user.createdAt,
         followers: user.followers,
         following: user.following,
@@ -213,11 +215,65 @@ const getFollowing = async (req, res) => {
   }
 };
 
+// Update avatar via Cloudinary (file uploaded by multer middleware)
+const updateAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No image file provided" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Delete old Cloudinary avatar if it exists
+    if (user.avatar && user.avatar.includes("cloudinary.com")) {
+      try {
+        // Extract public_id from URL: .../codexlive/avatars/<public_id>.ext
+        const parts = user.avatar.split("/");
+        const fileWithExt = parts[parts.length - 1];
+        const publicId = `codexlive/avatars/${fileWithExt.split(".")[0]}`;
+        await cloudinary.uploader.destroy(publicId);
+      } catch (delErr) {
+        logger.warn(`Could not delete old avatar: ${delErr.message}`);
+      }
+    }
+
+    // req.file.path is the Cloudinary URL from multer-storage-cloudinary
+    user.avatar = req.file.path;
+    await user.save();
+
+    logger.info(`Avatar updated for user ${user.username}`);
+    res.json({ success: true, avatar: user.avatar });
+  } catch (err) {
+    logger.error(`Update avatar error: ${err.message}`);
+    res.status(500).json({ error: "Failed to update avatar" });
+  }
+};
+
+// Update profile fields (fullName)
+const updateProfile = async (req, res) => {
+  try {
+    const { fullName } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (fullName !== undefined) user.fullName = fullName.trim();
+    await user.save();
+
+    res.json({ success: true, fullName: user.fullName });
+  } catch (err) {
+    logger.error(`Update profile error: ${err.message}`);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+};
+
 module.exports = {
   getUserProfile,
   followUser,
   unfollowUser,
   searchUsers,
   getFollowers,
-  getFollowing
+  getFollowing,
+  updateAvatar,
+  updateProfile,
 };

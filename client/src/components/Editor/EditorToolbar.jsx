@@ -4,10 +4,11 @@ import Button from '../ui/Button';
 const EditorToolbar = ({
   theme, onToggleTheme,
   selectedLanguage, onSelectLanguage, languages,
-  activeFileName, saveStatus, isDbFile,
+  files = [], activeFileId, onSelectFile, saveStatus, isDbFile,
   onSave, onFormat, showHistory, onToggleHistory,
   onToggleChat, showChatPanel, onRun, isCompiling,
   unreadChatCount, showAIPanel, onToggleAI,
+  showMeetingPanel, onToggleMeetings,
   onToggleSidebar
 }) => {
   return (
@@ -17,8 +18,8 @@ const EditorToolbar = ({
         <button className="sidebar-toggle" onClick={onToggleSidebar} title="Toggle sidebar">
           ☰
         </button>
-        <Button variant="outline" size="sm" onClick={onToggleTheme}>
-          {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
+        <Button variant="outline" size="sm" onClick={onToggleTheme} className="toolbar-icon-btn">
+          {theme === "dark" ? "☀️" : "🌙"}
         </Button>
         <select
           className="toolbar-select"
@@ -29,9 +30,20 @@ const EditorToolbar = ({
             <option key={lang} value={lang}>{lang}</option>
           ))}
         </select>
-        <span className="active-file-name">
-          {activeFileName || "untitled"}
-        </span>
+        
+        <div className="editor-tabs">
+          {files.map(file => (
+            <div 
+              key={file._id || file.id} 
+              className={`editor-tab ${activeFileId === (file._id || file.id) ? 'active' : ''}`}
+              onClick={() => onSelectFile(file._id || file.id)}
+              title={file.name}
+            >
+              <span className="tab-name">{file.name}</span>
+            </div>
+          ))}
+        </div>
+
         {saveStatus && (
           <span className={`save-indicator ${saveStatus.includes("✓") ? "saved" : ""}`}>
             {saveStatus}
@@ -41,42 +53,55 @@ const EditorToolbar = ({
 
       <div className="toolbar-right">
         {isDbFile && (
-          <Button variant="none" className="toolbar-btn" onClick={onSave}>
-             💾 Save
+          <Button variant="none" className="toolbar-btn chip" onClick={onSave} title="Save">
+             💾
           </Button>
         )}
-        <Button variant="none" className="toolbar-btn" onClick={onFormat}>
-          🎨 Format
+        <Button variant="none" className="toolbar-btn chip" onClick={onFormat} title="Format Code">
+          🎨
         </Button>
         {isDbFile && (
           <Button
             variant="none"
-            className={`toolbar-btn ${showHistory ? "active" : ""}`}
+            className={`toolbar-btn chip ${showHistory ? "active" : ""}`}
             onClick={onToggleHistory}
+            title="Version History"
           >
-            📜 History
+            📜
           </Button>
         )}
-        <Button variant="none" className="toolbar-btn run-btn" onClick={onRun} disabled={isCompiling}>
-          {isCompiling ? "⏳ Running..." : "▶ Run"}
-        </Button>
+        {isDbFile && (
+          <Button
+            variant="none"
+            className={`toolbar-btn chip ${showMeetingPanel ? "active" : ""}`}
+            onClick={onToggleMeetings}
+            title="Meetings"
+          >
+            📅
+          </Button>
+        )}
         <Button
           variant="none"
-          className={`toolbar-btn ai-toggle ${showChatPanel ? "active" : ""}`}
+          className={`toolbar-btn chip ai-toggle ${showChatPanel ? "active" : ""}`}
           onClick={onToggleChat}
           style={{ position: "relative" }}
+          title="Team Chat"
         >
-          💬 Chat
+          💬
           {unreadChatCount > 0 && !showChatPanel && (
-            <span className="chat-badge">{unreadChatCount}</span>
+            <span className="chat-badge round">{unreadChatCount}</span>
           )}
         </Button>
         <Button
           variant="none"
-          className={`toolbar-btn ai-toggle ${showAIPanel ? "active" : ""}`}
+          className={`toolbar-btn chip ai-toggle ${showAIPanel ? "active" : ""}`}
           onClick={onToggleAI}
+          title="AI Assistant"
         >
-          🤖 AI
+          🤖
+        </Button>
+        <Button variant="none" className="toolbar-btn chip run-btn" onClick={onRun} disabled={isCompiling} title="Run Code">
+          {isCompiling ? "⏳" : "▶ Run"}
         </Button>
       </div>
     </div>

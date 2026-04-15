@@ -1,7 +1,10 @@
 /* ===================== AI Panel ===================== */
 .ai-panel {
-  width: 360px; min-width: 360px; background: var(--bg-secondary);
-  border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
+  width: 360px; min-width: 360px; 
+  background: var(--bg-glass); backdrop-filter: blur(24px);
+  border-left: 1px solid rgba(109, 117, 140, 0.15); 
+  display: flex; flex-direction: column; overflow: hidden;
+  z-index: 10;
 }
 .ai-panel-header { padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border); }
 .ai-panel-header h3 { font-size: var(--text-base); font-weight: 600; }
@@ -79,8 +82,11 @@
 
 /* Chat Panel */
 .chat-panel {
-  width: 320px; min-width: 320px; background: var(--bg-secondary);
-  border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
+  width: 320px; min-width: 320px; 
+  background: var(--bg-glass); backdrop-filter: blur(24px);
+  border-left: 1px solid rgba(109, 117, 140, 0.15); 
+  display: flex; flex-direction: column; overflow: hidden;
+  z-index: 10;
 }
 .chat-panel-header {
   padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border);
@@ -110,8 +116,11 @@
 
 /* ===================== Version History ===================== */
 .version-panel {
-  width: 360px; min-width: 360px; background: var(--bg-secondary);
-  border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
+  width: 360px; min-width: 360px; 
+  background: var(--bg-glass); backdrop-filter: blur(24px);
+  border-left: 1px solid rgba(109, 117, 140, 0.15); 
+  display: flex; flex-direction: column; overflow: hidden;
+  z-index: 10;
 }
 .version-header {
   display: flex; justify-content: space-between; align-items: center;

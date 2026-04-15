@@ -1,7 +1,12 @@
 const express = require("express");
-const { getUserProfile, followUser, unfollowUser, searchUsers, getFollowers, getFollowing } = require("../controllers/userController");
+const {
+  getUserProfile, followUser, unfollowUser,
+  searchUsers, getFollowers, getFollowing,
+  updateAvatar, updateProfile,
+} = require("../controllers/userController");
 const { getUserActivityDashboard } = require("../controllers/activityController");
 const auth = require("../middleware/auth");
+const { uploadAvatar } = require("../config/cloudinary");
 
 const router = express.Router();
 
@@ -21,5 +26,11 @@ router.get("/:username/following", auth, getFollowing);
 
 // Activity Dashboard
 router.get("/:username/activity-dashboard", auth, getUserActivityDashboard);
+
+// Profile update (fullName etc.)
+router.patch("/me/profile", auth, updateProfile);
+
+// Avatar upload → Cloudinary
+router.post("/me/avatar", auth, uploadAvatar.single("avatar"), updateAvatar);
 
 module.exports = router;

@@ -34,8 +34,17 @@ body {
   opacity: 0.5; cursor: not-allowed; pointer-events: none;
 }
 
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-hover); box-shadow: var(--shadow-glow); }
+.btn-primary { 
+  background: linear-gradient(135deg, var(--primary-500), #5A8DF6); 
+  color: #fff; 
+  border-radius: 9999px; /* pill shape */
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+.btn-primary:hover { 
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+  filter: brightness(1.1); 
+}
 
 .btn-outline { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
 .btn-outline:hover { border-color: var(--accent); color: var(--accent); }

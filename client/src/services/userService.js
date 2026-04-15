@@ -34,3 +34,17 @@ export const getActivityDashboard = async (username) => {
   const { data } = await api.get(`/api/users/${username}/activity-dashboard`);
   return data;
 };
+
+export const uploadAvatar = async (file) => {
+  const formData = new FormData();
+  formData.append("avatar", file);
+  const { data } = await api.post("/api/users/me/avatar", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return data; // { success, avatar }
+};
+
+export const updateProfile = async (fields) => {
+  const { data } = await api.patch("/api/users/me/profile", fields);
+  return data;
+};

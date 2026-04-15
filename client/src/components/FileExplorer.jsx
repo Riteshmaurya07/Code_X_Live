@@ -32,26 +32,9 @@ function FileExplorer({
     setRenameValue("");
   };
 
-  const getFileIcon = (name) => {
-    const ext = name.split(".").pop().toLowerCase();
-    const icons = {
-      js: "📜",
-      jsx: "⚛️",
-      py: "🐍",
-      java: "☕",
-      cpp: "⚙️",
-      c: "⚙️",
-      html: "🌐",
-      css: "🎨",
-      json: "📋",
-      md: "📝",
-      rb: "💎",
-      go: "🔷",
-      rs: "🦀",
-      ts: "🔷",
-      tsx: "⚛️",
-    };
-    return icons[ext] || "📄";
+  const getFileExt = (name) => {
+    const parts = name.split(".");
+    return parts.length > 1 ? parts.pop().substring(0, 3).toUpperCase() : "";
   };
 
   return (
@@ -104,7 +87,9 @@ function FileExplorer({
               />
             ) : (
               <>
-                <span className="file-icon">{getFileIcon(file.name)}</span>
+                {getFileExt(file.name) && (
+                  <span className="file-ext-badge">{getFileExt(file.name)}</span>
+                )}
                 <span className="file-name">{file.name}</span>
                 <div className="file-actions">
                   <button

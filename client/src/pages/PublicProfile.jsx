@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { getUserProfile, followUser, unfollowUser, getActivityDashboard } from "../services/userService";
+import {
+  getUserProfile, followUser, unfollowUser,
+  getActivityDashboard, uploadAvatar, updateProfile,
+} from "../services/userService";
 import Navbar from "../components/layout/Navbar";
 import Button from "../components/ui/Button";
 import UserListModal from "../components/profile/UserListModal";
 import ActivityDashboard from "../components/profile/ActivityDashboard";
 import { useAuth } from "../hooks/useAuth";
+import { useDM } from "../hooks/useDM";
 import ProjectCard from "../components/Dashboard/ProjectCard";
 import toast from "react-hot-toast";
 
@@ -14,11 +18,15 @@ function PublicProfile() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user: currentUser } = useAuth();
+  const { openDM } = useDM();
+  const fileInputRef = useRef(null);
   const [profileData, setProfileData] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowingPending, setIsFollowingPending] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const isOwnProfile = currentUser?.username === username;
   const listType = location.pathname.endsWith("/followers") ? 'followers' : 
@@ -33,6 +41,7 @@ function PublicProfile() {
         ]);
         setProfileData(profData);
         setDashboardData(dashData);
+        setAvatarUrl(profData?.profile?.avatar || '');
         if (currentUser && profData?.profile?.followers) {
           setIsFollowing(profData.profile.followers.some(follower => 
             (follower._id || follower) === currentUser.id 
@@ -75,6 +84,26 @@ function PublicProfile() {
     }
   };
 
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Preview immediately
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarUrl(previewUrl);
+    setIsUploadingAvatar(true);
+    try {
+      const result = await uploadAvatar(file);
+      setAvatarUrl(result.avatar);
+      toast.success('Profile picture updated!');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Upload failed');
+      setAvatarUrl(profileData?.profile?.avatar || '');
+    } finally {
+      setIsUploadingAvatar(false);
+      // reset input so same file can be re-selected
+      e.target.value = '';
+    }
+  };
   return (
     <div className="dashboard-page profile-page">
       <Navbar variant="dashboard" />
@@ -85,9 +114,31 @@ function PublicProfile() {
         ) : profileData ? (
           <>
             <div className="profile-header">
-              <div className="profile-avatar">
-                {profileData.profile.username.charAt(0).toUpperCase()}
+              <div
+                className={`profile-avatar ${isOwnProfile ? 'profile-avatar--editable' : ''}`}
+                onClick={() => isOwnProfile && fileInputRef.current?.click()}
+                title={isOwnProfile ? 'Click to change photo' : ''}
+              >
+                {avatarUrl
+                  ? <img src={avatarUrl} alt="avatar" style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}} />
+                  : profileData.profile.username.charAt(0).toUpperCase()
+                }
+                {isOwnProfile && (
+                  <div className="profile-avatar-overlay">
+                    {isUploadingAvatar ? '⏳' : '📷'}
+                  </div>
+                )}
               </div>
+              {/* Hidden file input */}
+              {isOwnProfile && (
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handleAvatarChange}
+                />
+              )}
               <div className="profile-info" style={{ flex: 1 }}>
                 <h1 className="profile-name">
                   {profileData.profile.fullName || `@${profileData.profile.username}`}
@@ -107,13 +158,27 @@ function PublicProfile() {
                 {isOwnProfile ? (
                   <Button variant="outline">Edit Profile</Button>
                 ) : (
-                  <Button 
-                    variant={isFollowing ? "outline" : "primary"}
-                    onClick={handleFollowToggle}
-                    disabled={isFollowingPending}
-                  >
-                    {isFollowing ? "Unfollow" : "Follow"}
-                  </Button>
+                  <>
+                    <Button 
+                      variant={isFollowing ? "outline" : "primary"}
+                      onClick={handleFollowToggle}
+                      disabled={isFollowingPending}
+                    >
+                      {isFollowing ? "Unfollow" : "Follow"}
+                    </Button>
+                    <button
+                      className="dm-message-profile-btn"
+                      onClick={() => openDM({
+                        _id: profileData.profile.id || profileData.profile._id,
+                        username: profileData.profile.username,
+                        fullName: profileData.profile.fullName,
+                        avatar: profileData.profile.avatar,
+                      })}
+                      title={`Message @${profileData.profile.username}`}
+                    >
+                      💬 Message
+                    </button>
+                  </>
                 )}
               </div>
             </div>

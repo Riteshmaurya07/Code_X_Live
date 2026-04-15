@@ -35,7 +35,8 @@ const activityLogSchema = new mongoose.Schema({
       "user_followed",
       "user_login",
       "project_created",
-      "invitation_received"
+      "invitation_received",
+      "invitation_accepted"
     ],
     required: true,
   },

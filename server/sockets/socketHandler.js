@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { nanoid } = require("nanoid");
 const User = require("../models/User");
 const Project = require("../models/Project");
+const Message = require("../models/Message");
 
 const userSocketMap = {};
 const globalUserSockets = new Map(); // userId -> socketId
@@ -574,6 +575,60 @@ const setupSocket = (io) => {
       }
       // Echo back to sender so they see their own message
       socket.emit(ACTIONS.RECEIVE_PRIVATE_MESSAGE, msg);
+    });
+
+    // ====== CHAT: Global Direct Messaging ======
+    socket.on(ACTIONS.GLOBAL_SEND_MESSAGE, async ({ recipientId, content }) => {
+      try {
+        const senderId = socket.user.id;
+        if (!senderId || !recipientId) return;
+
+        // Check if recipient follows the sender, OR if they have existing non-request messages
+        // If receiver follows sender -> isRequest = false.
+        const recipientDoc = await User.findById(recipientId).select("following");
+        let isRequest = true;
+
+        if (recipientDoc && recipientDoc.following.includes(senderId)) {
+          isRequest = false;
+        } else {
+          // Check if there's any existing non-request message where recipient was sender and we were receiver
+          const existingNonRequest = await Message.findOne({
+            sender: recipientId,
+            receiver: senderId,
+            isRequest: false
+          });
+          if (existingNonRequest) {
+            isRequest = false;
+          }
+        }
+
+        // Save to DB
+        const newMessage = await Message.create({
+          sender: senderId,
+          receiver: recipientId,
+          content,
+          isRequest,
+          isRead: false
+        });
+
+        // Broadcast to receiver if they're online
+        const recipientSocketId = globalUserSockets.get(recipientId.toString());
+        if (recipientSocketId) {
+          io.to(recipientSocketId).emit(ACTIONS.GLOBAL_RECEIVE_MESSAGE, {
+            ...newMessage.toObject(),
+            senderName: socket.user.username // Attach for UI ease
+          });
+        }
+
+        // Echo to sender so UI updates
+        socket.emit(ACTIONS.GLOBAL_RECEIVE_MESSAGE, {
+          ...newMessage.toObject(),
+          senderName: socket.user.username
+        });
+
+      } catch (err) {
+        logger.error(`Error sending global message: ${err.message}`);
+      }
     });
 
     // DISCONNECTING
