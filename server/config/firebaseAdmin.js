@@ -12,14 +12,18 @@ try {
     });
     logger.info("Firebase Admin initialized with service account JSON");
   }
-  // Option 2: Use individual env vars
   else if (process.env.FIREBASE_PROJECT_ID) {
+    let formattedKey = process.env.FIREBASE_PRIVATE_KEY || "";
+    if (formattedKey.startsWith('"') && formattedKey.endsWith('"')) {
+      formattedKey = formattedKey.slice(1, -1);
+    }
+    formattedKey = formattedKey.replace(/\\n/g, "\n");
+
     firebaseApp = admin.initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        // Replace escaped newlines in the private key
-        privateKey: (process.env.FIREBASE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+        privateKey: formattedKey,
       }),
     });
     logger.info("Firebase Admin initialized with env vars");

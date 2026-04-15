@@ -239,3 +239,29 @@
 .cm-s-dracula .cm-operator { color: #8be9fd !important; }
 .cm-s-dracula .cm-string { color: #f1fa8c !important; }
 .cm-s-dracula .cm-comment { color: #6272a4 !important; font-style: italic; }
+
+/* ── Remote Cursor Tracking ──────────────────────────────── */
+.remote-cursor {
+  position: relative;
+  display: inline-block;
+  pointer-events: none;
+}
+.remote-cursor-label {
+  font-size: 10px;
+  font-family: var(--font-ui, Inter, sans-serif);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 1px 5px;
+  border-radius: 3px 3px 3px 0;
+  position: absolute;
+  top: -18px;
+  left: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: cursor-label-in 0.15s ease;
+  z-index: 20;
+}
+@keyframes cursor-label-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -53,17 +53,20 @@ const allowedOrigins = process.env.CLIENT_URL
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow server-to-server (no origin) and whitelisted origins
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`CORS: origin '${origin}' not allowed`));
-      }
+      // Allow server-to-server requests (no origin header)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // Silently deny — browser will show CORS error, not a 500
+      return callback(null, false);
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
+// Explicitly handle preflight for all routes
+app.options("*", cors());
 
 // Rate limiting
 const limiter = rateLimit({
