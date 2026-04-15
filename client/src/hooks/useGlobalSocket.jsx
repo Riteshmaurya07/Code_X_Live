@@ -24,7 +24,9 @@ export const GlobalSocketProvider = ({ children }) => {
 
     const newSocket = io(backendURL, {
       forceNew: true,
-      transports: ["websocket"],
+      transports: ["polling", "websocket"],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
       auth: { token },
     });
 

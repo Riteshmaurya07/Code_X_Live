@@ -1,0 +1,19 @@
+# Root gitignore — prevents secrets from being committed
+node_modules/
+
+# Environment files — never commit real .env files
+.env
+.env.local
+.env.production
+
+# Build outputs
+client/dist/
+client/build/
+
+# Logs
+logs/
+*.log
+
+# OS artifacts
+.DS_Store
+Thumbs.db
