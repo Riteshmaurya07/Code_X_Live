@@ -3,8 +3,13 @@
 
 .dashboard-nav {
   display: flex; align-items: center; justify-content: space-between;
-  padding: var(--sp-3) var(--sp-8); background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+  padding: var(--sp-3) var(--sp-8); 
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: var(--ghost-border); 
+  position: sticky; top: 0; z-index: 100;
+  margin-bottom: var(--sp-4);
 }
 .nav-logo { height: 40px; }
 .nav-actions { display: flex; align-items: center; gap: var(--sp-4); }
@@ -20,8 +25,9 @@
 .nav-search-input:focus { border-color: var(--accent); width: 300px; }
 .nav-search-dropdown {
   position: absolute; top: calc(100% + var(--sp-2)); right: 0; width: 300px;
-  background: var(--bg-secondary); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); box-shadow: var(--shadow-glow);
+  background: var(--bg-glass); backdrop-filter: blur(16px);
+  border: var(--ghost-border);
+  border-radius: var(--radius-lg); box-shadow: var(--depth-2);
   max-height: 400px; overflow-y: auto; z-index: 1000;
 }
 .search-status { padding: var(--sp-4); text-align: center; color: var(--text-muted); font-size: var(--text-sm); }
@@ -52,8 +58,10 @@
 
 .new-project-form {
   display: flex; gap: var(--sp-3); margin-bottom: var(--sp-6); padding: var(--sp-4);
-  background: var(--bg-secondary); border: 1px solid var(--border);
-  border-radius: var(--radius); flex-wrap: wrap; align-items: center;
+  background: var(--bg-secondary);
+  border: var(--ghost-border);
+  box-shadow: var(--depth-1);
+  border-radius: var(--radius-lg); flex-wrap: wrap; align-items: center;
 }
 .new-project-form input, .new-project-form select {
   padding: 10px 14px; background: var(--bg-tertiary); border: 1px solid var(--border);
@@ -71,12 +79,17 @@
 
 /* Project Card */
 .project-card {
-  background: var(--bg-secondary); border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  border: var(--ghost-border);
+  box-shadow: var(--depth-1);
   border-radius: var(--radius-lg); padding: var(--sp-5);
-  transition: var(--transition); display: flex; flex-direction: column;
+  transition: all 0.3s ease; display: flex; flex-direction: column;
 }
 .project-card:hover {
-  border-color: var(--accent); box-shadow: var(--shadow-glow); transform: translateY(-2px);
+  border-color: var(--primary-500);
+  box-shadow: var(--shadow-glow); 
+  transform: translateY(-4px);
+  background: var(--bg-hover);
 }
 .project-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-2); }
 .project-card-header h3 { font-size: var(--text-lg); font-weight: 600; }
@@ -103,14 +116,44 @@
 /* ===================== Profile Page ===================== */
 .profile-header {
   margin-bottom: var(--sp-8); padding: var(--sp-6);
-  background: var(--bg-secondary); border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: var(--ghost-border);
+  box-shadow: var(--depth-2);
   display: flex; align-items: center; gap: var(--sp-5);
 }
 .profile-avatar {
-  width: 80px; height: 80px; background: var(--accent);
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  width: 90px; height: 90px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
   font-size: var(--text-3xl); color: #fff; font-weight: 700; flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+  transition: box-shadow 0.25s ease;
+}
+.profile-avatar--editable {
+  cursor: pointer;
+}
+.profile-avatar--editable:hover {
+  box-shadow: 0 0 0 3px var(--primary-400);
+}
+.profile-avatar--editable:hover .profile-avatar-overlay {
+  opacity: 1;
+}
+.profile-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 50%;
 }
 .profile-info { min-width: 0; }
 .profile-name { font-size: var(--text-3xl); font-weight: 700; margin: 0; color: var(--text-primary); }

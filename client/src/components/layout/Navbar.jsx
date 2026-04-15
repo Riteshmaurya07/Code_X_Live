@@ -6,6 +6,7 @@ import { useTheme } from '../../hooks/useTheme';
 import Button from '../ui/Button';
 import { searchUsers } from '../../services/userService';
 import NotificationDropdown from './NotificationDropdown';
+import DirectMessaging from './DirectMessaging';
 
 const Navbar = ({ variant = 'landing' }) => {
   const { user, logout } = useAuth();
@@ -105,6 +106,7 @@ const Navbar = ({ variant = 'landing' }) => {
               </div>
             )}
           </div>
+          <DirectMessaging />
           <NotificationDropdown />
           <ThemeToggle />
           <Link to={`/profile/${user?.username}`} className="nav-profile-link">
@@ -130,6 +132,7 @@ const Navbar = ({ variant = 'landing' }) => {
         <a href="#" className="nav-link">Docs</a>
         {user ? (
           <>
+            <DirectMessaging />
             <NotificationDropdown />
             <Link to={`/profile/${user.username}`} className="nav-profile-link">Profile</Link>
             <Link to="/dashboard">

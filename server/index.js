@@ -31,6 +31,9 @@ const formatRoutes = require("./routes/formatRoutes");
 const githubRoutes = require("./routes/githubRoutes");
 const userRoutes = require("./routes/userRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const meetingRoutes = require("./routes/meetingRoutes");
+const messageRoutes = require("./routes/messageRoutes");
+const initMeetingCron = require("./utils/meetingCron");
 
 const server = http.createServer(app);
 
@@ -45,7 +48,7 @@ app.use(compression());
 app.use(
   cors({
     origin: process.env.NODE_ENV === "production" ? process.env.CLIENT_URL : "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   })
 );
@@ -96,6 +99,8 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/projects", activityRoutes); // Nested under /api/projects/:id/activity
 app.use("/api/files", fileRoutes);
+app.use("/api/meetings", meetingRoutes);
+app.use("/api/messages", messageRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/sharing", sharingRoutes);
 app.use("/api/format", formatRoutes);
@@ -112,8 +117,8 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// The frontend is deployed independently, so we no longer serve static assets here.
-
+// Initialize Cron Jobs
+initMeetingCron();
 
 // Centralized error handler (must be LAST middleware)
 app.use(errorHandler);

@@ -180,7 +180,7 @@ function Dashboard() {
             <h2 style={{ marginBottom: "1rem", fontSize: "1.25rem", color: "var(--text-primary)" }}>Pending Invitations</h2>
             <div className="invitations-list" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               {invitations.map((inv) => (
-                <div key={inv._id} className="invitation-card" style={{ padding: "1rem", background: "var(--bg-secondary)", borderRadius: "var(--radius-md)", border: "1px solid var(--accent)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div key={inv._id} className="invitation-card" style={{ padding: "1rem", background: "var(--bg-secondary)", borderRadius: "var(--radius-lg)", border: "var(--ghost-border)", boxShadow: "var(--depth-1)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <h3 style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>{inv.project.name}</h3>
                     <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "0.875rem" }}>

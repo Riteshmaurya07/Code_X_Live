@@ -7,6 +7,8 @@ import EditorModals from "./Editor/EditorModals";
 import EditorSidebar from "./Editor/EditorSidebar";
 import EditorToolbar from "./Editor/EditorToolbar";
 import CompilerOutput from "./Editor/CompilerOutput";
+import MeetingPanel from "./Editor/MeetingPanel";
+import MeetingModal from "./Editor/MeetingModal";
 import { initSocket } from "../Socket";
 import { ACTIONS } from "../Actions";
 import {
@@ -21,6 +23,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import api from "../services/api";
 import { getProject, formatCode as formatCodeAPI } from "../services/projectService";
+import { getProjectMeetings } from "../services/meetingService";
 import { useFileTree } from "../hooks/editor/useFileTree";
 import { useRoomSocket } from "../hooks/editor/useRoomSocket";
 
@@ -43,6 +46,8 @@ function EditorPage() {
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showChatPanel, setShowChatPanel] = useState(false);
+  const [showMeetingPanel, setShowMeetingPanel] = useState(false);
+  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
   const [isCompileWindowOpen, setIsCompileWindowOpen] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
   const [output, setOutput] = useState("");
@@ -55,6 +60,8 @@ function EditorPage() {
     return roomId || null;
   });
   const [projectLoaded, setProjectLoaded] = useState(false);
+  const [projectObj, setProjectObj] = useState(null);
+  const [meetings, setMeetings] = useState([]);
 
   // --- File Management Hook ---
   const {
@@ -115,6 +122,7 @@ function EditorPage() {
       }
       try {
         const data = await getProject(projectId);
+        setProjectObj(data.project);
         if (data.files?.length > 0) {
           setFiles(data.files);
           setActiveFileId(data.files[0]._id);
@@ -132,6 +140,42 @@ function EditorPage() {
     };
     load();
   }, [projectId]);
+
+  // Load meetings
+  useEffect(() => {
+    if (projectId) {
+      getProjectMeetings(projectId).then(setMeetings).catch(err => console.error(err));
+    }
+  }, [projectId]);
+
+  // Handle meeting socket events
+  useEffect(() => {
+    const s = socketRef.current;
+    if (!s) return;
+
+    const onMeetingCreated = ({ meeting }) => {
+      setMeetings(prev => [...prev, meeting].sort((a, b) => new Date(a.startTime) - new Date(b.startTime)));
+      toast.success(`Meeting scheduled: ${meeting.title}`);
+    };
+
+    const onMeetingUpdated = ({ meeting }) => {
+      setMeetings(prev => prev.map(m => m._id === meeting._id ? meeting : m).sort((a, b) => new Date(a.startTime) - new Date(b.startTime)));
+    };
+
+    const onMeetingDeleted = ({ meetingId }) => {
+      setMeetings(prev => prev.filter(m => m._id !== meetingId));
+    };
+
+    s.on(ACTIONS.MEETING_CREATED, onMeetingCreated);
+    s.on(ACTIONS.MEETING_UPDATED, onMeetingUpdated);
+    s.on(ACTIONS.MEETING_DELETED, onMeetingDeleted);
+
+    return () => {
+      s.off(ACTIONS.MEETING_CREATED, onMeetingCreated);
+      s.off(ACTIONS.MEETING_UPDATED, onMeetingUpdated);
+      s.off(ACTIONS.MEETING_DELETED, onMeetingDeleted);
+    };
+  }, [socketRef.current]);
 
   // --- Handlers ---
   const runCode = async () => {
@@ -228,20 +272,24 @@ function EditorPage() {
           selectedLanguage={selectedLanguage}
           onSelectLanguage={setSelectedLanguage}
           languages={LANGUAGES}
-          activeFileName={activeFile?.name}
+          files={files}
+          activeFileId={activeFileId}
+          onSelectFile={setActiveFileId}
           saveStatus={saveStatus}
           isDbFile={isDbFile(activeFileId)}
           onSave={saveFileExplicitly}
           onFormat={handleFormat}
           showHistory={showHistory}
-          onToggleHistory={() => { setShowHistory(!showHistory); setShowAIPanel(false); setShowChatPanel(false); }}
+          onToggleHistory={() => { setShowHistory(!showHistory); setShowAIPanel(false); setShowChatPanel(false); setShowMeetingPanel(false); }}
           showChatPanel={showChatPanel}
-          onToggleChat={() => { setShowChatPanel(!showChatPanel); setShowAIPanel(false); setShowHistory(false); }}
+          onToggleChat={() => { setShowChatPanel(!showChatPanel); setShowAIPanel(false); setShowHistory(false); setShowMeetingPanel(false); }}
+          showMeetingPanel={showMeetingPanel}
+          onToggleMeetings={() => { setShowMeetingPanel(!showMeetingPanel); setShowAIPanel(false); setShowHistory(false); setShowChatPanel(false); }}
           onRun={runCode}
           isCompiling={isCompiling}
           unreadChatCount={Object.values(unreadChatCounts).reduce((a, b) => a + b, 0)}
           showAIPanel={showAIPanel}
-          onToggleAI={() => { setShowAIPanel(!showAIPanel); setShowHistory(false); setShowChatPanel(false); }}
+          onToggleAI={() => { setShowAIPanel(!showAIPanel); setShowHistory(false); setShowChatPanel(false); setShowMeetingPanel(false); }}
           onToggleSidebar={() => setSidebarOpen(prev => !prev)}
         />
 
@@ -272,8 +320,22 @@ function EditorPage() {
               currentUser={username} unreadCounts={unreadChatCounts}
             />
           )}
+          {showMeetingPanel && (
+            <MeetingPanel
+              meetings={meetings}
+              onClose={() => setShowMeetingPanel(false)}
+              onSchedule={() => setIsMeetingModalOpen(true)}
+            />
+          )}
           {showHistory && activeFileId && <VersionHistory fileId={activeFileId} onRestore={c => editorRef.current?.setValue(c)} onClose={() => setShowHistory(false)} />}
         </div>
+
+        <MeetingModal 
+          isOpen={isMeetingModalOpen} 
+          onClose={() => setIsMeetingModalOpen(false)} 
+          projectId={projectId} 
+          project={projectObj} 
+        />
 
         {isCompileWindowOpen && <CompilerOutput output={output} executionTime={executionTime} onClose={() => setIsCompileWindowOpen(false)} />}
       </div>

@@ -111,4 +111,41 @@ const declinedEmail = (declinerName, projectName) => {
   `);
 };
 
-module.exports = { invitationEmail, acceptedEmail, declinedEmail };
+/**
+ * Meeting Invite email sent to participants
+ */
+const meetingInviteTemplate = (creatorName, projectName, meetingTitle, startTimeStr, meetingUrl) => {
+  return emailWrapper(`
+    <h2>You're Invited to a Meeting! 📅</h2>
+    <p>
+      <span class="highlight">@${creatorName}</span> has scheduled a meeting for the project: <strong>${projectName}</strong>
+    </p>
+    <div class="project-box">
+      <p class="project-name">🎥 ${meetingTitle}</p>
+      <p class="project-role">Time: ${startTimeStr}</p>
+    </div>
+    <p>
+      You can join the meeting directly from the CodeX Live editor or via the link below:
+    </p>
+    <div style="text-align: center;">
+      <a href="${meetingUrl}" class="btn btn-primary" target="_blank">Join Meeting →</a>
+    </div>
+  `);
+};
+
+/**
+ * Reminder email sent to participants 15 mins before
+ */
+const meetingReminderTemplate = (meetingTitle, projectName, meetingUrl) => {
+  return emailWrapper(`
+    <h2>Meeting Starts Soon! ⏳</h2>
+    <p>
+      Your meeting <strong>${meetingTitle}</strong> for project <strong>${projectName}</strong> starts in 15 minutes!
+    </p>
+    <div style="text-align: center;">
+      <a href="${meetingUrl}" class="btn btn-primary" target="_blank">Join Meeting →</a>
+    </div>
+  `);
+};
+
+module.exports = { invitationEmail, acceptedEmail, declinedEmail, meetingInviteTemplate, meetingReminderTemplate };

@@ -10,6 +10,7 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/useTheme";
 import { GlobalSocketProvider } from "./hooks/useGlobalSocket";
+import { DMProvider } from "./hooks/useDM";
 
 // Protected route wrapper
 function ProtectedRoute({ children }) {
@@ -138,10 +139,12 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <GlobalSocketProvider>
-          <div>
-            <Toaster position="top-center" />
-          </div>
-          <AppRoutes />
+          <DMProvider>
+            <div>
+              <Toaster position="top-center" />
+            </div>
+            <AppRoutes />
+          </DMProvider>
         </GlobalSocketProvider>
       </AuthProvider>
     </ThemeProvider>

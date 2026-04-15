@@ -35,6 +35,8 @@ export const ACTIONS = {
   SEND_PRIVATE_MESSAGE: "send-private-message",
   RECEIVE_PRIVATE_MESSAGE: "receive-private-message",
   CHAT_HISTORY: "chat-history",
+  GLOBAL_SEND_MESSAGE: "global-send-message",
+  GLOBAL_RECEIVE_MESSAGE: "global-receive-message",
 
   // Room & Role events
   CREATE_ROOM: "create-room",
@@ -44,4 +46,10 @@ export const ACTIONS = {
   ROLE_UPDATED: "role-updated",
   INVALID_INVITE: "invalid-invite",
   WAIT_FOR_APPROVAL: "wait-for-approval",
+
+  // Meeting events
+  MEETING_CREATED: "meeting-created",
+  MEETING_UPDATED: "meeting-updated",
+  MEETING_DELETED: "meeting-deleted",
 };
+
