@@ -45,9 +45,21 @@ if (process.env.NODE_ENV === "production") {
 // Middleware
 app.use(helmet());
 app.use(compression());
+// Multi-origin CORS support — supports comma-separated CLIENT_URL list
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").map((u) => u.trim())
+  : ["http://localhost:3000"];
+
 app.use(
   cors({
-    origin: process.env.NODE_ENV === "production" ? process.env.CLIENT_URL : "*",
+    origin: (origin, callback) => {
+      // Allow server-to-server (no origin) and whitelisted origins
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin '${origin}' not allowed`));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   })
@@ -81,12 +93,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// Socket.io setup
+// Socket.io setup — mirror transports with client (polling first, then upgrade)
 const io = new Server(server, {
   cors: {
-    origin: process.env.NODE_ENV === "production" ? process.env.CLIENT_URL : "*",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
+    credentials: true,
   },
+  transports: ["polling", "websocket"],
+  pingTimeout: 60000,
+  pingInterval: 25000,
 });
 
 app.set("io", io);
@@ -135,11 +151,41 @@ const startServer = async () => {
     );
   } catch (err) {
     logger.error(`MongoDB connection failed: ${err.message}`);
-    // Start without DB for development if needed
+    if (process.env.NODE_ENV === "production") {
+      logger.error("Aborting startup — DB is required in production.");
+      process.exit(1);
+    }
     server.listen(PORT, () =>
-      logger.warn(`Server running on port ${PORT} (without DB)`)
+      logger.warn(`Server running on port ${PORT} (without DB — dev only)`)
     );
   }
 };
+
+// Graceful shutdown on SIGTERM (e.g. Render, Docker, PM2)
+const gracefulShutdown = (signal) => {
+  logger.info(`${signal} received. Closing server gracefully...`);
+  server.close(() => {
+    logger.info("HTTP server closed.");
+    process.exit(0);
+  });
+  // Force-kill after 15s if connections don't drain
+  setTimeout(() => {
+    logger.error("Could not close connections in time. Forcing shutdown.");
+    process.exit(1);
+  }, 15000);
+};
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT",  () => gracefulShutdown("SIGINT"));
+
+// Catch unhandled promise rejections and log them
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error(`Unhandled Rejection at: ${promise} — reason: ${reason}`);
+});
+
+process.on("uncaughtException", (err) => {
+  logger.error(`Uncaught Exception: ${err.message}`);
+  process.exit(1);
+});
 
 startServer();
