@@ -95,7 +95,12 @@ export const useRoomSocket = ({
       s.on(ACTIONS.CODE_CHANGE, ({ fileId, code, language }) => {
         if (fileId === activeFileIdRef.current) {
           if (editorRef.current && code != null) {
-            editorRef.current.setValue(code);
+            // Use applyRemoteChange to preserve local cursor position
+            if (editorRef.current.applyRemoteChange) {
+              editorRef.current.applyRemoteChange(code);
+            } else {
+              editorRef.current.setValue(code);
+            }
           }
           codeRef.current = code;
         } else {
@@ -108,6 +113,8 @@ export const useRoomSocket = ({
         setClients((prev) =>
           prev.filter((client) => client.socketId !== socketId)
         );
+        // Tell the editor to clear the cursor for this socket
+        s.emit("cursor-remove", { socketId });
       });
 
       s.on(ACTIONS.KICKED, ({ message }) => {

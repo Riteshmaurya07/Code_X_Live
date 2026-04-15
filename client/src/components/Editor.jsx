@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import CodeMirror from "codemirror";
+import "codemirror/addon/selection/mark-selection";
 
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/dracula.css";
@@ -67,6 +68,19 @@ const Editor = forwardRef(function Editor(
     },
     getValue: () => {
       return editorRef.current?.getValue() || "";
+    },
+    // Expose applyRemoteChange for targeted remote updates
+    applyRemoteChange: (newCode) => {
+      const cm = editorRef.current;
+      if (!cm) return;
+      const currentCode = cm.getValue();
+      if (currentCode === newCode) return; // No-op
+      // Preserve cursor position across remote update
+      const cursor = cm.getCursor();
+      const scrollInfo = cm.getScrollInfo();
+      cm.setValue(newCode);
+      cm.setCursor(cursor);
+      cm.scrollTo(scrollInfo.left, scrollInfo.top);
     },
   }));
 
@@ -152,6 +166,102 @@ const Editor = forwardRef(function Editor(
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Remote Cursor Management ────────────────────────────────────
+  const remoteCursorsRef = useRef({});
+  const cursorColorsRef = useRef({});
+  const colorIdxRef = useRef(0);
+
+  useEffect(() => {
+    if (!socket || !editorRef.current) return;
+    const editor = editorRef.current;
+
+    const palette = [
+      "#a78bfa", "#34d399", "#f87171", "#60a5fa",
+      "#fbbf24", "#f472b6", "#2dd4bf", "#fb923c"
+    ];
+
+    const getColor = (id) => {
+      if (!cursorColorsRef.current[id]) {
+        cursorColorsRef.current[id] = palette[colorIdxRef.current++ % palette.length];
+      }
+      return cursorColorsRef.current[id];
+    };
+
+    const renderRemoteCursor = (socketId, username, pos) => {
+      if (remoteCursorsRef.current[socketId]) {
+        remoteCursorsRef.current[socketId].clear();
+      }
+      const color = getColor(socketId);
+      const el = document.createElement("span");
+      el.className = "remote-cursor";
+      el.style.cssText = `
+        position: absolute;
+        border-left: 2px solid ${color};
+        height: 1.2em;
+        display: inline-block;
+        pointer-events: none;
+        z-index: 10;
+      `;
+      const label = document.createElement("span");
+      label.className = "remote-cursor-label";
+      // Ensure we display some fallback if username is undefined
+      label.textContent = username || "Guest";
+      label.style.cssText = `
+        background: ${color};
+        color: #fff;
+        font-size: 10px;
+        font-family: Inter, sans-serif;
+        padding: 1px 4px;
+        border-radius: 3px;
+        position: absolute;
+        top: -16px;
+        left: 0;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 11;
+      `;
+      el.appendChild(label);
+      const bookmark = editor.setBookmark(
+        { line: pos.line, ch: pos.ch },
+        { widget: el, insertLeft: true }
+      );
+      remoteCursorsRef.current[socketId] = bookmark;
+    };
+
+    const onCursorUpdate = ({ socketId, username, cursor }) => {
+      if (!cursor || !editor) return;
+      // Prevent rendering cursor past document end which crashes setBookmark
+      if (cursor.line > editor.lineCount()) return;
+      renderRemoteCursor(socketId, username, cursor);
+    };
+
+    const onCursorSync = (positions) => {
+      if (!positions || !editor) return;
+      Object.entries(positions).forEach(([sid, { username, line, ch }]) => {
+        if (line <= editor.lineCount()) {
+          renderRemoteCursor(sid, username, { line, ch });
+        }
+      });
+    };
+
+    const onCursorRemove = ({ socketId }) => {
+      if (remoteCursorsRef.current[socketId]) {
+        remoteCursorsRef.current[socketId].clear();
+        delete remoteCursorsRef.current[socketId];
+      }
+    };
+
+    socket.on("cursor-update", onCursorUpdate);
+    socket.on("cursor-sync", onCursorSync);
+    socket.on("cursor-remove", onCursorRemove);
+
+    return () => {
+      socket.off("cursor-update", onCursorUpdate);
+      socket.off("cursor-sync", onCursorSync);
+      socket.off("cursor-remove", onCursorRemove);
+    };
+  }, [socket]);
 
   // React to theme changes
   useEffect(() => {

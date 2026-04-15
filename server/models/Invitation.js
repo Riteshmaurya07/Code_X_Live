@@ -48,6 +48,5 @@ const invitationSchema = new mongoose.Schema(
 // Index for fast lookups
 invitationSchema.index({ invitedUser: 1, status: 1 });
 invitationSchema.index({ project: 1, invitedUser: 1 }, { unique: true });
-invitationSchema.index({ token: 1 });
 
 module.exports = mongoose.model("Invitation", invitationSchema);
