@@ -1,5 +1,4 @@
 import React from 'react';
-import Button from '../ui/Button';
 
 /**
  * Renders the list of pending join requests for the admin
@@ -15,26 +14,24 @@ const PendingRequests = ({
 
   return (
     <div className="members-section pending-requests">
-      <span className="section-label" style={{ color: "var(--warning)"}}>
+      <span className="section-label text-[var(--warning)]">
         Pending Requests ({approvalRequests.length})
       </span>
       <div className="members-list">
         {approvalRequests.map((request) => (
-          <div key={request.requesterSocketId} className="client pending-client" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-            <span style={{ fontSize: "0.9rem", color: "var(--text)" }}>{request.username}</span>
-            <div className="client-controls" style={{ display: "flex", gap: "4px" }}>
+          <div key={request.requesterSocketId} className="client pending-client mb-2 flex items-center justify-between">
+            <span className="text-sm text-[var(--text-secondary)]">{request.username}</span>
+            <div className="client-controls flex gap-1">
               <button
-                className="btn btn-outline"
+                className="btn btn-outline px-1.5 py-0.5 text-xs text-[var(--success)] border-[var(--success)]"
                 title="Approve"
-                style={{ padding: "2px 6px", fontSize: "0.8rem", color: "var(--success)", borderColor: "var(--success)" }}
                 onClick={() => onApproveRejoin(request)}
               >
                 ✅
               </button>
               <button
-                className="btn btn-danger"
+                className="btn btn-danger px-1.5 py-0.5 text-xs"
                 title="Deny"
-                style={{ padding: "2px 6px", fontSize: "0.8rem" }}
                 onClick={() => onDenyRejoin(request)}
               >
                 ❌

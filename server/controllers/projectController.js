@@ -69,17 +69,23 @@ const getProject = async (req, res) => {
 
     // Try finding by ObjectID first (default behavior)
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
-      project = await Project.findById(id).populate("owner", "username");
+      project = await Project.findById(id)
+        .populate("owner", "username email avatar")
+        .populate("collaborators.user", "username email avatar");
     }
 
     // If not found by ID, try finding by custom roomId slug
     if (!project) {
-      project = await Project.findOne({ roomId: id }).populate("owner", "username");
+      project = await Project.findOne({ roomId: id })
+        .populate("owner", "username email avatar")
+        .populate("collaborators.user", "username email avatar");
     }
 
     // Finally, fallback to shareToken in case someone directly navigates to /editor/:shareToken
     if (!project) {
-      project = await Project.findOne({ shareToken: id }).populate("owner", "username");
+      project = await Project.findOne({ shareToken: id })
+        .populate("owner", "username email avatar")
+        .populate("collaborators.user", "username email avatar");
     }
 
     if (!project) {

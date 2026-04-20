@@ -32,7 +32,7 @@ const LANGUAGES = [
 ];
 
 function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [invitations, setInvitations] = useState([]);
@@ -139,12 +139,6 @@ function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-    toast.success("Logged out");
-  };
-
   return (
     <div className="dashboard-page">
       <Navbar variant="dashboard" />
@@ -176,18 +170,18 @@ function Dashboard() {
 
         {/* Pending Invitations Section */}
         {!loading && invitations.length > 0 && (
-          <div className="invitations-section" style={{ marginBottom: "2rem" }}>
-            <h2 style={{ marginBottom: "1rem", fontSize: "1.25rem", color: "var(--text-primary)" }}>Pending Invitations</h2>
-            <div className="invitations-list" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div className="invitations-section mb-8">
+            <h2 className="mb-4 text-xl font-semibold text-[var(--text-primary)]">Pending Invitations</h2>
+            <div className="invitations-list flex flex-col gap-4">
               {invitations.map((inv) => (
-                <div key={inv._id} className="invitation-card" style={{ padding: "1rem", background: "var(--bg-secondary)", borderRadius: "var(--radius-lg)", border: "var(--ghost-border)", boxShadow: "var(--depth-1)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div key={inv._id} className="invitation-card flex items-center justify-between rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-secondary)] p-4 shadow-[var(--depth-1)]">
                   <div>
-                    <h3 style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>{inv.project.name}</h3>
-                    <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "0.875rem" }}>
+                    <h3 className="mb-2 text-base font-semibold text-[var(--text-primary)]">{inv.project.name}</h3>
+                    <p className="text-sm text-[var(--text-muted)]">
                       Invited by <strong>{inv.invitedBy.username}</strong>
                     </p>
                   </div>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <div className="flex gap-2">
                     <button className="btn btn-primary btn-sm" onClick={() => handleAcceptInvite(inv._id)}>Accept</button>
                     <button className="btn btn-outline btn-sm" onClick={() => handleDeclineInvite(inv._id)}>Decline</button>
                   </div>

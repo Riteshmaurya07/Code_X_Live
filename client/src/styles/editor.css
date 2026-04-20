@@ -89,15 +89,15 @@
 }
 .editor-tab.active {
   background: var(--bg-primary); 
-  color: var(--primary-100);
+  color: var(--text-primary);
   border: var(--ghost-border);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.5), inset 0 -2px 10px -5px var(--primary-900);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5), inset 0 -2px 10px -5px var(--primary-700);
 }
 
 /* Tool Chips */
 .toolbar-btn.chip {
   padding: 6px 12px; font-size: 0.95rem; display: inline-flex; align-items: center;
-  border-radius: var(--radius-full);
+  border-radius: 9999px;
 }
 .toolbar-icon-btn {
   padding: 6px 10px; font-size: 0.95rem; line-height: 1; display: inline-flex;

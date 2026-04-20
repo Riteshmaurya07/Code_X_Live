@@ -52,19 +52,40 @@
 .dm-panel {
   position: absolute;
   top: calc(100% + 15px);
-  right: -80px; /* shift panel if on nav */
+  right: -80px;
   width: 380px;
   height: 500px;
   background: var(--bg-glass);
   backdrop-filter: blur(32px);
   border: 1px solid rgba(139, 92, 246, 0.2);
   border-radius: var(--radius-lg);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(139, 92, 246, 0.05);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6),
+              inset 0 0 20px rgba(139, 92, 246, 0.05);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   z-index: 9999;
   animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ================= MOBILE FIX ================= */
+@media (max-width: 768px) {
+  .dm-panel {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+    right: 0;
+    top: 0;
+    animation: none;
+  }
+}
+/* Fix container for mobile */
+@media (max-width: 768px) {
+  .dm-dropdown-container {
+    position: static;
+  }
 }
 
 @keyframes slideDown {

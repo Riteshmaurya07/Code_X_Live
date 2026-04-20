@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Button from "../ui/Button";
-import { createMeeting } from "../../services/meetingService";
+import Modal from "../ui/Modal";
+import ParticipantPicker from "./ParticipantPicker";
+import { createMeeting, updateMeeting } from "../../services/meetingService";
 import { toast } from "react-hot-toast";
 
-const MeetingModal = ({ isOpen, onClose, projectId, project }) => {
+const MeetingModal = ({ isOpen, onClose, projectId, project, mode = "create", initialMeeting = null }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
@@ -11,30 +13,41 @@ const MeetingModal = ({ isOpen, onClose, projectId, project }) => {
   const [duration, setDuration] = useState(30);
   const [participants, setParticipants] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMeeting, setSuccessMeeting] = useState(null);
 
-  // Derive project members for the select list
-  const projectMembers = [];
-  if (project?.owner) {
-    projectMembers.push(project.owner);
-  }
-  if (project?.collaborators) {
-    project.collaborators.forEach((c) => {
-      if (c.user && c.user._id !== project.owner?._id) {
-        projectMembers.push(c.user);
-      }
-    });
-  }
-
-  // Set default minimum datetime bounds
-  useEffect(() => {
-    if (isOpen) {
-      const now = new Date();
-      setDate(now.toISOString().split("T")[0]);
-      
-      const timeString = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
-      setStartTime(timeString);
+  const isEditMode = mode === "edit" && initialMeeting?._id;
+  const projectMembers = useMemo(() => {
+    const dedup = new Map();
+    if (project?.owner?._id) {
+      dedup.set(project.owner._id, project.owner);
     }
-  }, [isOpen]);
+    (project?.collaborators || []).forEach((c) => {
+      if (c?.user?._id) dedup.set(c.user._id, c.user);
+    });
+    return [...dedup.values()];
+  }, [project]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (isEditMode && initialMeeting) {
+      const start = new Date(initialMeeting.startTime);
+      setTitle(initialMeeting.title || "");
+      setDescription(initialMeeting.description || "");
+      setDate(start.toISOString().slice(0, 10));
+      setStartTime(`${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`);
+      setDuration(initialMeeting.duration || 30);
+      setParticipants((initialMeeting.participants || []).map((p) => p._id || p).filter(Boolean));
+      return;
+    }
+
+    const now = new Date();
+    setTitle("");
+    setDescription("");
+    setParticipants([]);
+    setDate(now.toISOString().split("T")[0]);
+    setStartTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
+    setDuration(30);
+  }, [isOpen, isEditMode, initialMeeting]);
 
   if (!isOpen) return null;
 
@@ -45,31 +58,35 @@ const MeetingModal = ({ isOpen, onClose, projectId, project }) => {
       return;
     }
 
-    // Combine date and time
     const startDateTime = new Date(`${date}T${startTime}:00`);
-    if (startDateTime < new Date()) {
+    if (!isEditMode && startDateTime < new Date()) {
       toast.error("Meeting time cannot be in the past.");
       return;
     }
 
     try {
       setIsSubmitting(true);
-      await createMeeting({
+      const payload = {
         title,
         description,
-        projectId,
         participants,
         startTime: startDateTime.toISOString(),
         duration,
-      });
+      };
 
-      toast.success("Meeting scheduled successfully!");
-      setTitle("");
-      setDescription("");
-      setParticipants([]);
-      onClose();
+      let response;
+      if (isEditMode) {
+        response = await updateMeeting(initialMeeting._id, payload);
+        toast.success("Meeting updated");
+        onClose();
+      } else {
+        response = await createMeeting({ ...payload, projectId });
+        setSuccessMeeting(response);
+        toast.success("Meeting scheduled successfully!");
+      }
+
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to schedule meeting.");
+      toast.error(err.response?.data?.message || `Failed to ${isEditMode ? "update" : "schedule"} meeting.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -83,117 +100,152 @@ const MeetingModal = ({ isOpen, onClose, projectId, project }) => {
     );
   };
 
+  const copyMeetingLink = async (link) => {
+    try {
+      await navigator.clipboard.writeText(link);
+      toast.success("Link copied!");
+    } catch {
+      toast.error("Could not copy link");
+    }
+  };
+
   return (
-    <div className="modal-overlay">
-      <div className="modal-content meeting-modal">
-        <div className="modal-header">
-          <h2>Schedule a Meeting</h2>
-          <button className="close-btn" onClick={onClose}>×</button>
+    <>
+      <div className="modal-overlay">
+        <div className="modal-content w-full max-w-2xl rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-secondary)] p-0">
+          <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+              {isEditMode ? "Edit Meeting" : "Schedule a Meeting"}
+            </h2>
+            <button className="text-xl text-[var(--text-muted)] hover:text-[var(--text-primary)]" onClick={onClose}>×</button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4 p-5">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[var(--text-secondary)]">Meeting Title *</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g., Code Review, Pair Programming"
+                className="w-full rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[var(--text-secondary)]">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="What will this meeting be about?"
+                rows={3}
+                className="w-full rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+              />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-[var(--text-secondary)]">Date *</label>
+                <input
+                  type="date"
+                  value={date}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-[var(--text-secondary)]">Start Time *</label>
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[var(--text-secondary)]">Duration</label>
+              <select
+                value={duration}
+                onChange={(e) => setDuration(parseInt(e.target.value, 10))}
+                className="w-full rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+              >
+                <option value={15}>15 Minutes</option>
+                <option value={30}>30 Minutes</option>
+                <option value={60}>1 Hour</option>
+                <option value={120}>2 Hours</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[var(--text-secondary)]">Invite Collaborators</label>
+              <ParticipantPicker
+                members={projectMembers}
+                selectedIds={participants}
+                onToggle={handleToggleParticipant}
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+              <Button variant="outline" type="button" onClick={onClose} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (isEditMode ? "Saving..." : "Scheduling...") : (isEditMode ? "Save Changes" : "Schedule Meeting")}
+              </Button>
+            </div>
+          </form>
         </div>
-
-        <form onSubmit={handleSubmit} className="meeting-form">
-          <div className="form-group">
-            <label>Meeting Title *</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Code Review, Pair Programming"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Description (Optional)</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="What will this meeting be about?"
-              rows={3}
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Date *</label>
-              <input
-                type="date"
-                value={date}
-                min={new Date().toISOString().split("T")[0]}
-                onChange={(e) => setDate(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Start Time *</label>
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Duration</label>
-            <select
-              value={duration}
-              onChange={(e) => setDuration(parseInt(e.target.value))}
-            >
-              <option value={15}>15 Minutes</option>
-              <option value={30}>30 Minutes</option>
-              <option value={60}>1 Hour</option>
-              <option value={120}>2 Hours</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>Invite Collaborators</label>
-            <div className="participants-list">
-              {projectMembers.length > 0 ? (
-                projectMembers.map((member) => (
-                  <label key={member._id} className="participant-item">
-                    <input
-                      type="checkbox"
-                      checked={participants.includes(member._id)}
-                      onChange={() => handleToggleParticipant(member._id)}
-                    />
-                    <span>{member.username}</span>
-                  </label>
-                ))
-              ) : (
-                <div className="no-members">No project members available to select.</div>
-              )}
-            </div>
-          </div>
-
-          <div className="modal-actions">
-            <Button variant="outline" type="button" onClick={onClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Scheduling..." : "Schedule Meeting"}
-            </Button>
-          </div>
-        </form>
-        
-        <style>{`
-          .meeting-modal { max-width: 500px; width: 100%; border-radius: 12px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); }
-          .meeting-form { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-          .form-group { display: flex; flex-direction: column; gap: 6px; }
-          .form-group label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
-          .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-          .form-group input, .form-group textarea, .form-group select { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px; border-radius: 8px; font-family: inherit; }
-          .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent-primary); outline: none; }
-          .participants-list { max-height: 120px; overflow-y: auto; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-          .participant-item { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; }
-          .participant-item input { accent-color: var(--accent-primary); }
-          .no-members { font-size: 13px; color: var(--text-muted); font-style: italic; }
-          .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; }
-        `}</style>
       </div>
-    </div>
+      <Modal
+        isOpen={Boolean(successMeeting)}
+        onClose={() => {
+          setSuccessMeeting(null);
+          onClose();
+        }}
+        title="Meeting Created"
+        icon="✅"
+        footer={
+          <>
+            <button
+              className="admin-modal-btn secondary"
+              onClick={() => {
+                setSuccessMeeting(null);
+                onClose();
+              }}
+            >
+              Close
+            </button>
+            <button
+              className="admin-modal-btn primary"
+              onClick={() => copyMeetingLink(successMeeting?.meetingLink)}
+            >
+              Copy Link
+            </button>
+          </>
+        }
+      >
+        <p className="mb-2 text-sm text-[var(--text-secondary)]">
+          Your meeting has been scheduled successfully.
+        </p>
+        <div className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg-tertiary)] p-2">
+          <p className="truncate text-xs text-[var(--text-muted)]">{successMeeting?.meetingLink}</p>
+        </div>
+        {successMeeting?.meetingLink && (
+          <a
+            href={`mailto:?subject=${encodeURIComponent(`Meeting: ${successMeeting.title}`)}&body=${encodeURIComponent(`Join meeting: ${successMeeting.meetingLink}`)}`}
+            className="mt-3 inline-block text-xs text-[var(--accent)] hover:underline"
+          >
+            Share via Email
+          </a>
+        )}
+      </Modal>
+    </>
   );
 };
 

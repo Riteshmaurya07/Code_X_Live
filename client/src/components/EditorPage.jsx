@@ -9,7 +9,8 @@ import EditorToolbar from "./Editor/EditorToolbar";
 import CompilerOutput from "./Editor/CompilerOutput";
 import MeetingPanel from "./Editor/MeetingPanel";
 import MeetingModal from "./Editor/MeetingModal";
-import { initSocket } from "../Socket";
+import MeetingDetailsModal from "./Editor/MeetingDetailsModal";
+import InviteParticipantsModal from "./Editor/InviteParticipantsModal";
 import { ACTIONS } from "../Actions";
 import {
   useNavigate,
@@ -23,7 +24,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import api from "../services/api";
 import { getProject, formatCode as formatCodeAPI } from "../services/projectService";
-import { getProjectMeetings } from "../services/meetingService";
+import { getProjectMeetings, deleteMeeting } from "../services/meetingService";
 import { useFileTree } from "../hooks/editor/useFileTree";
 import { useRoomSocket } from "../hooks/editor/useRoomSocket";
 
@@ -48,6 +49,10 @@ function EditorPage() {
   const [showChatPanel, setShowChatPanel] = useState(false);
   const [showMeetingPanel, setShowMeetingPanel] = useState(false);
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
+  const [meetingModalMode, setMeetingModalMode] = useState("create");
+  const [selectedMeeting, setSelectedMeeting] = useState(null);
+  const [isMeetingDetailsOpen, setIsMeetingDetailsOpen] = useState(false);
+  const [isInviteMoreOpen, setIsInviteMoreOpen] = useState(false);
   const [isCompileWindowOpen, setIsCompileWindowOpen] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
   const [output, setOutput] = useState("");
@@ -175,7 +180,19 @@ function EditorPage() {
       s.off(ACTIONS.MEETING_UPDATED, onMeetingUpdated);
       s.off(ACTIONS.MEETING_DELETED, onMeetingDeleted);
     };
-  }, [socketRef.current]);
+  }, [socketRef]);
+
+  useEffect(() => {
+    if (!selectedMeeting?._id) return;
+    const next = meetings.find((m) => m._id === selectedMeeting._id);
+    if (next) {
+      setSelectedMeeting(next);
+    } else {
+      setIsMeetingDetailsOpen(false);
+      setIsInviteMoreOpen(false);
+      setSelectedMeeting(null);
+    }
+  }, [meetings, selectedMeeting?._id]);
 
   // --- Handlers ---
   const runCode = async () => {
@@ -193,6 +210,36 @@ function EditorPage() {
       setOutput(error.response?.data?.message || "Execution error");
     } finally {
       setIsCompiling(false);
+    }
+  };
+
+  const openCreateMeetingModal = () => {
+    setMeetingModalMode("create");
+    setSelectedMeeting(null);
+    setIsMeetingModalOpen(true);
+  };
+
+  const openEditMeetingModal = (meeting) => {
+    setMeetingModalMode("edit");
+    setSelectedMeeting(meeting);
+    setIsMeetingModalOpen(true);
+  };
+
+  const openMeetingDetails = (meeting) => {
+    setSelectedMeeting(meeting);
+    setIsMeetingDetailsOpen(true);
+  };
+
+  const handleDeleteMeeting = async () => {
+    if (!selectedMeeting?._id) return;
+    if (!confirm("Cancel this meeting?")) return;
+    try {
+      await deleteMeeting(selectedMeeting._id);
+      toast.success("Meeting cancelled");
+      setIsMeetingDetailsOpen(false);
+      setSelectedMeeting(null);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to cancel meeting");
     }
   };
 
@@ -324,7 +371,10 @@ function EditorPage() {
             <MeetingPanel
               meetings={meetings}
               onClose={() => setShowMeetingPanel(false)}
-              onSchedule={() => setIsMeetingModalOpen(true)}
+              onSchedule={openCreateMeetingModal}
+              onViewMeeting={openMeetingDetails}
+              onEditMeeting={openEditMeetingModal}
+              currentUsername={username}
             />
           )}
           {showHistory && activeFileId && <VersionHistory fileId={activeFileId} onRestore={c => editorRef.current?.setValue(c)} onClose={() => setShowHistory(false)} />}
@@ -335,6 +385,39 @@ function EditorPage() {
           onClose={() => setIsMeetingModalOpen(false)} 
           projectId={projectId} 
           project={projectObj} 
+          mode={meetingModalMode}
+          initialMeeting={selectedMeeting}
+        />
+
+        <MeetingDetailsModal
+          meeting={selectedMeeting}
+          isOpen={isMeetingDetailsOpen}
+          onClose={() => setIsMeetingDetailsOpen(false)}
+          onEdit={() => {
+            setIsMeetingDetailsOpen(false);
+            openEditMeetingModal(selectedMeeting);
+          }}
+          onInviteMore={() => {
+            setIsMeetingDetailsOpen(false);
+            setIsInviteMoreOpen(true);
+          }}
+          onDelete={handleDeleteMeeting}
+          currentUsername={username}
+        />
+
+        <InviteParticipantsModal
+          isOpen={isInviteMoreOpen}
+          onClose={(didUpdate) => {
+            setIsInviteMoreOpen(false);
+            if (didUpdate && selectedMeeting) {
+              setIsMeetingDetailsOpen(true);
+            }
+          }}
+          meeting={selectedMeeting}
+          projectMembers={[
+            ...(projectObj?.owner ? [projectObj.owner] : []),
+            ...((projectObj?.collaborators || []).map((c) => c.user).filter(Boolean)),
+          ].filter((user, index, arr) => user?._id && arr.findIndex((u) => u._id === user._id) === index)}
         />
 
         {isCompileWindowOpen && <CompilerOutput output={output} executionTime={executionTime} onClose={() => setIsCompileWindowOpen(false)} />}
