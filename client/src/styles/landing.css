@@ -5,16 +5,7 @@
     radial-gradient(circle at 15% 50%, var(--accent-soft) 0%, transparent 40%),
     radial-gradient(circle at 85% 30%, rgba(16,185,129,0.06) 0%, transparent 40%);
 }
-.landing-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: var(--sp-4) 5%; background: rgba(15,23,42,0.8); backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000;
-}
-[data-theme="light"] .landing-nav { background: rgba(255,255,255,0.85); }
-.landing-logo img { height: 36px; display: block; }
-.landing-nav-links { display: flex; align-items: center; gap: var(--sp-6); }
-.nav-link { color: var(--text-secondary); text-decoration: none; font-size: var(--text-sm); font-weight: 500; transition: var(--transition); }
-.nav-link:hover { color: var(--text-primary); }
+/* Navbar: styled in Navbar.jsx (Tailwind + design tokens) */
 
 .landing-main { flex: 1; max-width: 1200px; margin: 0 auto; padding: var(--sp-10) 5% 80px; width: 100%; }
 
@@ -72,7 +63,7 @@
   background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius);
   padding: var(--sp-6); text-align: center; transition: var(--transition);
 }
-.feature-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: var(--shadow); }
+.feature-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: var(--depth-1); }
 .feature-icon { font-size: 2rem; margin-bottom: var(--sp-4); }
 .feature-card h3 { font-size: var(--text-lg); font-weight: 600; margin-bottom: 10px; color: var(--text-primary); }
 .feature-card p { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; }

@@ -100,12 +100,15 @@ const firebaseLogin = async (req, res) => {
     let authProvider = "google";
     if (provider.includes("github")) authProvider = "github";
 
+    // Provide a fallback email if OAuth (like GitHub) doesn't return one
+    const safeEmail = email || `${uid}@github.local`;
+
     // Try to find existing user by Firebase UID
     let user = await User.findOne({ firebaseUid: uid });
 
     if (!user) {
       // Check if a user with this email already exists (account linking)
-      user = await User.findOne({ email });
+      user = await User.findOne({ email: safeEmail });
 
       if (user) {
         // Link the Firebase UID to the existing account
@@ -115,8 +118,9 @@ const firebaseLogin = async (req, res) => {
         logger.info(`Linked Firebase UID to existing user: ${user.username}`);
       } else {
         // Create a brand new user
-        // Generate a unique username from email or display name
-        let username = (name || email.split("@")[0]).replace(/[^a-zA-Z0-9_]/g, "").toLowerCase();
+        // Generate a unique username from display name or email fallback
+        let baseName = name || safeEmail.split("@")[0];
+        let username = baseName.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase();
 
         // Ensure username is unique
         const existingUsername = await User.findOne({ username });
@@ -126,12 +130,12 @@ const firebaseLogin = async (req, res) => {
 
         // Ensure minimum length
         if (username.length < 3) {
-          username = `user_${Date.now().toString(36)}`;
+          username = `user_${Date.now().toString(36).slice(-6)}`;
         }
 
         user = await User.create({
           username,
-          email,
+          email: safeEmail,
           firebaseUid: uid,
           authProvider,
           avatar: picture || "",

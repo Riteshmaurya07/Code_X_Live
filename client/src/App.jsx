@@ -1,5 +1,6 @@
 import "./App.css";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, Navigate, useParams, useSearchParams, useNavigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import EditorPage from "./components/EditorPage";
 import Login from "./pages/Login";
@@ -11,6 +12,8 @@ import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/useTheme";
 import { GlobalSocketProvider } from "./hooks/useGlobalSocket";
 import { DMProvider } from "./hooks/useDM";
+import toast from "react-hot-toast";
+import api from "./services/api";
 
 // Protected route wrapper
 function ProtectedRoute({ children }) {
@@ -31,12 +34,6 @@ function ProtectedRoute({ children }) {
 
   return children;
 }
-
-// Simple redirect for the invite link format /join/:roomId?token=xxx
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
-import api from "./services/api";
 
 function JoinHandler() {
   const { roomId } = useParams();
@@ -71,7 +68,7 @@ function JoinHandler() {
 
   return (
     <div className="loading-screen">
-      <p style={{ color: "var(--text-muted)" }}>Joining project...</p>
+      <p className="text-[var(--text-muted)]">Joining project...</p>
     </div>
   );
 }

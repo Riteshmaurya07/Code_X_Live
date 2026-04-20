@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   getUserProfile, followUser, unfollowUser,
-  getActivityDashboard, uploadAvatar, updateProfile,
+  getActivityDashboard, uploadAvatar,
 } from "../services/userService";
 import Navbar from "../components/layout/Navbar";
 import Button from "../components/ui/Button";
@@ -120,7 +120,7 @@ function PublicProfile() {
                 title={isOwnProfile ? 'Click to change photo' : ''}
               >
                 {avatarUrl
-                  ? <img src={avatarUrl} alt="avatar" style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}} />
+                  ? <img src={avatarUrl} alt="avatar" className="h-full w-full rounded-full object-cover" />
                   : profileData.profile.username.charAt(0).toUpperCase()
                 }
                 {isOwnProfile && (
@@ -135,11 +135,11 @@ function PublicProfile() {
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  style={{ display: 'none' }}
+                  className="hidden"
                   onChange={handleAvatarChange}
                 />
               )}
-              <div className="profile-info" style={{ flex: 1 }}>
+              <div className="profile-info flex-1">
                 <h1 className="profile-name">
                   {profileData.profile.fullName || `@${profileData.profile.username}`}
                 </h1>
@@ -185,7 +185,7 @@ function PublicProfile() {
 
             <ActivityDashboard data={dashboardData} isOwnProfile={isOwnProfile} />
 
-            <h2 style={{ margin: "2rem 0 1rem 0" }}>Public Projects</h2>
+            <h2 className="my-8 mb-4 text-2xl font-semibold text-[var(--text-primary)]">Public Projects</h2>
 
             {profileData.publicProjects.length === 0 ? (
               <div className="empty-state">

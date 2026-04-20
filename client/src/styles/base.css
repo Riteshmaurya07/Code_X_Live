@@ -46,8 +46,17 @@ body {
   filter: brightness(1.1); 
 }
 
-.btn-outline { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
-.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-outline {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  box-shadow: var(--depth-1);
+}
+.btn-outline:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 .btn-success { background: var(--success); color: #fff; }
 .btn-success:hover { background: var(--success-hover); }

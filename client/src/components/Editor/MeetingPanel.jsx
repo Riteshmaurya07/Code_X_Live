@@ -1,16 +1,26 @@
 import React from "react";
+import { toast } from "react-hot-toast";
 
-const MeetingPanel = ({ meetings, onClose, onSchedule }) => {
+const MeetingPanel = ({ meetings, onClose, onSchedule, onViewMeeting, onEditMeeting, currentUsername }) => {
   const getStatusBadge = (status) => {
     switch (status) {
       case "scheduled":
-        return <span className="badge badge-info">Scheduled</span>;
+        return <span className="rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-indigo-300">Scheduled</span>;
       case "ongoing":
-        return <span className="badge badge-success">Ongoing</span>;
+        return <span className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-300">Ongoing</span>;
       case "completed":
-        return <span className="badge badge-secondary">Completed</span>;
+        return <span className="rounded-xl border border-slate-500/20 bg-slate-500/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-300">Completed</span>;
       default:
-        return <span className="badge badge-secondary">{status}</span>;
+        return <span className="rounded-xl border border-slate-500/20 bg-slate-500/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-300">{status}</span>;
+    }
+  };
+
+  const copyLink = async (link) => {
+    try {
+      await navigator.clipboard.writeText(link || "");
+      toast.success("Link copied!");
+    } catch {
+      toast.error("Could not copy link");
     }
   };
 
@@ -23,7 +33,7 @@ const MeetingPanel = ({ meetings, onClose, onSchedule }) => {
   };
 
   return (
-    <div className="panel meeting-panel">
+    <div className="panel flex h-full w-80 shrink-0 flex-col border-l border-[var(--border)] bg-[var(--bg-secondary)]">
       <div className="panel-header">
         <div className="panel-title-container">
           <span className="panel-icon">📅</span>
@@ -37,11 +47,14 @@ const MeetingPanel = ({ meetings, onClose, onSchedule }) => {
       </div>
 
       <div className="panel-content">
-        <button className="schedule-btn-full" onClick={onSchedule}>
+        <button
+          className="mb-5 w-full rounded-lg bg-gradient-to-r from-[var(--accent)] to-[#818cf8] px-3 py-3 font-semibold text-white transition hover:-translate-y-0.5 hover:brightness-110"
+          onClick={onSchedule}
+        >
           🗓️ Schedule New Meeting
         </button>
 
-        <div className="meetings-list">
+        <div className="flex flex-col gap-4 overflow-y-auto pr-1">
           {meetings.length === 0 ? (
             <div className="empty-state">
               <span className="empty-icon">📅</span>
@@ -50,30 +63,61 @@ const MeetingPanel = ({ meetings, onClose, onSchedule }) => {
             </div>
           ) : (
             meetings.map((meeting) => (
-              <div key={meeting._id} className="meeting-card">
-                <div className="meeting-card-header">
-                  <h4>{meeting.title}</h4>
+              <div
+                key={meeting._id}
+                className="flex flex-col gap-3 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg-tertiary)] p-4 transition-colors hover:border-[var(--accent)]"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="text-sm font-semibold leading-snug text-[var(--text-primary)]">{meeting.title}</h4>
                   {getStatusBadge(meeting.status)}
                 </div>
                 
                 {meeting.description && (
-                  <p className="meeting-desc">{meeting.description}</p>
+                  <p className="line-clamp-2 text-xs leading-relaxed text-[var(--text-secondary)]">{meeting.description}</p>
                 )}
 
-                <div className="meeting-meta">
-                  <div className="meta-item">
-                    <span className="meta-icon">⏰</span>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+                    <span>⏰</span>
                     <span>{new Date(meeting.startTime).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} ({meeting.duration}m)</span>
                   </div>
-                  <div className="meta-item">
-                    <span className="meta-icon">👥</span>
+                  <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+                    <span>👥</span>
                     <span>{meeting.participants.length} participant{meeting.participants.length !== 1 ? 's' : ''}</span>
                   </div>
                 </div>
 
-                <div className="meeting-actions">
+                <div className="mt-1">
+                {meeting.createdBy?.username === currentUsername && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      className="rounded-md border border-[var(--border)] px-2.5 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent)]"
+                      onClick={() => onViewMeeting?.(meeting)}
+                    >
+                      Details
+                    </button>
+                    <button
+                      className="rounded-md border border-[var(--border)] px-2.5 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent)]"
+                      onClick={() => onEditMeeting?.(meeting)}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                )}
+                {meeting.createdBy?.username !== currentUsername && (
+                  <button
+                    className="w-full rounded-md border border-[var(--border)] px-2.5 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent)]"
+                    onClick={() => onViewMeeting?.(meeting)}
+                  >
+                    Details
+                  </button>
+                )}
                   <button 
-                    className={`btn-join ${isMeetingActive(meeting.startTime, meeting.endTime, meeting.status) ? "active" : "disabled"}`}
+                    className={`mt-2 block w-full rounded-md border px-2.5 py-2 text-center text-xs font-semibold transition ${
+                      isMeetingActive(meeting.startTime, meeting.endTime, meeting.status)
+                        ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                        : "cursor-not-allowed border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-muted)] opacity-70"
+                    }`}
                     onClick={(e) => {
                       if (!isMeetingActive(meeting.startTime, meeting.endTime, meeting.status)) {
                         e.preventDefault();
@@ -86,36 +130,18 @@ const MeetingPanel = ({ meetings, onClose, onSchedule }) => {
                   >
                     🚀 Join Meeting
                   </button>
+                  <button
+                    className="mt-2 block w-full rounded-md border border-[var(--border)] px-2.5 py-2 text-center text-xs font-semibold text-[var(--text-secondary)] hover:border-[var(--accent)]"
+                    onClick={() => copyLink(meeting.meetingLink)}
+                  >
+                    Copy Link
+                  </button>
                 </div>
               </div>
             ))
           )}
         </div>
       </div>
-
-      <style>{`
-        .meeting-panel { display: flex; flex-direction: column; height: 100%; border-left: 1px solid var(--border-color); background: var(--bg-sidebar); width: 320px; flex-shrink: 0; }
-        .schedule-btn-full { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--accent-primary), #818cf8); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.2s, background 0.2s; margin-bottom: 20px; }
-        .schedule-btn-full:hover { transform: translateY(-1px); filter: brightness(1.1); }
-        .meetings-list { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding-right: 4px; }
-        .meeting-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; transition: border-color 0.2s; }
-        .meeting-card:hover { border-color: var(--accent-primary); }
-        .meeting-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-        .meeting-card-header h4 { font-size: 15px; margin: 0; color: var(--text-primary); font-weight: 600; line-height: 1.3; }
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge-info { background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.2); }
-        .badge-success { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
-        .badge-secondary { background: rgba(148, 163, 184, 0.1); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); }
-        .meeting-desc { font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .meeting-meta { display: flex; flex-direction: column; gap: 6px; }
-        .meta-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
-        .meta-icon { font-size: 14px; }
-        .meeting-actions { margin-top: 4px; }
-        .btn-join { display: block; text-align: center; width: 100%; padding: 10px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px; transition: all 0.2s; cursor: pointer; border: none; font-family: inherit; }
-        .btn-join.active { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .btn-join.active:hover { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.5); }
-        .btn-join.disabled { background: var(--bg-hover); color: var(--text-muted); cursor: not-allowed; opacity: 0.7; pointer-events: none; }
-      `}</style>
     </div>
   );
 };

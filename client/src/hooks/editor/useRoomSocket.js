@@ -33,6 +33,13 @@ export const useRoomSocket = ({
   activeFileIdRef
 }) => {
   const socketRef = useRef(null);
+  const activeChatTabRef = useRef(activeChatTab);
+  const showChatPanelRef = useRef(showChatPanel);
+
+  useEffect(() => {
+    activeChatTabRef.current = activeChatTab;
+    showChatPanelRef.current = showChatPanel;
+  }, [activeChatTab, showChatPanel]);
 
   useEffect(() => {
     if (!username || !roomId) return;
@@ -175,7 +182,7 @@ export const useRoomSocket = ({
 
       s.on(ACTIONS.RECEIVE_ROOM_MESSAGE, (msg) => {
         setRoomMessages((prev) => [...prev, msg]);
-        if (!showChatPanel || activeChatTab !== "Everyone") {
+        if (!showChatPanelRef.current || activeChatTabRef.current !== "Everyone") {
           setUnreadChatCounts((prev) => ({ ...prev, Everyone: (prev.Everyone || 0) + 1 }));
         }
       });
@@ -190,7 +197,7 @@ export const useRoomSocket = ({
         });
 
         if (!isFromMe) {
-          if (!showChatPanel || activeChatTab !== msg.senderName) {
+          if (!showChatPanelRef.current || activeChatTabRef.current !== msg.senderName) {
             setUnreadChatCounts((prev) => ({ ...prev, [msg.senderName]: (prev[msg.senderName] || 0) + 1 }));
           }
         }
@@ -246,7 +253,7 @@ export const useRoomSocket = ({
         socketRef.current = null;
       }
     };
-  }, [username, roomId, navigate]);
+  }, [username, roomId, navigate, isNewRoom, searchParams]);
 
   const kickUser = useCallback((targetUsername) => {
     if (!socketRef.current) return;
