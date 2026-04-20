@@ -69,6 +69,12 @@ const registerCodeHandlers = (io, socket) => {
     });
   });
 
+  // CURSOR_SYNC_REQUEST: send existing cursor positions to a newly joined socket
+  socket.on("cursor-sync-request", ({ roomId }) => {
+    const positions = cursorPositions[roomId] || {};
+    socket.emit("cursor-sync", positions);
+  });
+
   // INLINE COMMENT: broadcast to room
   socket.on("add-comment", ({ roomId, comment }) => {
     socket.in(roomId).emit("new-comment", {

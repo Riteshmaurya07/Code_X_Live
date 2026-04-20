@@ -9,7 +9,7 @@ const EditorToolbar = ({
   onToggleChat, showChatPanel, onRun, isCompiling,
   unreadChatCount, showAIPanel, onToggleAI,
   showMeetingPanel, onToggleMeetings,
-  onToggleSidebar
+  onToggleSidebar, onDownloadProject
 }) => {
   return (
     <div className="editor-toolbar">
@@ -55,6 +55,11 @@ const EditorToolbar = ({
         {isDbFile && (
           <Button variant="none" className="toolbar-btn chip" onClick={onSave} title="Save">
              💾
+          </Button>
+        )}
+        {isDbFile && (
+          <Button variant="none" className="toolbar-btn chip" onClick={onDownloadProject} title="Download as ZIP">
+            ⬇️
           </Button>
         )}
         <Button variant="none" className="toolbar-btn chip" onClick={onFormat} title="Format Code">

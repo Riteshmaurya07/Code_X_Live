@@ -1,70 +1,135 @@
-# 🖥️ CodeXAlive — Frontend React Core
+# 🖥️ CodeXLive — Frontend (React + Vite)
 
-The CodeXAlive frontend is a high-performance, real-time interface built with **React (Vite 5)**. It features a custom **Design Token System** for a premium, glassmorphic UI that scales across mobile and desktop.
-
----
-
-## 🎨 Feature Modules
-
-### 🛠️ Collaborative Editor (CodeMirror 6)
-- **Real-Time Sync**: Instant WebSocket synchronization via Socket.io.
-- **Support for 20+ Languages**: Full syntax highlighting and intelligent auto-indent.
-- **Integrated Compiler**: Execute and view code output natively.
-- **Admin Controls**: Owners can manage room access, kick/ban participants, and approve join requests.
-
-### 📊 Social & Activity Dashboard (New!)
-- **Activity Heatmap**: A custom 365-day contribution matrix displaying daily coding intensity.
-- **Developer Stats**: Streak counting, active days tracking, and collaboration metrics.
-- **Follower Network**: Interactive lists for followers and following with real-time updates.
-- **Project Invitations**: A dedicated dashboard panel to accept or decline collaboration invites.
-
-### 🔔 Notification System
-- **Global Dropdown**: A Navbar-integrated bell icon with real-time unread badges.
-- **Live Dispatch**: Instant unread counts and clickable alerts for social and project events.
-- **Deep Linking**: Notifications lead directly to user profiles or project dashboards.
-
-### 🤖 Intellect AI Integration
-- **Contextual Assistance**: AI-powered code explanation and debugging directly in the sidebar.
-- **Gemini Pro**: High-fidelity AI responses for boilerplate generation and architectural advice.
+The CodeXLive frontend is a high-performance real-time interface built with **React 18 + Vite**. It features a glassmorphic design system, a full-featured CodeMirror collaborative editor, live cursor tracking, and a rich developer social dashboard.
 
 ---
 
 ## 🚀 Getting Started
 
-### 1️⃣ Install Dependencies
+### Install Dependencies
 ```bash
 npm install
 ```
 
-### 2️⃣ Configure Environment
-Create a `.env` file in the `client` directory:
+### Configure Environment
+Create a `.env` file in the `client/` directory:
+
 ```env
+# Backend URL — used by Vite proxy at config-load time (via loadEnv)
 VITE_BACKEND_URL=http://localhost:5000
-VITE_FIREBASE_API_KEY=your_key
-VITE_FIREBASE_AUTH_DOMAIN=your_domain
-VITE_FIREBASE_PROJECT_ID=your_id
+
+# Firebase (Social Auth)
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
 ```
 
-### 3️⃣ Development Server
+> **Important:** `VITE_BACKEND_URL` is read by `vite.config.js` via `loadEnv` at startup — **not** via `process.env` — so the dev proxy always has a valid target. If you change `.env`, restart the dev server.
+
+### Development Server
 ```bash
-npm run dev
+npm run dev    # http://localhost:3000
+```
+
+Vite proxies:
+- `/api/*` → `VITE_BACKEND_URL` (REST API)
+- `/socket.io/*` → `VITE_BACKEND_URL` with `ws: true` (WebSocket upgrade)
+
+---
+
+## ✨ Feature Modules
+
+### 🛠️ Collaborative Editor (`/src/components/Editor.jsx`)
+- **Real-Time Code Sync** — Socket.io `CODE_CHANGE` events keep all participants in sync.
+- **Live Cursor Tracking** — `cursorActivity` listener emits `cursor-move` to the socket (throttled to **50 ms**). Peers' cursors render as colour-coded bookmarks with name labels via CodeMirror `setBookmark`.
+- **Cursor Sync on Join** — when a new user joins, `cursor-sync-request` is emitted and the server replies with all current cursor positions, so late joiners immediately see where everyone is.
+- **20+ Languages** — syntax highlighting via CodeMirror mode modules.
+- **Autocomplete** — `anyword-hint` + `javascript-hint` on `Ctrl+Space` / input.
+- **Theme Toggle** — Dracula (dark) / Eclipse (light).
+- **Read-Only Mode** — viewers cannot edit; the readonly banner is shown.
+
+### ⬇️ Download Project as ZIP (`EditorToolbar` + `EditorPage`)
+- The **⬇️ button** in the toolbar (only visible for persisted DB projects) calls `handleDownloadProject`.
+- Uses `fetch` with `Authorization: Bearer <token>` to call `GET /api/projects/:id/download`.
+- Response is streamed into a `Blob`, converted to an object URL, and a hidden `<a>` click triggers the browser's save-file dialog.
+- URL is immediately revoked after download to free memory.
+
+### 🗂️ File Explorer & Multi-File Editing
+- Create, rename, and delete files within a project.
+- Tab bar shows all open files with active state highlight.
+- Auto-saves to MongoDB with debounce; manual save with 💾.
+
+### 📊 Developer Social Dashboard
+- **Activity Heatmap** — 365-day GitHub-style contribution matrix.
+- **Stats** — streak counting, active days, collaboration count.
+- **Follower Network** — interactive follow/unfollow with real-time notification.
+- **Project Invitations** — accept or decline collaboration invites.
+
+### 🔔 Notification System
+- Navbar bell icon with real-time unread badge via global socket.
+- Deep links to user profiles and project dashboards.
+
+### 💬 Team Chat
+- In-editor room chat panel with `Everyone` broadcast and private DMs.
+- Unread badge per conversation thread.
+
+### 📅 Meeting Scheduler
+- Schedule, edit, view, and cancel project meetings.
+- Invite specific project members to meetings.
+- Real-time meeting events synced across room participants.
+
+### 🤖 AI Assistant
+- Gemini-powered code explanation, debugging, and boilerplate generation.
+- Apply AI-suggested fixes directly into the editor.
+
+---
+
+## 📁 Folder Structure
+
+```
+client/src/
+├── components/
+│   ├── Editor.jsx              # CodeMirror instance + cursor tracking
+│   ├── EditorPage.jsx          # Top-level editor page, handleDownloadProject
+│   ├── Editor/
+│   │   ├── EditorToolbar.jsx   # Toolbar with ⬇️ download button
+│   │   ├── EditorSidebar.jsx   # File explorer + member list
+│   │   ├── CompilerOutput.jsx
+│   │   ├── MeetingPanel.jsx
+│   │   └── ...
+│   ├── Dashboard/
+│   ├── Landing/
+│   ├── layout/                 # Navbar, NotificationDropdown
+│   ├── profile/                # Heatmap, Stats, Timeline
+│   └── ui/                     # Button, shared UI primitives
+├── hooks/
+│   ├── useAuth.jsx
+│   ├── useTheme.jsx
+│   ├── useGlobalSocket.jsx
+│   └── editor/
+│       ├── useRoomSocket.js    # Socket lifecycle + cursor-sync-request on JOIN
+│       └── useFileTree.js
+├── services/
+│   ├── api.js                  # Axios instance with Bearer token interceptor
+│   ├── projectService.js
+│   ├── meetingService.js
+│   └── ...
+└── Actions.js                  # Shared socket event name constants
 ```
 
 ---
 
-## 🏗️ Folder Structure
+## 🧩 Key Dependencies
 
-- `/src/components/profile`: Specialized social dashboard components (Heatmap, Stats, Timeline).
-- `/src/components/layout`: Core navigation, footer, and notification dropdowns.
-- `/src/hooks`: Global state hooks (useAuth, useSocket, useTheme).
-- `/src/services`: API abstraction layers (sharingService, userService, projectService).
-- `/src/styles`: Design tokens, social-specific CSS, and editor styling.
-
----
-
-## 🧩 Key Libraries
-- **CodeMirror 6**: The core editor engine.
-- **Socket.io-client**: Real-time WebSocket layer.
-- **Firebase Auth**: Social login providers (Google/GitHub).
-- **React Hot Toast**: Elegant, accessible UI notifications.
-- **Lucide React**: Modern iconography system.
+| Package | Purpose |
+|---|---|
+| `codemirror` (v5/classic) | Editor engine with mode plugins |
+| `socket.io-client` | Real-time WebSocket layer |
+| `react-router-dom` | Client-side routing |
+| `axios` | HTTP client with auth interceptor |
+| `firebase` | Social login (Google/GitHub) |
+| `react-hot-toast` | Accessible toast notifications |
+| `@tailwindcss/vite` | Utility CSS (selectively used) |
