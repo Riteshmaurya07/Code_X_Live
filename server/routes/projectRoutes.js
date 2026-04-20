@@ -7,12 +7,14 @@ const {
   updateProject,
   deleteProject,
 } = require("../controllers/projectController");
+const { downloadProject } = require("../controllers/downloadController");
 const auth = require("../middleware/auth");
 
 router.use(auth); // All project routes are protected
 
 router.post("/", createProject);
 router.get("/", getProjects);
+router.get("/:id/download", downloadProject);
 router.get("/:id", getProject);
 router.put("/:id", updateProject);
 router.delete("/:id", deleteProject);

@@ -86,6 +86,9 @@ export const useRoomSocket = ({
         if (admin) {
           setAdminUsername(admin);
         }
+        // Request existing cursor positions from the server so late-joiners
+        // immediately see where all current participants' cursors are.
+        s.emit("cursor-sync-request", { roomId });
       });
 
       s.on(ACTIONS.SYNC_CODE, ({ files }) => {

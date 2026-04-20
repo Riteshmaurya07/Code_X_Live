@@ -246,10 +246,56 @@ function EditorPage() {
   const handleFormat = async () => {
     try {
       const { formatted, supported } = await formatCodeAPI(codeRef.current || "", selectedLanguage);
-      if (editorRef.current) editorRef.current.setValue(formatted);
-      toast.success(supported ? "Formatted!" : "Not supported");
+
+      if (editorRef.current) {
+        // Preserve cursor/scroll position across the format replace
+        editorRef.current.setValue(formatted);
+      }
+
+      // Update local code ref and autosave pipeline — setValue bypasses onCodeChange
+      handleCodeChange(formatted);
+
+      // Broadcast formatted code to all other room participants.
+      // We can't rely on the editor's "change" listener because it intentionally
+      // ignores origin==="setValue" to prevent remote-update loops.
+      if (socketRef.current && roomId && activeFileId) {
+        socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+          roomId,
+          fileId: activeFileId,
+          code: formatted,
+          language: selectedLanguage,
+        });
+      }
+
+      toast.success(supported ? "Formatted!" : "Not supported — returned as-is");
     } catch {
       toast.error("Formatting failed");
+    }
+  };
+
+  const handleDownloadProject = async () => {
+    if (!projectId) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/projects/${projectId}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || "Download failed");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${projectObj?.name || "project"}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Download failed");
     }
   };
 
@@ -309,7 +355,7 @@ function EditorPage() {
         onSetPermission={setRole}
         onMessageUser={handleJoinDM}
         onCopyRoomId={() => { navigator.clipboard.writeText(roomId); toast.success("Copied!"); }}
-        onLeaveRoom={() => navigate("/")}
+        onLeaveRoom={() => navigate("/dashboard")}
       />
 
       <div className="editor-main">
@@ -338,6 +384,7 @@ function EditorPage() {
           showAIPanel={showAIPanel}
           onToggleAI={() => { setShowAIPanel(!showAIPanel); setShowHistory(false); setShowChatPanel(false); setShowMeetingPanel(false); }}
           onToggleSidebar={() => setSidebarOpen(prev => !prev)}
+          onDownloadProject={handleDownloadProject}
         />
 
         {isReadOnly && <div className="readonly-banner">👁 View Only</div>}

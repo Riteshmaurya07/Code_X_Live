@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
+import React, { useEffect, useRef, useImperativeHandle, forwardRef, useCallback } from "react";
 import CodeMirror from "codemirror";
 import "codemirror/addon/selection/mark-selection";
 
@@ -75,12 +75,30 @@ const Editor = forwardRef(function Editor(
       if (!cm) return;
       const currentCode = cm.getValue();
       if (currentCode === newCode) return; // No-op
-      // Preserve cursor position across remote update
+
+      // Save cursor and scroll BEFORE any document mutation
       const cursor = cm.getCursor();
       const scrollInfo = cm.getScrollInfo();
-      cm.setValue(newCode);
-      cm.setCursor(cursor);
-      cm.scrollTo(scrollInfo.left, scrollInfo.top);
+
+      // Use replaceRange instead of setValue.
+      // setValue resets the entire document (cursor jumps to line 0, undo history
+      // cleared, re-render races with setCursor). replaceRange patches the content
+      // in-place and preserves internal CM state.
+      // Wrapping in cm.operation() batches the replaceRange + setCursor into a
+      // single render frame so the cursor is atomically restored before any repaint.
+      cm.operation(() => {
+        const lastLine = cm.lastLine();
+        const lastCh = cm.getLine(lastLine).length;
+        // "+remote" origin prevents the change listener from re-emitting CODE_CHANGE
+        cm.replaceRange(
+          newCode,
+          { line: 0, ch: 0 },
+          { line: lastLine, ch: lastCh },
+          "+remote"
+        );
+        cm.setCursor(cursor);
+        cm.scrollTo(scrollInfo.left, scrollInfo.top);
+      });
     },
   }));
 
@@ -138,7 +156,7 @@ const Editor = forwardRef(function Editor(
       const currentFileId = fileIdRef.current;
       const currentLanguage = languageRef.current;
 
-      if (origin !== "setValue" && currentSocket && currentRoomId && currentFileId) {
+      if (origin !== "setValue" && origin !== "+remote" && currentSocket && currentRoomId && currentFileId) {
         // Debounce socket emission (300ms)
         if (emitTimer) clearTimeout(emitTimer);
         emitTimer = setTimeout(() => {
@@ -159,6 +177,24 @@ const Editor = forwardRef(function Editor(
           completeSingle: false,
         });
       }
+    });
+
+    // cursorActivity: emit cursor-move to socket, throttled to 50ms
+    const lastCursorEmit = { ts: 0 };
+    editor.on("cursorActivity", (instance) => {
+      const now = Date.now();
+      if (now - lastCursorEmit.ts < 50) return;
+      lastCursorEmit.ts = now;
+
+      const currentSocket = socketRef.current;
+      const currentRoomId = roomIdRef.current;
+      if (!currentSocket || !currentRoomId) return;
+
+      const cursor = instance.getCursor();
+      currentSocket.emit("cursor-move", {
+        roomId: currentRoomId,
+        cursor: { line: cursor.line, ch: cursor.ch },
+      });
     });
 
     return () => {
