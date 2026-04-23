@@ -1,5 +1,6 @@
 import React from "react";
 import { toast } from "react-hot-toast";
+import { Calendar, Clock, Users, Video, X } from "lucide-react";
 
 const MeetingPanel = ({ meetings, onClose, onSchedule, onViewMeeting, onEditMeeting, currentUsername }) => {
   const getStatusBadge = (status) => {
@@ -36,13 +37,11 @@ const MeetingPanel = ({ meetings, onClose, onSchedule, onViewMeeting, onEditMeet
     <div className="panel flex h-full w-80 shrink-0 flex-col border-l border-[var(--border)] bg-[var(--bg-secondary)]">
       <div className="panel-header">
         <div className="panel-title-container">
-          <span className="panel-icon">📅</span>
+          <span className="panel-icon"><Calendar size={18} /></span>
           <h3>Meetings</h3>
         </div>
         <button className="icon-btn" onClick={onClose} title="Close Panel">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X size={18} />
         </button>
       </div>
 
@@ -51,13 +50,13 @@ const MeetingPanel = ({ meetings, onClose, onSchedule, onViewMeeting, onEditMeet
           className="mb-5 w-full rounded-lg bg-gradient-to-r from-[var(--accent)] to-[#818cf8] px-3 py-3 font-semibold text-white transition hover:-translate-y-0.5 hover:brightness-110"
           onClick={onSchedule}
         >
-          🗓️ Schedule New Meeting
+          <Calendar size={16} className="inline mr-2" /> Schedule New Meeting
         </button>
 
         <div className="flex flex-col gap-4 overflow-y-auto pr-1">
           {meetings.length === 0 ? (
             <div className="empty-state">
-              <span className="empty-icon">📅</span>
+              <span className="empty-icon"><Calendar size={48} /></span>
               <p>No upcoming meetings</p>
               <span>Schedule one to collaborate with your team</span>
             </div>
@@ -78,11 +77,11 @@ const MeetingPanel = ({ meetings, onClose, onSchedule, onViewMeeting, onEditMeet
 
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
-                    <span>⏰</span>
+                    <Clock size={12} />
                     <span>{new Date(meeting.startTime).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} ({meeting.duration}m)</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
-                    <span>👥</span>
+                    <Users size={12} />
                     <span>{meeting.participants.length} participant{meeting.participants.length !== 1 ? 's' : ''}</span>
                   </div>
                 </div>
@@ -128,7 +127,7 @@ const MeetingPanel = ({ meetings, onClose, onSchedule, onViewMeeting, onEditMeet
                       }
                     }}
                   >
-                    🚀 Join Meeting
+                    <Video size={14} className="inline mr-2" /> Join Meeting
                   </button>
                   <button
                     className="mt-2 block w-full rounded-md border border-[var(--border)] px-2.5 py-2 text-center text-xs font-semibold text-[var(--text-secondary)] hover:border-[var(--accent)]"

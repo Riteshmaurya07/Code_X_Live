@@ -37,3 +37,15 @@ const firebaseOAuthLogin = async (provider) => {
 
 export const loginWithGoogle = () => firebaseOAuthLogin(googleProvider);
 export const loginWithGitHub = () => firebaseOAuthLogin(githubProvider);
+
+export const forgotPassword = async (email) => {
+  const { data } = await api.post("/api/auth/forgot-password", { email });
+  return data;
+};
+
+export const resetPassword = async (token, password) => {
+  const { data } = await api.post(`/api/auth/reset-password/${token}`, {
+    password,
+  });
+  return data;
+};

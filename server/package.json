@@ -12,7 +12,7 @@
     "dev": "nodemon index.js",
     "prod": "NODE_ENV=production node index.js"
   },
-  "author": "Yadvendra Shukla",
+  "author": "Ritesh Maurya",
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

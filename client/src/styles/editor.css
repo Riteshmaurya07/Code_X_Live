@@ -2,11 +2,11 @@
 .editor-page { display: flex; height: 100vh; overflow: hidden; background: var(--bg-primary); }
 
 .editor-sidebar {
-  width: 240px; min-width: 240px; 
-  background: var(--bg-tertiary);
-  border-right: var(--ghost-border); 
+  width: 260px; min-width: 260px; 
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border); 
   display: flex; flex-direction: column;
-  padding: var(--sp-3); transition: transform 0.3s ease;
+  padding: var(--sp-4); transition: transform 0.3s ease;
   z-index: 10;
 }
 .sidebar-logo { width: 100px; margin: 0 auto 4px; display: block; filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4)); }
@@ -89,9 +89,10 @@
 }
 .editor-tab.active {
   background: var(--bg-primary); 
-  color: var(--text-primary);
-  border: var(--ghost-border);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.5), inset 0 -2px 10px -5px var(--primary-700);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-bottom-color: transparent;
+  box-shadow: inset 0 2px 0 var(--accent);
 }
 
 /* Tool Chips */
@@ -104,8 +105,36 @@
 }
 
 /* Editor workspace */
-.editor-workspace { flex: 1; display: flex; min-height: 0; overflow: hidden; }
-.editor-container { flex: 1; min-width: 0; overflow: hidden; }
+.editor-workspace { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; position: relative; }
+.editor-container { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; background: var(--bg-primary); }
+
+/* Breadcrumbs */
+.editor-breadcrumbs {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; color: var(--text-secondary);
+  user-select: none;
+}
+.breadcrumb-item { display: flex; align-items: center; gap: 6px; }
+.breadcrumb-item.active { color: var(--text-primary); font-weight: 500; }
+.text-accent { color: var(--accent); }
+
+/* Status Bar */
+.editor-status-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 var(--sp-4);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text-secondary);
+  height: 32px;
+}
+.status-left, .status-right { display: flex; align-items: center; gap: var(--sp-4); }
+.status-item { display: flex; align-items: center; gap: 6px; }
+.text-success { color: var(--success); }
+.text-error { color: var(--error); }
+.animate-spin { animation: spin 1s linear infinite; }
 
 /* Compiler output */
 .compiler-output { 
@@ -128,39 +157,115 @@
   font-size: var(--text-sm); color: var(--text-secondary); white-space: pre-wrap; word-break: break-word;
 }
 
-/* File Explorer */
+/* ── File Explorer (VS Code-style tree) ──────────────────── */
 .file-explorer { margin-bottom: var(--sp-2); }
-.file-explorer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-.file-explorer-header span { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+.file-explorer-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 4px; padding: 0 4px;
+}
+.fe-title {
+  font-size: var(--text-xs); text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted);
+}
+.fe-header-actions { display: flex; gap: 2px; }
+
 .file-add-btn {
   width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
-  background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px;
-  color: var(--text-primary); cursor: pointer; font-size: var(--text-sm); transition: var(--transition);
+  background: none; border: none;
+  color: var(--text-muted); cursor: pointer; font-size: 13px;
+  border-radius: 3px; transition: all 0.15s;
 }
-.file-add-btn:hover { border-color: var(--accent); color: var(--accent); }
-.file-create-form input {
-  width: 100%; padding: 6px 8px; background: var(--bg-tertiary);
-  border: 1px solid var(--accent); border-radius: 4px;
-  color: var(--text-primary); font-size: var(--text-xs); outline: none; margin-bottom: 4px;
+.file-add-btn:hover { background: var(--bg-hover); color: var(--accent); }
+
+/* Tree container */
+.file-tree { display: flex; flex-direction: column; gap: 1px; }
+
+/* Shared row base */
+.ft-row {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 8px; border-radius: 4px;
+  cursor: pointer; font-size: 0.82rem;
+  position: relative; user-select: none;
+  min-height: 26px; transition: background 0.12s;
 }
-.file-list { display: flex; flex-direction: column; gap: 2px; }
-.file-item {
-  display: flex; align-items: center; padding: 6px 8px; border-radius: 4px;
-  cursor: pointer; transition: var(--transition); font-size: 0.82rem; gap: 6px;
+.ft-row:hover { background: var(--bg-hover); }
+.ft-row:hover .ft-actions { opacity: 1; }
+
+/* File row active state */
+.ft-file.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
-.file-item:hover { background: var(--bg-hover); }
-.file-item.active { background: var(--bg-hover); color: var(--primary-400); box-shadow: inset 2px 0 0 var(--primary-500); }
-.file-ext-badge { font-size: 0.6rem; font-weight: 700; color: var(--primary-400); background: rgba(139, 92, 246, 0.1); padding: 2px 4px; border-radius: 3px; font-family: var(--font-mono); flex-shrink: 0; }
-.file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.file-actions { display: none; gap: 2px; }
-.file-item:hover .file-actions { display: flex; }
-.file-action-btn { background: none; border: none; cursor: pointer; font-size: 0.7rem; padding: 2px; opacity: 0.6; transition: var(--transition); }
-.file-action-btn:hover { opacity: 1; }
-.rename-input {
-  width: 100%; padding: 3px 6px; background: var(--bg-tertiary);
+
+/* Folder row */
+.ft-folder { color: var(--text-secondary); }
+
+/* Chevron */
+.ft-chevron {
+  font-size: 9px; color: var(--text-muted);
+  flex-shrink: 0; width: 12px; text-align: center;
+}
+
+/* Icon */
+.ft-icon { flex-shrink: 0; font-size: 13px; line-height: 1; }
+
+/* Label */
+.ft-label {
+  flex: 1; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hover action buttons */
+.ft-actions {
+  display: flex; gap: 1px; opacity: 0;
+  transition: opacity 0.12s; flex-shrink: 0;
+}
+.ft-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 10px; padding: 2px 3px; border-radius: 3px;
+  color: var(--text-muted); line-height: 1;
+  transition: all 0.15s;
+}
+.ft-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+.ft-btn.danger:hover { color: var(--error, #f87171); }
+
+/* Indent guide for nested children */
+.ft-children { border-left: 1px solid rgba(255,255,255,0.06); margin-left: 10px; }
+
+/* Inline create / rename input */
+.ft-inline-row {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 8px; min-height: 26px;
+}
+.ft-inline-input {
+  flex: 1; background: var(--bg-tertiary);
   border: 1px solid var(--accent); border-radius: 3px;
-  color: var(--text-primary); font-size: var(--text-xs); outline: none;
+  color: var(--text-primary); font-size: 0.8rem;
+  padding: 3px 6px; outline: none;
 }
+
+/* Context menu */
+.ft-context-menu {
+  background: var(--bg-secondary);
+  border: var(--ghost-border); border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  min-width: 160px; padding: 4px 0; overflow: hidden;
+}
+.ft-context-item {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; background: none; border: none;
+  padding: 7px 14px; font-size: 0.82rem;
+  color: var(--text-secondary); cursor: pointer;
+  text-align: left; transition: background 0.12s;
+}
+.ft-context-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.ft-context-item.danger:hover { color: var(--error, #f87171); }
+.ft-context-icon { font-size: 12px; width: 16px; text-align: center; flex-shrink: 0; }
+.ft-context-divider { height: 1px; background: var(--border); margin: 3px 0; }
+
+
 
 /* Client (Member) Item */
 .client-item {
@@ -224,8 +329,8 @@
   color: var(--text-muted) !important;
 }
 .cm-s-dracula .CodeMirror-cursor {
-  border-left: 2px solid var(--primary-400) !important;
-  box-shadow: 0 0 5px var(--primary-500);
+  border-left: 2px solid var(--accent) !important;
+  box-shadow: 0 0 8px var(--accent);
 }
 .cm-s-dracula .CodeMirror-selected {
   background: rgba(139, 92, 246, 0.3) !important;

@@ -1,12 +1,11 @@
 import React from 'react';
 
 /**
- * Reusable Input component with label support
+ * Reusable Select component
  */
-const Input = ({ 
+const Select = ({ 
   label, 
-  type = 'text', 
-  placeholder, 
+  options = [], 
   value, 
   onChange, 
   className = '', 
@@ -21,18 +20,22 @@ const Input = ({
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      <input
-        type={type}
-        placeholder={placeholder}
+      <select
         value={value}
         onChange={onChange}
         required={required}
         className={`w-full rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none transition-all focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-soft)] disabled:opacity-50 disabled:cursor-not-allowed ${error ? 'border-red-500 ring-red-500/20' : ''} ${className}`.trim()}
         {...props}
-      />
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
       {error && <span className="text-xs text-red-500 mt-1 ml-1">{error}</span>}
     </div>
   );
 };
 
-export default Input;
+export default Select;

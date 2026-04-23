@@ -3,11 +3,11 @@
 
 /* Dashboard navbar & user search: Navbar.jsx (Tailwind + design tokens) */
 
-.dashboard-content { max-width: 1200px; margin: 0 auto; padding: var(--sp-8) var(--sp-6); }
+.dashboard-content { max-width: 1200px; margin: 0 auto; padding: var(--sp-10) var(--sp-6); }
 
 .dashboard-header {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: var(--sp-6); flex-wrap: wrap; gap: var(--sp-3);
+  margin-bottom: var(--sp-8); flex-wrap: wrap; gap: var(--sp-4);
 }
 .dashboard-header h1 { font-size: var(--text-3xl); font-weight: 700; }
 .header-actions { display: flex; gap: var(--sp-2); }
@@ -38,7 +38,7 @@
   background: var(--bg-secondary);
   border: var(--ghost-border);
   box-shadow: var(--depth-1);
-  border-radius: var(--radius-lg); padding: var(--sp-5);
+  border-radius: var(--radius-lg); padding: var(--sp-6);
   transition: all 0.3s ease; display: flex; flex-direction: column;
 }
 .project-card:hover {
@@ -76,7 +76,7 @@
 
 /* ===================== Profile Page ===================== */
 .profile-header {
-  margin-bottom: var(--sp-8); padding: var(--sp-6);
+  margin-bottom: var(--sp-10); padding: var(--sp-8);
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
   border: var(--ghost-border);

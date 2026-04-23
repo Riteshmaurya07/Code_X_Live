@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import api from "../services/api";
+import { X, Trash2 } from "lucide-react";
 
 function ShareModal({ projectId, onClose }) {
   const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -79,7 +80,7 @@ function ShareModal({ projectId, onClose }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>Share Project</h3>
-          <button className="toolbar-btn" onClick={onClose}>✕</button>
+          <button className="toolbar-btn" onClick={onClose}><X size={16} /></button>
         </div>
 
         {/* Invite form */}
@@ -135,7 +136,7 @@ function ShareModal({ projectId, onClose }) {
                   title="Remove"
                   onClick={() => handleRemove(c.user?._id)}
                 >
-                  🗑️
+                  <Trash2 size={14} />
                 </button>
               </div>
             </div>

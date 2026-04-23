@@ -4,84 +4,54 @@
 
 :root,
 [data-theme="dark"] {
-  /* Primary — Violet/Purple */
-  --primary-400: #ba9eff;
-  --primary-500: #8b5cf6;
-  --primary-600: #6e3bd7;
-  --primary-700: #2b006e;
+  /* 🎨 1. COLOR SYSTEM (Grey + Green + Dark) */
+  --bg-primary: #0F1115;     /* Deep dark background */
+  --bg-secondary: #1A1D24;   /* Surface/Card background */
+  --bg-tertiary: #22262F;    /* Input/Card background */
+  --border: #2E3440;         /* Subtle divider */
+  
+  /* Green Accent */
+  --accent: #00D084;
+  --accent-hover: #00B574;
+  --accent-soft: rgba(0, 208, 132, 0.1);
+  --bg-hover: rgba(255, 255, 255, 0.05);
+  
+  /* Text Colors */
+  --text-primary: #E6EAF0;
+  --text-secondary: #A0A8B5;
+  --text-muted: #6B7280;
 
-  /* Luminous Neutrals */
-  --gray-50: #faf8ff;
-  --gray-100: #dee5ff;
-  --gray-200: #a3aac4;
-  --gray-300: #6d758c;
-  --gray-400: #40485d;
-  --gray-500: #4d556b;
-  --gray-600: #1f2b49;
-  --gray-700: #192540;
-  --gray-800: #0f1930;
-  --gray-900: #060e20;
-  --gray-950: #05070d; /* surface-container-lowest */
+  /* Status Colors */
+  --success: #22C55E;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  --info: #3B82F6;
 
-  /* Semantic surfaces */
-  --bg-primary: var(--gray-950);     /* Editor Main Area */
-  --bg-secondary: var(--gray-900);   /* Cards, Containers */
-  --bg-tertiary: var(--gray-800);    /* Elevated Sidebars */
-  --bg-elevated: var(--gray-700);    /* Active Tabs / Highlights */
-  --bg-glass: rgba(9, 19, 40, 0.6);  /* Navbar, Floating Panels */
-  --bg-hover: rgba(25, 37, 64, 0.6); /* surface-container-highest */
+  /* 📐 3. SPACING SYSTEM (8px grid) */
+  --sp-1: 4px;   /* micro */
+  --sp-2: 8px;   /* tight */
+  --sp-4: 16px;  /* default */
+  --sp-6: 24px;  /* section */
+  --sp-8: 32px;  /* layout */
+  --sp-10: 48px; /* large layout */
+  --sp-12: 64px; /* massive layout */
 
-  /* Semantic text */
-  --text-primary: var(--gray-100);
-  --text-secondary: var(--gray-200);
-  --text-muted: var(--gray-300);
-
-  /* Accent mapped */
-  --accent: var(--primary-500);
-  --accent-hover: var(--primary-400);
-  --accent-glow: rgba(139, 92, 246, 0.3); /* For hover/active/focus only */
-  --accent-soft: rgba(139, 92, 246, 0.12);
-
-  /* Status */
-  --success: #10b981;
-  --success-hover: #34d399;
-  --danger: #ef4444;
-  --danger-hover: #f87171;
-  --warning: #f59e0b;
-  --info: #3b82f6;
-
-  /* Borders & Depth */
-  --border: rgba(255,255,255,0.06);
-  --border-hover: rgba(255,255,255,0.12);
-  --ghost-border: 1px solid rgba(255,255,255,0.05);
-
-  /* Radius */
-  --radius-sm: 6px;
-  --radius: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-
-  /* Shadows (Depth System) */
-  --depth-1: 0 2px 10px rgba(0,0,0,0.2);
-  --depth-2: 0 8px 30px rgba(0,0,0,0.4);
-  --depth-3: 0 20px 60px rgba(0,0,0,0.6);
-  --shadow-glow: 0 0 20px var(--accent-glow);
-
-  /* Misc */
-  --transition: all 0.2s ease;
-  --font-heading: 'Manrope', -apple-system, sans-serif;
-  --font: 'Inter', -apple-system, sans-serif;
+  /* 🔤 2. TYPOGRAPHY SYSTEM */
+  --font-primary: 'Inter', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  
+  /* Radius & Shadows */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  
+  --depth-1: 0 2px 8px rgba(0,0,0,0.2);
+  --depth-2: 0 4px 16px rgba(0,0,0,0.3);
+  --shadow-glow: 0 0 15px rgba(0, 208, 132, 0.2);
 
-  /* Spacing */
-  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
-  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
-
-  /* Typography */
-  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem;
-  --text-lg: 1.125rem; --text-xl: 1.25rem; --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem; --text-4xl: 2.25rem; --text-5xl: 3rem;
+  --transition: all 250ms ease-in-out;
 }
+
 
 /* ===== LIGHT MODE ===== */
 [data-theme="light"] {

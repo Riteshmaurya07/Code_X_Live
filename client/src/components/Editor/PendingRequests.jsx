@@ -1,4 +1,5 @@
 import React from 'react';
+import { Check, X } from 'lucide-react';
 
 /**
  * Renders the list of pending join requests for the admin
@@ -27,14 +28,14 @@ const PendingRequests = ({
                 title="Approve"
                 onClick={() => onApproveRejoin(request)}
               >
-                ✅
+                <Check size={14} />
               </button>
               <button
                 className="btn btn-danger px-1.5 py-0.5 text-xs"
                 title="Deny"
                 onClick={() => onDenyRejoin(request)}
               >
-                ❌
+                <X size={14} />
               </button>
             </div>
           </div>

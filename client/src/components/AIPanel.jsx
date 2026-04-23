@@ -7,6 +7,7 @@ import {
   chatWithAI,
 } from "../services/aiService";
 import toast from "react-hot-toast";
+import { Bot, Lightbulb, CircleCheck, MessageSquare, ListChecks } from "lucide-react";
 
 function AIPanel({ code, language, onApplyFix }) {
   const [activeTab, setActiveTab] = useState("chat");
@@ -134,7 +135,7 @@ function AIPanel({ code, language, onApplyFix }) {
                       <span className="severity-badge">{item.severity}</span>
                       <p>{item.description}</p>
                       {item.suggestion && (
-                        <p className="suggestion">💡 {item.suggestion}</p>
+                        <p className="suggestion"><Lightbulb size={14} className="inline mr-1" /> {item.suggestion}</p>
                       )}
                     </div>
                   ))}
@@ -157,7 +158,7 @@ function AIPanel({ code, language, onApplyFix }) {
             Apply Fix
           </button>
           {result.data.changes?.map((change, i) => (
-            <p key={i} className="change-item">✅ {change.description}</p>
+            <p key={i} className="change-item"><CircleCheck size={14} className="inline mr-1 text-success" /> {change.description}</p>
           ))}
         </div>
       );
@@ -171,7 +172,7 @@ function AIPanel({ code, language, onApplyFix }) {
   return (
     <div className="ai-panel">
       <div className="ai-panel-header">
-        <h3>🤖 AI Assistant</h3>
+        <h3><Bot size={20} className="inline mr-2" /> AI Assistant</h3>
       </div>
 
       {/* AI Action Buttons */}

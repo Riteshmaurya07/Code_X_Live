@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import api from "../services/api";
+import { History, X } from "lucide-react";
 
 function VersionHistory({ fileId, onRestore, onClose }) {
   const [versions, setVersions] = useState([]);
@@ -58,8 +59,8 @@ function VersionHistory({ fileId, onRestore, onClose }) {
   return (
     <div className="version-panel">
       <div className="version-header">
-        <h3>📜 Version History</h3>
-        <button className="toolbar-btn" onClick={onClose}>✕</button>
+        <h3><History size={18} className="inline mr-2" /> Version History</h3>
+        <button className="toolbar-btn" onClick={onClose}><X size={16} /></button>
       </div>
 
       <div className="version-list">

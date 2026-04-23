@@ -23,6 +23,8 @@ const ACTIONS = {
   FILE_CREATED: "file-created",
   FILE_RENAMED: "file-renamed",
   FILE_DELETED: "file-deleted",
+  FOLDER_CREATED: "folder-created",
+  FOLDER_DELETED: "folder-deleted",
 
   // Permission management
   SET_PERMISSION: "set-permission",

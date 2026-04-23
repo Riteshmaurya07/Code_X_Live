@@ -11,6 +11,8 @@ import MeetingPanel from "./Editor/MeetingPanel";
 import MeetingModal from "./Editor/MeetingModal";
 import MeetingDetailsModal from "./Editor/MeetingDetailsModal";
 import InviteParticipantsModal from "./Editor/InviteParticipantsModal";
+import StatusBar from "./Editor/StatusBar";
+import Breadcrumbs from "./Editor/Breadcrumbs";
 import { ACTIONS } from "../Actions";
 import {
   useNavigate,
@@ -20,6 +22,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { Eye } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import api from "../services/api";
@@ -58,6 +61,7 @@ function EditorPage() {
   const [output, setOutput] = useState("");
   const [executionTime, setExecutionTime] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("python3");
+  const [cursor, setCursor] = useState({ line: 0, ch: 0 });
 
   // --- Project State ---
   const [projectId, setProjectId] = useState(() => {
@@ -72,10 +76,11 @@ function EditorPage() {
   const {
     files, setFiles,
     activeFileId, setActiveFileId,
-    saveStatus, 
+    saveStatus,
     codeRef, fileCodeCache,
     isDbFile, handleCodeChange,
-    createFile, deleteFile, renameFile, saveFileExplicitly
+    createFile, deleteFile, renameFile, saveFileExplicitly,
+    knownFolders, setKnownFolders, createFolder, deleteFolder,
   } = useFileTree(projectId, selectedLanguage);
 
   // --- Member & Room State ---
@@ -152,6 +157,40 @@ function EditorPage() {
       getProjectMeetings(projectId).then(setMeetings).catch(err => console.error(err));
     }
   }, [projectId]);
+
+  // --- Folder handlers (virtual — no DB write) ---
+  const handleCreateFolder = useCallback((parentPath, folderName) => {
+    const path = createFolder(parentPath, folderName);
+    // Broadcast to room peers
+    if (socketRef.current && roomId) {
+      socketRef.current.emit(ACTIONS.FOLDER_CREATED, { roomId, path });
+    }
+  }, [createFolder, socketRef, roomId]);
+
+  const handleDeleteFolder = useCallback((folderPath) => {
+    deleteFolder(folderPath);
+    if (socketRef.current && roomId) {
+      socketRef.current.emit(ACTIONS.FOLDER_DELETED, { roomId, path: folderPath });
+    }
+  }, [deleteFolder, socketRef, roomId]);
+
+  // Listen for peer folder events
+  useEffect(() => {
+    const s = socketRef.current;
+    if (!s) return;
+    const onFolderCreated = ({ path }) => {
+      setKnownFolders(prev => { const n = new Set(prev); n.add(path); return n; });
+    };
+    const onFolderDeleted = ({ path }) => {
+      deleteFolder(path);
+    };
+    s.on(ACTIONS.FOLDER_CREATED, onFolderCreated);
+    s.on(ACTIONS.FOLDER_DELETED, onFolderDeleted);
+    return () => {
+      s.off(ACTIONS.FOLDER_CREATED, onFolderCreated);
+      s.off(ACTIONS.FOLDER_DELETED, onFolderDeleted);
+    };
+  }, [socketRef, deleteFolder, setKnownFolders]);
 
   // Handle meeting socket events
   useEffect(() => {
@@ -308,8 +347,7 @@ function EditorPage() {
     setUnreadChatCounts(prev => ({ ...prev, [target]: 0 }));
   };
 
-  if (!projectLoaded && !username) return null;
-  if (projectLoaded && !username) return <Navigate to="/" />;
+  if (!username) return projectLoaded ? <Navigate to="/" /> : null;
 
   if (!projectLoaded) {
     return (
@@ -334,15 +372,18 @@ function EditorPage() {
         navigate={navigate}
       />
 
-      <EditorSidebar 
+      <EditorSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         files={files}
+        knownFolders={knownFolders}
         activeFileId={activeFileId}
         onSelectFile={setActiveFileId}
         onCreateFile={createFile}
+        onCreateFolder={handleCreateFolder}
         onDeleteFile={deleteFile}
         onRenameFile={renameFile}
+        onDeleteFolder={handleDeleteFolder}
         clients={clients}
         username={username}
         adminUsername={adminUsername}
@@ -387,10 +428,11 @@ function EditorPage() {
           onDownloadProject={handleDownloadProject}
         />
 
-        {isReadOnly && <div className="readonly-banner">👁 View Only</div>}
+        {isReadOnly && <div className="readonly-banner"><Eye size={14} className="inline mr-1" /> View Only</div>}
 
         <div className="editor-workspace">
           <div className="editor-container">
+            <Breadcrumbs activeFile={activeFile} />
             <Editor
               key={activeFileId}
               ref={editorRef}
@@ -399,6 +441,7 @@ function EditorPage() {
               fileId={activeFileId}
               initialValue={fileCodeCache.current[activeFileId]?.code ?? activeFile?.content ?? ""}
               onCodeChange={handleCodeChange}
+              onCursorChange={setCursor}
               theme={theme}
               language={selectedLanguage}
               readOnly={isReadOnly}
@@ -468,6 +511,13 @@ function EditorPage() {
         />
 
         {isCompileWindowOpen && <CompilerOutput output={output} executionTime={executionTime} onClose={() => setIsCompileWindowOpen(false)} />}
+        
+        <StatusBar 
+          language={selectedLanguage} 
+          cursor={cursor} 
+          clientsCount={clients.length} 
+          status={socketRef.current?.connected ? "connected" : "disconnected"} 
+        />
       </div>
     </div>
   );

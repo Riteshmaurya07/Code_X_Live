@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { v4 as uuid } from "uuid";
 import toast from "react-hot-toast";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import Navbar from "../components/layout/Navbar";
 import HeroSection from "../components/Landing/HeroSection";
 import ActionCards from "../components/Landing/ActionCards";
+import HowItWorks from "../components/Landing/HowItWorks";
 import FeatureGrid from "../components/Landing/FeatureGrid";
 import Footer from "../components/layout/Footer";
 
@@ -101,6 +102,8 @@ function LandingPage() {
           setJoinInput={setJoinInput}
           onJoinRoom={handleJoinRoom}
         />
+
+        <HowItWorks />
 
         <FeatureGrid />
       </main>

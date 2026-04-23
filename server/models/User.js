@@ -37,25 +37,21 @@ const userSchema = new mongoose.Schema(
     // Firebase Authentication fields
     firebaseUid: {
       type: String,
-      unique: true,
-      sparse: true, // Allow null values while maintaining uniqueness
     },
     authProvider: {
       type: String,
       enum: ["local", "google", "github"],
       default: "local",
     },
-    followers: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }],
-    following: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }],
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
   },
   { timestamps: true }
 );
+
+// Indexes
+userSchema.index({ authProvider: 1 });
+userSchema.index({ firebaseUid: 1 }, { unique: true, sparse: true });
 
 // Hash password before saving (only for local auth)
 userSchema.pre("save", async function (next) {

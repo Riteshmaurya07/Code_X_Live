@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { Bell, X } from "lucide-react";
 import {
   getNotifications,
   markAsRead,
   markAllAsRead,
 } from "../../services/notificationService";
 import { useGlobalSocket } from "../../hooks/useGlobalSocket";
+import "../../styles/social.css";
+import "../../styles/messaging.css";
 
 const NotificationDropdown = ({ onOpen }) => {
   const [notifications, setNotifications] = useState([]);
@@ -109,11 +112,11 @@ const NotificationDropdown = ({ onOpen }) => {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          if (!isOpen) onOpen && onOpen(); // 🔥 close mobile menu
+          if (!isOpen) onOpen && onOpen(); // close mobile menu
           setIsOpen((o) => !o);
         }}
       >
-        🔔
+        <Bell size={20} />
         {unreadCount > 0 && (
           <span className="notification-badge">{unreadCount}</span>
         )}
@@ -125,48 +128,50 @@ const NotificationDropdown = ({ onOpen }) => {
             <>
               {/* BACKDROP */}
               <div
-                className="fixed inset-0 bg-black/50 z-[99999]"
+                className="dm-panel-overlay"
                 onClick={() => setIsOpen(false)}
               />
 
               {/* MOBILE PANEL */}
-              <div className="fixed top-0 left-0 w-screen h-screen z-[100000] flex flex-col bg-[#0B0F1A] text-white">
+              <div className="dm-panel dm-panel--mobile glass-panel">
 
                 {/* HEADER */}
-                <div className="flex justify-between items-center p-4 border-b border-white/10">
-                  <h4 className="text-sm font-semibold">Notifications</h4>
+                <div className="dm-panel-header">
+                  <span className="dm-panel-title">Notifications</span>
 
-                  <div className="flex gap-3 items-center">
+                  <div className="header-actions">
                     {unreadCount > 0 && (
                       <button
-                        className="text-xs text-purple-400"
+                        className="mark-all-btn"
                         onClick={handleMarkAllRead}
                       >
                         Mark all
                       </button>
                     )}
-                    <button onClick={() => setIsOpen(false)}>✕</button>
+                    <button className="text-muted hover:text-primary transition-colors" onClick={() => setIsOpen(false)}><X size={18} /></button>
                   </div>
                 </div>
 
                 {/* LIST */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="notification-list">
                   {notifications.length === 0 ? (
-                    <div className="p-6 text-center text-gray-400">
+                    <div className="notification-empty">
                       No notifications
                     </div>
                   ) : (
                     notifications.map((notif) => (
                       <div
                         key={notif._id}
-                        className={`p-4 border-b border-white/5 ${!notif.read ? "bg-white/5" : ""
-                          }`}
+                        className={`notification-item ${!notif.read ? "unread" : ""}`}
                         onClick={() => handleNotificationClick(notif)}
                       >
-                        <p className="text-sm">{notif.message}</p>
-                        <span className="text-xs text-gray-400">
-                          {new Date(notif.createdAt).toLocaleDateString()}
-                        </span>
+                        <div className="notification-dot" />
+                        <div className="notification-content">
+                          <p className="notification-msg">{notif.message}</p>
+                          <span className="notification-time">
+                            {new Date(notif.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
                     ))
                   )}
@@ -177,14 +182,14 @@ const NotificationDropdown = ({ onOpen }) => {
           )
         ) : (
           /* DESKTOP */
-          <div className="notification-dropdown absolute top-full mt-2 right-0 w-[380px] bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-xl border border-[var(--border)] rounded-xl">
+          <div className="notification-dropdown glass-panel">
             {/* HEADER */}
-            <div className="flex justify-between items-center p-4 border-b border-white/10">
-              <h4 className="text-sm font-semibold">Notifications</h4>
+            <div className="notification-header">
+              <h4 className="dm-panel-title">Notifications</h4>
 
               {unreadCount > 0 && (
                 <button
-                  className="text-xs text-purple-400"
+                  className="mark-all-btn"
                   onClick={handleMarkAllRead}
                 >
                   Mark all
@@ -193,23 +198,25 @@ const NotificationDropdown = ({ onOpen }) => {
             </div>
 
             {/* LIST */}
-            <div className="max-h-[400px] overflow-y-auto">
+            <div className="notification-list">
               {notifications.length === 0 ? (
-                <div className="p-6 text-center text-gray-400">
+                <div className="notification-empty">
                   No notifications
                 </div>
               ) : (
                 notifications.map((notif) => (
                   <div
                     key={notif._id}
-                    className={`p-3 border-b border-white/5 cursor-pointer ${!notif.read ? "bg-white/5" : ""
-                      }`}
+                    className={`notification-item ${!notif.read ? "unread" : ""}`}
                     onClick={() => handleNotificationClick(notif)}
                   >
-                    <p className="text-sm">{notif.message}</p>
-                    <span className="text-xs text-gray-400">
-                      {new Date(notif.createdAt).toLocaleDateString()}
-                    </span>
+                    <div className="notification-dot" />
+                    <div className="notification-content">
+                      <p className="notification-msg">{notif.message}</p>
+                      <span className="notification-time">
+                        {new Date(notif.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
                 ))
               )}

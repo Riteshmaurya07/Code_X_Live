@@ -1,11 +1,12 @@
 import React from 'react';
+import { Flame, Calendar, Rocket, Users } from 'lucide-react';
 
 const ProfileStats = ({ stats }) => {
   const statItems = [
-    { label: 'Current Streak', value: `${stats.currentStreak} days`, icon: '🔥' },
-    { label: 'Active Days', value: stats.activeDaysThisMonth, icon: '📅', sub: 'This month' },
-    { label: 'Total Projects', value: stats.totalProjects, icon: '🚀' },
-    { label: 'Collaborations', value: stats.joinedCollaborations, icon: '🤝' },
+    { label: 'Current Streak', value: `${stats.currentStreak} days`, icon: <Flame size={20} className="text-orange-500" /> },
+    { label: 'Active Days', value: stats.activeDaysThisMonth, icon: <Calendar size={20} className="text-blue-500" />, sub: 'This month' },
+    { label: 'Total Projects', value: stats.totalProjects, icon: <Rocket size={20} className="text-purple-500" /> },
+    { label: 'Collaborations', value: stats.joinedCollaborations, icon: <Users size={20} className="text-green-500" /> },
   ];
 
   return (

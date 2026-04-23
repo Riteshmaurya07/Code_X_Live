@@ -49,7 +49,7 @@ const langModeMap = {
 };
 
 const Editor = forwardRef(function Editor(
-  { socket, roomId, fileId, onCodeChange, theme, language, initialValue, readOnly },
+  { socket, roomId, fileId, onCodeChange, onCursorChange, theme, language, initialValue, readOnly },
   ref
 ) {
   const editorRef = useRef(null);
@@ -191,6 +191,9 @@ const Editor = forwardRef(function Editor(
       if (!currentSocket || !currentRoomId) return;
 
       const cursor = instance.getCursor();
+      if (onCursorChange) {
+        onCursorChange({ line: cursor.line, ch: cursor.ch });
+      }
       currentSocket.emit("cursor-move", {
         roomId: currentRoomId,
         cursor: { line: cursor.line, ch: cursor.ch },

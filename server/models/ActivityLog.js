@@ -48,5 +48,6 @@ const activityLogSchema = new mongoose.Schema({
 
 activityLogSchema.index({ project: 1, createdAt: -1 });
 activityLogSchema.index({ user: 1, createdAt: -1 });
+activityLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7776000 }); // Auto-delete after 90 days
 
 module.exports = mongoose.model("ActivityLog", activityLogSchema);

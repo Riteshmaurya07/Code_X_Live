@@ -1,7 +1,7 @@
 /**
  * roomHandlers.js — Handles room lifecycle: create, join, kick, ban, rejoin approvals.
  */
-const { nanoid } = require("nanoid");
+const crypto = require("crypto");
 const ACTIONS = require("../../Actions");
 const logger = require("../../utils/logger");
 const Project = require("../../models/Project");
@@ -31,13 +31,31 @@ const registerRoomHandlers = (io, socket) => {
   });
 
   // CREATE_ROOM
-  socket.on(ACTIONS.CREATE_ROOM, ({ roomId }) => {
+  socket.on(ACTIONS.CREATE_ROOM, async ({ roomId }) => {
     if (roomCleanupTimers.has(roomId)) {
       clearTimeout(roomCleanupTimers.get(roomId));
       roomCleanupTimers.delete(roomId);
     }
+
+    // Ensure a persistent Project document exists for this room
+    try {
+      const existing = await Project.findOne({ roomId });
+      if (!existing) {
+        await Project.create({
+          name: "Collaborative Session",
+          roomId: roomId,
+          owner: socket.user.id,
+          language: "nodejs",
+          isPublic: true
+        });
+        logger.info(`Created persistent project document for room ${roomId}`);
+      }
+    } catch (err) {
+      logger.error(`Error creating project for room ${roomId}: ${err.message}`);
+    }
+
     const username = socket.user.username;
-    const inviteToken = nanoid(12);
+    const inviteToken = crypto.randomBytes(6).toString("hex");
     roomInviteTokens.set(roomId, inviteToken);
     roomAdmins.set(roomId, { socketId: socket.id, username });
     socket.emit(ACTIONS.ROOM_CREATED, { roomId, inviteToken });

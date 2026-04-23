@@ -20,7 +20,7 @@ const MAX_FILES = 50;
 const detectLanguage = (filename) => {
   const ext = filename.split(".").pop().toLowerCase();
   const langMap = {
-    js: "javascript", jsx: "javascript", ts: "typescript", tsx: "typescript",
+    js: "nodejs", jsx: "nodejs", ts: "typescript", tsx: "typescript",
     py: "python3", java: "java", c: "c", cpp: "cpp", h: "c", hpp: "cpp",
     cs: "csharp", go: "go", rs: "rust", rb: "ruby", php: "php",
     swift: "swift", kt: "kotlin", scala: "scala", r: "r",
@@ -95,7 +95,7 @@ const importGitHubRepo = async (req, res, next) => {
     const project = await Project.create({
       name: `${owner}/${repo}`,
       owner: req.user._id,
-      language: "javascript", // Default; will be overridden by first file
+      language: "nodejs", // Default; will be overridden by first file
     });
 
     // Fetch and create each file

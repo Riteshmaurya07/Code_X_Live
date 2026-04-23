@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from '../ui/Button';
+import { Menu, Sun, Moon, Save, Download, Paintbrush, History, Calendar, MessageSquare, Bot, LoaderCircle, Play } from 'lucide-react';
 
 const EditorToolbar = ({
   theme, onToggleTheme,
@@ -16,10 +17,10 @@ const EditorToolbar = ({
       <div className="toolbar-left">
         {/* Mobile sidebar hamburger */}
         <button className="sidebar-toggle" onClick={onToggleSidebar} title="Toggle sidebar">
-          ☰
+          <Menu size={20} />
         </button>
         <Button variant="outline" size="sm" onClick={onToggleTheme} className="toolbar-icon-btn">
-          {theme === "dark" ? "☀️" : "🌙"}
+          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
         </Button>
         <select
           className="toolbar-select"
@@ -53,60 +54,60 @@ const EditorToolbar = ({
 
       <div className="toolbar-right">
         {isDbFile && (
-          <Button variant="none" className="toolbar-btn chip" onClick={onSave} title="Save">
-             💾
+          <Button variant="outline" className="toolbar-btn chip" onClick={onSave} title="Save">
+             <Save size={18} />
           </Button>
         )}
         {isDbFile && (
-          <Button variant="none" className="toolbar-btn chip" onClick={onDownloadProject} title="Download as ZIP">
-            ⬇️
+          <Button variant="outline" className="toolbar-btn chip" onClick={onDownloadProject} title="Download as ZIP">
+            <Download size={18} />
           </Button>
         )}
-        <Button variant="none" className="toolbar-btn chip" onClick={onFormat} title="Format Code">
-          🎨
+        <Button variant="outline" className="toolbar-btn chip" onClick={onFormat} title="Format Code">
+          <Paintbrush size={18} />
         </Button>
         {isDbFile && (
           <Button
-            variant="none"
+            variant="outline"
             className={`toolbar-btn chip ${showHistory ? "active" : ""}`}
             onClick={onToggleHistory}
             title="Version History"
           >
-            📜
+            <History size={18} />
           </Button>
         )}
         {isDbFile && (
           <Button
-            variant="none"
+            variant="outline"
             className={`toolbar-btn chip ${showMeetingPanel ? "active" : ""}`}
             onClick={onToggleMeetings}
             title="Meetings"
           >
-            📅
+            <Calendar size={18} />
           </Button>
         )}
         <Button
-          variant="none"
+          variant="outline"
           className={`toolbar-btn chip ai-toggle ${showChatPanel ? "active" : ""}`}
           onClick={onToggleChat}
           style={{ position: "relative" }}
           title="Team Chat"
         >
-          💬
+          <MessageSquare size={18} />
           {unreadChatCount > 0 && !showChatPanel && (
             <span className="chat-badge round">{unreadChatCount}</span>
           )}
         </Button>
         <Button
-          variant="none"
+          variant="outline"
           className={`toolbar-btn chip ai-toggle ${showAIPanel ? "active" : ""}`}
           onClick={onToggleAI}
           title="AI Assistant"
         >
-          🤖
+          <Bot size={18} />
         </Button>
-        <Button variant="none" className="toolbar-btn chip run-btn" onClick={onRun} disabled={isCompiling} title="Run Code">
-          {isCompiling ? "⏳" : "▶ Run"}
+        <Button variant="primary" className="toolbar-btn chip run-btn" onClick={onRun} disabled={isCompiling} title="Run Code">
+          {isCompiling ? <LoaderCircle size={16} className="animate-spin" /> : <><Play size={16} fill="currentColor" /> Run</>}
         </Button>
       </div>
     </div>

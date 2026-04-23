@@ -148,4 +148,32 @@ const meetingReminderTemplate = (meetingTitle, projectName, meetingUrl) => {
   `);
 };
 
-module.exports = { invitationEmail, acceptedEmail, declinedEmail, meetingInviteTemplate, meetingReminderTemplate };
+/**
+ * Password reset email template
+ */
+const passwordResetEmail = (resetUrl) => {
+  return emailWrapper(`
+    <h2>Password Reset Request</h2>
+    <p>
+      You are receiving this email because you (or someone else) requested a password reset for your account.
+    </p>
+    <p>
+      Please click on the button below to complete the process. This link will expire in 1 hour.
+    </p>
+    <div style="text-align: center;">
+      <a href="${resetUrl}" class="btn btn-primary">Reset Password →</a>
+    </div>
+    <p style="margin-top: 24px; font-size: 13px; color: #64748b;">
+      If you did not request this, please ignore this email and your password will remain unchanged.
+    </p>
+  `);
+};
+
+module.exports = { 
+  invitationEmail, 
+  acceptedEmail, 
+  declinedEmail, 
+  meetingInviteTemplate, 
+  meetingReminderTemplate,
+  passwordResetEmail
+};
