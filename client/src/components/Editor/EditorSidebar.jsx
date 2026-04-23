@@ -66,7 +66,7 @@ const EditorSidebar = ({
 
         <div className="sidebar-footer">
           <Button variant="outline" fullWidth onClick={onCopyRoomId}>
-            Copy Room ID
+            Copy Invite Link
           </Button>
           <Button variant="danger" fullWidth onClick={onLeaveRoom}>
             Leave Room

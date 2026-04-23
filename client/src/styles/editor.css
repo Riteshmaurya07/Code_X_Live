@@ -60,7 +60,12 @@
 
 .run-btn { background: var(--success) !important; border-color: var(--success) !important; color: #fff !important; }
 .run-btn:hover { background: var(--success-hover) !important; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important; }
-.ai-toggle.active { background: linear-gradient(135deg, var(--primary-500), #5A8DF6) !important; border-color: transparent !important; color: #fff !important; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4) !important; }
+.toolbar-btn.active, .ai-toggle.active { 
+  background: var(--accent-soft) !important; 
+  border-color: var(--accent) !important; 
+  color: var(--accent) !important;
+  box-shadow: 0 0 12px var(--accent-soft);
+}
 
 .toolbar-select {
   padding: 6px 10px; background: var(--bg-tertiary); 
@@ -105,7 +110,7 @@
 }
 
 /* Editor workspace */
-.editor-workspace { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; position: relative; }
+.editor-workspace { flex: 1; display: flex; flex-direction: row; min-height: 0; overflow: hidden; position: relative; }
 .editor-container { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; background: var(--bg-primary); }
 
 /* Breadcrumbs */

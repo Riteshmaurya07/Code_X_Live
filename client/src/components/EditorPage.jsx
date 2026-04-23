@@ -108,14 +108,20 @@ function EditorPage() {
   const { 
     socketRef, kickUser, setRole, requestRejoin, approveRejoin, denyRejoin, sendMessage 
   } = useRoomSocket({
-    username, roomId, searchParams, navigate,
+    username, 
+    roomId: projectObj?._id || roomId,
+    searchParams, navigate,
     isNewRoom: location.state?.isNewRoom,
     activeChatTab, showChatPanel,
     setFiles, setActiveFileId, setClients, setAdminUsername, setPermissions,
     setRoomMessages, setPrivateMessages, setUnreadChatCounts,
     setKickedModal, setBannedModal, setApprovalRequests, setRejoinPending,
     setWaitingApproval,
-    editorRef, codeRef, fileCodeCache, activeFileIdRef
+    editorRef, codeRef, fileCodeCache, activeFileIdRef,
+    onRoomCreated: (proj) => {
+      setProjectObj(proj);
+      if (proj._id) setProjectId(proj._id);
+    }
   });
 
   const isAdmin = adminUsername === username;
@@ -150,6 +156,14 @@ function EditorPage() {
     };
     load();
   }, [projectId]);
+
+  // Sync canonical roomId to URL
+  useEffect(() => {
+    if (projectObj?.roomId && roomId && projectObj.roomId !== roomId) {
+      const search = window.location.search;
+      navigate(`/editor/${projectObj.roomId}${search}`, { replace: true });
+    }
+  }, [projectObj, roomId, navigate]);
 
   // Load meetings
   useEffect(() => {
@@ -395,7 +409,13 @@ function EditorPage() {
         onKick={kickUser}
         onSetPermission={setRole}
         onMessageUser={handleJoinDM}
-        onCopyRoomId={() => { navigator.clipboard.writeText(roomId); toast.success("Copied!"); }}
+        onCopyRoomId={() => {
+          const url = new URL(window.location.href);
+          // Ensure we copy the current editor URL which includes the token if present
+          const inviteLink = url.origin + url.pathname + url.search;
+          navigator.clipboard.writeText(inviteLink);
+          toast.success("Invite link copied!");
+        }}
         onLeaveRoom={() => navigate("/dashboard")}
       />
 

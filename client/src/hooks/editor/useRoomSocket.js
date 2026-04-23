@@ -30,7 +30,8 @@ export const useRoomSocket = ({
   editorRef,
   codeRef,
   fileCodeCache,
-  activeFileIdRef
+  activeFileIdRef,
+  onRoomCreated
 }) => {
   const socketRef = useRef(null);
   const activeChatTabRef = useRef(activeChatTab);
@@ -66,9 +67,10 @@ export const useRoomSocket = ({
         s.emit(ACTIONS.JOIN, { roomId, inviteToken: searchToken });
       }
 
-      s.on(ACTIONS.ROOM_CREATED, ({ inviteToken }) => {
-        window.history.replaceState({}, '', `/editor/${roomId}?token=${inviteToken}`);
+      s.on(ACTIONS.ROOM_CREATED, ({ inviteToken, project }) => {
+        navigate(`/editor/${roomId}?token=${inviteToken}`, { replace: true });
         toast.success("Room created! Copy the URL to invite others.");
+        if (onRoomCreated && project) onRoomCreated(project);
         s.emit(ACTIONS.JOIN, { roomId, inviteToken });
       });
 
