@@ -16,21 +16,24 @@ const {
 } = require("../roomState");
 
 const registerChatHandlers = (io, socket) => {
+  const getRoom = (payloadRoomId) => socket.currentRoom || payloadRoomId;
 
   // ROOM MESSAGE: broadcast to all clients in the room
   socket.on(ACTIONS.SEND_ROOM_MESSAGE, ({ roomId, senderId, senderName, message, timestamp }) => {
+    const targetRoom = getRoom(roomId);
     const msg = { senderId, senderName, message, timestamp: timestamp || new Date().toISOString() };
 
-    if (!roomMessages.has(roomId)) roomMessages.set(roomId, []);
-    const msgs = roomMessages.get(roomId);
+    if (!roomMessages.has(targetRoom)) roomMessages.set(targetRoom, []);
+    const msgs = roomMessages.get(targetRoom);
     msgs.push(msg);
     if (msgs.length > MAX_ROOM_MESSAGES) msgs.shift();
 
-    io.to(roomId).emit(ACTIONS.RECEIVE_ROOM_MESSAGE, msg);
+    io.to(targetRoom).emit(ACTIONS.RECEIVE_ROOM_MESSAGE, msg);
   });
 
   // PRIVATE DM (within a room): send to a specific user + echo to sender
   socket.on(ACTIONS.SEND_PRIVATE_MESSAGE, ({ roomId, senderId, senderName, recipientId, message, timestamp }) => {
+    const targetRoom = getRoom(roomId);
     const msg = { senderId, senderName, recipientId, message, timestamp: timestamp || new Date().toISOString() };
 
     const dmKey = [senderId, recipientId].sort().join("__");
@@ -39,7 +42,7 @@ const registerChatHandlers = (io, socket) => {
     dms.push(msg);
     if (dms.length > MAX_ROOM_MESSAGES) dms.shift();
 
-    const clients = getAllConnectedClients(io, roomId);
+    const clients = getAllConnectedClients(io, targetRoom);
     const recipientClient = clients.find((c) => c.username === recipientId);
     if (recipientClient) {
       io.to(recipientClient.socketId).emit(ACTIONS.RECEIVE_PRIVATE_MESSAGE, msg);

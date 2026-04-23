@@ -53,39 +53,31 @@ const EditorToolbar = ({
       </div>
 
       <div className="toolbar-right">
-        {isDbFile && (
-          <Button variant="outline" className="toolbar-btn chip" onClick={onSave} title="Save">
-             <Save size={18} />
-          </Button>
-        )}
-        {isDbFile && (
-          <Button variant="outline" className="toolbar-btn chip" onClick={onDownloadProject} title="Download as ZIP">
-            <Download size={18} />
-          </Button>
-        )}
+        <Button variant="outline" className="toolbar-btn chip" onClick={onSave} title="Save">
+           <Save size={18} />
+        </Button>
+        <Button variant="outline" className="toolbar-btn chip" onClick={onDownloadProject} title="Download as ZIP">
+          <Download size={18} />
+        </Button>
         <Button variant="outline" className="toolbar-btn chip" onClick={onFormat} title="Format Code">
           <Paintbrush size={18} />
         </Button>
-        {isDbFile && (
-          <Button
-            variant="outline"
-            className={`toolbar-btn chip ${showHistory ? "active" : ""}`}
-            onClick={onToggleHistory}
-            title="Version History"
-          >
-            <History size={18} />
-          </Button>
-        )}
-        {isDbFile && (
-          <Button
-            variant="outline"
-            className={`toolbar-btn chip ${showMeetingPanel ? "active" : ""}`}
-            onClick={onToggleMeetings}
-            title="Meetings"
-          >
-            <Calendar size={18} />
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          className={`toolbar-btn chip ${showHistory ? "active" : ""}`}
+          onClick={onToggleHistory}
+          title="Version History"
+        >
+          <History size={18} />
+        </Button>
+        <Button
+          variant="outline"
+          className={`toolbar-btn chip ${showMeetingPanel ? "active" : ""}`}
+          onClick={onToggleMeetings}
+          title="Meetings"
+        >
+          <Calendar size={18} />
+        </Button>
         <Button
           variant="outline"
           className={`toolbar-btn chip ai-toggle ${showChatPanel ? "active" : ""}`}

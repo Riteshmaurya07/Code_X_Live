@@ -58,52 +58,57 @@ const registerRoomHandlers = (io, socket) => {
     const inviteToken = crypto.randomBytes(6).toString("hex");
     roomInviteTokens.set(roomId, inviteToken);
     roomAdmins.set(roomId, { socketId: socket.id, username });
-    socket.emit(ACTIONS.ROOM_CREATED, { roomId, inviteToken });
+    
+    // Fetch the project we just created (or found) to get the canonical _id
+    const project = await Project.findOne({ roomId });
+    socket.emit(ACTIONS.ROOM_CREATED, { roomId, inviteToken, project });
     logger.info(`Room ${roomId} created by ${username} with invite token ${inviteToken}`);
   });
 
   // JOIN
-  socket.on(ACTIONS.JOIN, async ({ roomId, inviteToken: payloadToken }) => {
+  socket.on(ACTIONS.JOIN, async ({ roomId: inputRoomId, inviteToken: payloadToken }) => {
     const username = socket.user.username;
     const handshakeToken = socket.handshake.auth?.inviteToken;
     const inviteToken = payloadToken || handshakeToken;
-    const cleanRoomId = typeof roomId === "string" ? roomId.trim() : roomId;
+    const rawRoomId = typeof inputRoomId === "string" ? inputRoomId.trim() : inputRoomId;
 
-    let existingAdmin = roomAdmins.get(cleanRoomId);
-    let isRoomCreator = existingAdmin && existingAdmin.username === username;
+    // Resolve canonical room identifier (ObjectId if persistent, else rawRoomId)
+    let project;
+    try {
+      if (typeof rawRoomId === "string" && rawRoomId.match(/^[0-9a-fA-F]{24}$/)) {
+        project = await Project.findById(rawRoomId);
+      }
+      if (!project) project = await Project.findOne({ roomId: rawRoomId });
+      if (!project) project = await Project.findOne({ shareToken: rawRoomId });
+    } catch (err) {
+      logger.error(`Error resolving project for room join: ${err.message}`);
+    }
+
+    const cleanRoomId = project ? project._id.toString() : rawRoomId;
+
+    // Check if user is owner/collaborator
+    let isRoomCreator = false;
     let isDbCollaborator = false;
 
-    if (!isRoomCreator) {
-      try {
-        let project;
-        if (typeof cleanRoomId === "string" && cleanRoomId.match(/^[0-9a-fA-F]{24}$/)) {
-          project = await Project.findById(cleanRoomId);
+    if (project) {
+      const userId = socket.user.id.toString();
+      if (project.owner.toString() === userId) {
+        isRoomCreator = true;
+        isDbCollaborator = true;
+        roomAdmins.set(cleanRoomId, { socketId: socket.id, username });
+        logger.info(`Owner ${username} joined canonical room ${cleanRoomId}`);
+      } else {
+        const isCollab = project.collaborators.some(
+          (c) => c.user && c.user.toString() === userId
+        );
+        if (isCollab) {
+          isDbCollaborator = true;
         }
-        if (!project) project = await Project.findOne({ roomId: cleanRoomId });
-        if (!project) project = await Project.findOne({ shareToken: cleanRoomId });
-
-        if (project) {
-          const userId = socket.user.id.toString();
-          if (project.owner.toString() === userId) {
-            isRoomCreator = true;
-            isDbCollaborator = true;
-            roomAdmins.set(cleanRoomId, { socketId: socket.id, username });
-            existingAdmin = { socketId: socket.id, username };
-            logger.info(`Owner ${username} reclaimed admin in room ${cleanRoomId}`);
-          } else {
-            const isCollab = project.collaborators.some(
-              (c) => c.user && c.user.toString() === userId
-            );
-            if (isCollab) {
-              isDbCollaborator = true;
-              logger.info(`Collaborator ${username} identified for room ${cleanRoomId}`);
-            }
-          }
-        } else {
-          logger.debug(`No project found for roomId: ${cleanRoomId}`);
-        }
-      } catch (err) {
-        logger.error(`Failed to fetch project ${cleanRoomId} on join: ${err.message}`);
+      }
+    } else {
+      const existingAdmin = roomAdmins.get(cleanRoomId);
+      if (existingAdmin && existingAdmin.username === username) {
+        isRoomCreator = true;
       }
     }
 
@@ -124,13 +129,9 @@ const registerRoomHandlers = (io, socket) => {
             username,
             requesterSocketId: socket.id,
           });
-          logger.info(`User ${username} placed in waiting room for ${cleanRoomId}`);
           return;
         } else {
-          socket.emit(ACTIONS.INVALID_INVITE, {
-            message: "Invalid or missing invite token.",
-          });
-          logger.info(`User ${username} rejected from room ${cleanRoomId} — invalid token`);
+          socket.emit(ACTIONS.INVALID_INVITE, { message: "Invalid or missing invite token." });
           return;
         }
       }
@@ -139,26 +140,21 @@ const registerRoomHandlers = (io, socket) => {
     // Ban check
     const bannedSet = roomBanList.get(cleanRoomId);
     if (bannedSet && bannedSet.has(username)) {
-      socket.emit(ACTIONS.ROOM_BANNED, {
-        roomId: cleanRoomId,
-        message: "You have been removed by the admin",
-      });
-      logger.info(`Banned user ${username} rejected from room ${cleanRoomId}`);
+      socket.emit(ACTIONS.ROOM_BANNED, { roomId: cleanRoomId, message: "You have been removed by the admin" });
       return;
     }
 
     userSocketMap[socket.id] = username;
     socket.join(cleanRoomId);
+    socket.currentRoom = cleanRoomId;
 
     if (!roomAdmins.has(cleanRoomId)) {
       roomAdmins.set(cleanRoomId, { socketId: socket.id, username });
-      logger.info(`${username} is now admin of room ${cleanRoomId}`);
     }
 
     if (roomCleanupTimers.has(cleanRoomId)) {
       clearTimeout(roomCleanupTimers.get(cleanRoomId));
       roomCleanupTimers.delete(cleanRoomId);
-      logger.info(`Aborted cleanup for room ${cleanRoomId}`);
     }
 
     if (!roomPermissions.has(cleanRoomId)) roomPermissions.set(cleanRoomId, new Map());
@@ -182,13 +178,8 @@ const registerRoomHandlers = (io, socket) => {
 
     const files = roomState.get(cleanRoomId);
     socket.emit(ACTIONS.SYNC_CODE, { files: files ? Object.fromEntries(files) : {} });
-
-    socket.emit(ACTIONS.PERMISSION_UPDATED, {
-      permissions: Object.fromEntries(roomPermissions.get(cleanRoomId)),
-    });
-    io.to(cleanRoomId).emit(ACTIONS.PERMISSION_UPDATED, {
-      permissions: Object.fromEntries(roomPermissions.get(cleanRoomId)),
-    });
+    socket.emit(ACTIONS.PERMISSION_UPDATED, { permissions: Object.fromEntries(roomPermissions.get(cleanRoomId)) });
+    io.to(cleanRoomId).emit(ACTIONS.PERMISSION_UPDATED, { permissions: Object.fromEntries(roomPermissions.get(cleanRoomId)) });
 
     const history = roomMessages.get(cleanRoomId) || [];
     socket.emit(ACTIONS.CHAT_HISTORY, { messages: history });
