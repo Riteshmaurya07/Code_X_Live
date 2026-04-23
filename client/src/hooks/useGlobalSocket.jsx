@@ -38,13 +38,9 @@ export const GlobalSocketProvider = ({ children }) => {
     newSocket.on("NEW_NOTIFICATION", (notification) => {
       // You can trigger sounds, native notifications, or just a toast here
       if (notification.type === "follow") {
-        toast(`${notification.relatedUser?.username || "Someone"} started following you!`, {
-          icon: "👀",
-        });
+        toast(`${notification.relatedUser?.username || "Someone"} started following you!`);
       } else if (notification.type === "invitation") {
-        toast(`You were invited to collaborate on ${notification.relatedProject?.name || "a project"}!`, {
-          icon: "🚀",
-        });
+        toast(`You were invited to collaborate on ${notification.relatedProject?.name || "a project"}!`);
       }
     });
 

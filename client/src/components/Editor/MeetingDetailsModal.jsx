@@ -1,6 +1,7 @@
 import React from "react";
 import Modal from "../ui/Modal";
 import { toast } from "react-hot-toast";
+import { Calendar } from "lucide-react";
 
 const MeetingDetailsModal = ({ meeting, isOpen, onClose, onEdit, onInviteMore, onDelete, currentUsername }) => {
   if (!isOpen || !meeting) return null;
@@ -20,7 +21,7 @@ const MeetingDetailsModal = ({ meeting, isOpen, onClose, onEdit, onInviteMore, o
       isOpen={isOpen}
       onClose={onClose}
       title="Meeting Details"
-      icon="📅"
+      icon={<Calendar size={24} />}
       footer={
         <>
           <button className="admin-modal-btn secondary" onClick={onClose}>

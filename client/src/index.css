@@ -28,11 +28,16 @@ body {
 /* Luminous Glassmorphism Utilities */
 .glass-panel {
   background: var(--bg-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: var(--ghost-border);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(139, 92, 246, 0.15);
   border-radius: var(--radius-lg);
-  box-shadow: var(--depth-2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .glow-text {
@@ -73,3 +78,28 @@ body {
   background: var(--bg-hover);
   border: var(--ghost-border);
 }
+
+/* Layout Spacing Utilities */
+.section-margin {
+  margin-top: var(--sp-10);
+  margin-bottom: var(--sp-10);
+}
+
+.container-padding {
+  padding: var(--sp-8) var(--sp-6);
+}
+
+@media (min-width: 1024px) {
+  .container-padding {
+    padding: var(--sp-12) var(--sp-10);
+  }
+}
+
+.card-padding {
+  padding: var(--sp-6);
+}
+
+.mb-section { margin-bottom: var(--sp-10); }
+.mt-section { margin-top: var(--sp-10); }
+.py-section { padding-top: var(--sp-10); padding-bottom: var(--sp-10); }
+

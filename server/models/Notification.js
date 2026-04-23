@@ -20,6 +20,8 @@ const notificationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    relatedUserName: String,
+    relatedUserAvatar: String,
     relatedProject: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Project",
@@ -38,5 +40,6 @@ const notificationSchema = new mongoose.Schema(
 // Indexes for fast lookups (fetching user's notifications sorted by date)
 notificationSchema.index({ recipient: 1, createdAt: -1 });
 notificationSchema.index({ recipient: 1, read: 1 });
+notificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 5184000 }); // Auto-delete after 60 days
 
 module.exports = mongoose.model("Notification", notificationSchema);

@@ -7,7 +7,8 @@ import Button from '../ui/Button';
 
 const EditorSidebar = ({
   isOpen, onClose,
-  files, activeFileId, onSelectFile, onCreateFile, onDeleteFile, onRenameFile,
+  files, knownFolders, activeFileId, onSelectFile,
+  onCreateFile, onCreateFolder, onDeleteFile, onRenameFile, onDeleteFolder,
   clients, username, adminUsername, isAdmin, permissions,
   approvalRequests, onApproveRejoin, onDenyRejoin,
   onKick, onSetPermission, onMessageUser,
@@ -28,11 +29,14 @@ const EditorSidebar = ({
         <div className="sidebar-scroll-content">
           <FileExplorer
             files={files}
+            knownFolders={knownFolders}
             activeFileId={activeFileId}
             onSelectFile={(id) => { onSelectFile(id); if (onClose) onClose(); }}
             onCreateFile={onCreateFile}
+            onCreateFolder={onCreateFolder}
             onDeleteFile={onDeleteFile}
             onRenameFile={onRenameFile}
+            onDeleteFolder={onDeleteFolder}
           />
 
           <hr />

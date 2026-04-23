@@ -5,6 +5,7 @@ import { ACTIONS } from '../../Actions';
 import { useGlobalSocket } from '../../hooks/useGlobalSocket';
 import { useDM } from '../../hooks/useDM';
 import toast from 'react-hot-toast';
+import { Mail, MessageSquare, Inbox, Send, Check, X, ArrowLeft } from 'lucide-react';
 import '../../styles/messaging.css';
 
 const DirectMessaging = () => {
@@ -121,7 +122,7 @@ const DirectMessaging = () => {
       // Toast notification only for messages from others
       if (senderId !== myId && !isOpen) {
         const senderName = msg.senderName || 'Someone';
-        toast(`💬 ${senderName}: ${msg.content?.slice(0, 40)}${msg.content?.length > 40 ? '…' : ''}`, {
+        toast(`${senderName}: ${msg.content?.slice(0, 40)}${msg.content?.length > 40 ? '…' : ''}`, {
           duration: 4000,
           style: {
             background: 'rgba(20, 10, 40, 0.95)',
@@ -212,7 +213,7 @@ const DirectMessaging = () => {
         title="Messages"
         aria-label="Open Direct Messages"
       >
-        📩
+        <Mail size={20} />
         {unreadCount > 0 && <span className="dm-unread-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
       </button>
 
@@ -220,6 +221,9 @@ const DirectMessaging = () => {
         <div className="dm-panel glass-panel">
           {!activeChat ? (
             <>
+              {/* Overlay for mobile backdrop */}
+              <div className="dm-panel-overlay" onClick={() => setIsOpen(false)} />
+
               {/* Header */}
               <div className="dm-panel-header">
                 <span className="dm-panel-title">Messages</span>
@@ -253,9 +257,7 @@ const DirectMessaging = () => {
               <div className="dm-conversations">
                 {(activeTab === 'primary' ? primaryConvos : requestConvos).length === 0 ? (
                   <div className="dm-empty">
-                    <span style={{ fontSize: '2rem', display: 'block', marginBottom: '8px' }}>
-                      {activeTab === 'primary' ? '💬' : '📥'}
-                    </span>
+                      {activeTab === 'primary' ? <MessageSquare size={32} className="text-muted" /> : <Inbox size={32} className="text-muted" />}
                     {activeTab === 'primary'
                       ? 'No conversations yet.'
                       : 'No message requests.'}
@@ -305,18 +307,18 @@ const DirectMessaging = () => {
                   onClick={() => { setActiveChat(null); loadConversations(); }}
                   title="Back"
                 >
-                  ←
+                  <ArrowLeft size={18} />
                 </button>
-                <div className="dm-avatar" style={{ width: '32px', height: '32px', fontSize: '0.9rem' }}>
+                <div className="dm-avatar" style={{ width: '36px', height: '36px', fontSize: '1rem' }}>
                   {activeChat.avatar
                     ? <img src={activeChat.avatar} alt="avatar" />
                     : activeChat.username[0].toUpperCase()}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <strong style={{ color: '#fff', fontSize: '0.875rem', display: 'block' }}>
+                  <strong style={{ color: 'var(--text-primary)', fontSize: '0.9rem', display: 'block' }}>
                     {activeChat.fullName || activeChat.username}
                   </strong>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     @{activeChat.username}
                   </span>
                 </div>
@@ -326,7 +328,7 @@ const DirectMessaging = () => {
               {isRequestView && (
                 <div className="dm-request-actions">
                   <span className="dm-request-text">
-                    📬 Message request from <strong>@{activeChat.username}</strong>
+                    <Send size={14} className="inline mr-1" /> Message request from <strong>@{activeChat.username}</strong>
                   </span>
                   <div className="dm-request-btns">
                     <button
@@ -334,13 +336,13 @@ const DirectMessaging = () => {
                       className="btn-premium"
                       style={{ padding: '5px 14px', fontSize: '0.75rem' }}
                     >
-                      ✓ Approve
+                      <Check size={14} className="inline mr-1" /> Approve
                     </button>
                     <button
                       onClick={() => handleDecline(activeChat.userId)}
                       className="dm-decline-btn"
                     >
-                      ✗ Decline
+                      <X size={14} className="inline mr-1" /> Decline
                     </button>
                   </div>
                 </div>
@@ -351,7 +353,7 @@ const DirectMessaging = () => {
                 {isLoadingMessages ? (
                   <div className="dm-empty">Loading messages...</div>
                 ) : messages.length === 0 ? (
-                  <div className="dm-empty">No messages yet. Say hello! 👋</div>
+                  <div className="dm-empty">No messages yet. Say hello!</div>
                 ) : (
                   messages.map((msg, i) => {
                     const isMine = msg.sender?.toString() === user._id?.toString();
@@ -384,7 +386,7 @@ const DirectMessaging = () => {
                   disabled={!inputValue.trim() || isRequestView}
                   title="Send"
                 >
-                  ➤
+                  <Send size={18} />
                 </button>
               </div>
             </div>

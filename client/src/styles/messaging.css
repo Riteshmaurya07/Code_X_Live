@@ -68,19 +68,36 @@
   animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ================= MOBILE FIX ================= */
+
+.dm-panel--mobile {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  z-index: 100000;
+  background: var(--bg-primary);
+}
+
+.dm-panel-overlay {
+  display: none;
+}
+
 @media (max-width: 768px) {
-  .dm-panel {
+  .dm-panel-overlay {
+    display: block;
     position: fixed;
     inset: 0;
-    width: 100%;
-    height: 100vh;
-    border-radius: 0;
-    right: 0;
-    top: 0;
-    animation: none;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 99999;
   }
 }
+
+
+/* ================= MOBILE FIX ================= */
+/* Mobile fix removed here and handled by dm-panel--mobile */
+
 /* Fix container for mobile */
 @media (max-width: 768px) {
   .dm-dropdown-container {

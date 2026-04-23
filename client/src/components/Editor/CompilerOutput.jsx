@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from '../ui/Button';
+import { Zap, X } from 'lucide-react';
 
 /**
  * Bottom panel for displaying compilation and execution results.
@@ -16,12 +17,12 @@ const CompilerOutput = ({ output, executionTime, onClose }) => {
           <h3>Output</h3>
           {executionTime && (
             <span className="execution-time">
-              ⚡ {executionTime}
+              <Zap size={12} className="inline mr-1" /> {executionTime}
             </span>
           )}
         </div>
         <Button variant="none" className="close-compiler" onClick={onClose}>
-          ✕
+          <X size={16} />
         </Button>
       </div>
       <div className="compiler-body">

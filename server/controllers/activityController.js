@@ -37,8 +37,18 @@ const getProjectActivity = async (req, res, next) => {
 // Utility: log an activity (used internally by other controllers)
 const logActivity = async (projectId, userId, username, action, details) => {
   try {
+    let resolvedProjectId = projectId;
+
+    // Resolve roomId (UUID string) to Project ObjectId if necessary
+    if (projectId && typeof projectId === "string" && !projectId.match(/^[0-9a-fA-F]{24}$/)) {
+      const project = await Project.findOne({ roomId: projectId });
+      if (project) {
+        resolvedProjectId = project._id;
+      }
+    }
+
     await ActivityLog.create({
-      project: projectId || undefined,
+      project: resolvedProjectId || undefined,
       user: userId || null,
       username: username || "System",
       action,

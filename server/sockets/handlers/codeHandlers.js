@@ -84,6 +84,17 @@ const registerCodeHandlers = (io, socket) => {
       timestamp: new Date().toISOString(),
     });
   });
+
+  // FOLDER_CREATED: relay virtual folder creation to the rest of the room.
+  // No DB write — folders are frontend-only and live in each client's knownFolders Set.
+  socket.on(ACTIONS.FOLDER_CREATED, ({ roomId, path }) => {
+    socket.to(roomId).emit(ACTIONS.FOLDER_CREATED, { path });
+  });
+
+  // FOLDER_DELETED: relay virtual folder deletion to the rest of the room.
+  socket.on(ACTIONS.FOLDER_DELETED, ({ roomId, path }) => {
+    socket.to(roomId).emit(ACTIONS.FOLDER_DELETED, { path });
+  });
 };
 
 module.exports = { registerCodeHandlers };

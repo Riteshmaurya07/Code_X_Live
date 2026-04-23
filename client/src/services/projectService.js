@@ -27,10 +27,11 @@ export const deleteProject = async (id) => {
 };
 
 // ===== File operations =====
-export const createFile = async (projectId, name, language) => {
+export const createFile = async (projectId, name, language, path = "/") => {
   const { data } = await api.post(`/api/files/${projectId}`, {
     name,
     language,
+    path,
   });
   return data;
 };

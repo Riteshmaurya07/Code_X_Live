@@ -18,7 +18,7 @@ const fileSchema = new mongoose.Schema(
     },
     language: {
       type: String,
-      default: "javascript",
+      default: "nodejs",
     },
     path: {
       type: String,

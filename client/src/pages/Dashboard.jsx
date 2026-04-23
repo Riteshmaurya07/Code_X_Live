@@ -15,7 +15,7 @@ import ProjectCard from "../components/Dashboard/ProjectCard";
 import NewProjectForm from "../components/Dashboard/NewProjectForm";
 
 const LANGUAGES = [
-  "javascript",
+  "nodejs",
   "python3",
   "java",
   "cpp",
@@ -39,7 +39,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
-  const [newProjectLang, setNewProjectLang] = useState("javascript");
+  const [newProjectLang, setNewProjectLang] = useState("nodejs");
 
   // GitHub import
   const [showGitHubImport, setShowGitHubImport] = useState(false);
@@ -143,7 +143,7 @@ function Dashboard() {
     <div className="dashboard-page">
       <Navbar variant="dashboard" />
 
-      <div className="dashboard-content">
+      <div className="dashboard-content container-padding">
         <NewProjectForm
           showNewProject={showNewProject}
           setShowNewProject={setShowNewProject}

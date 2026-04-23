@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../ui/Button';
+import { Rocket } from 'lucide-react';
 
 const SuggestedActions = ({ isOwnProfile }) => {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ const SuggestedActions = ({ isOwnProfile }) => {
 
   return (
     <div className="suggested-actions">
-      <h3>🚀 Start building your first project</h3>
+      <h3><Rocket size={20} className="inline mr-2" /> Start building your first project</h3>
       <p>Your profile is looking a bit empty! Create your first project to start tracking your activity.</p>
       <div className="action-buttons">
         <Button onClick={() => navigate('/dashboard')}>

@@ -1,4 +1,5 @@
 const File = require("../models/File");
+const Project = require("../models/Project");
 const Version = require("../models/Version");
 const ActivityLog = require("../models/ActivityLog");
 const logger = require("../utils/logger");
@@ -8,16 +9,31 @@ const ACTIONS = require("../Actions");
 const createFile = async (req, res, next) => {
   try {
     const { name, language, path, content } = req.body;
-    const { projectId } = req.params;
+    let { projectId } = req.params;
 
-    if (!name) {
-      return res.status(400).json({ success: false, message: "File name is required" });
+    // Resolve projectId (could be ObjectId, roomId/UUID, or shareToken)
+    let project;
+    if (projectId.match(/^[0-9a-fA-F]{24}$/)) {
+      project = await Project.findById(projectId);
     }
+    
+    if (!project) {
+      project = await Project.findOne({
+        $or: [{ roomId: projectId }, { shareToken: projectId }],
+      });
+    }
+
+    if (!project) {
+      return res.status(404).json({ success: false, message: "Project not found" });
+    }
+
+    // Always use the database ObjectId for internal operations
+    projectId = project._id;
 
     const file = await File.create({
       name,
       project: projectId,
-      language: language || "javascript",
+      language: language || "nodejs",
       path: path || "/",
       content: content || "",
     });
@@ -31,10 +47,11 @@ const createFile = async (req, res, next) => {
       details: `Created file: ${name}`,
     });
 
-    // Emit FILE_CREATED to all users in the room (projectId is the roomId)
+    // Emit FILE_CREATED to all users in the room (use roomId if available, fallback to ObjectId)
     const io = req.app.get("io");
     if (io) {
-      io.to(projectId).emit(ACTIONS.FILE_CREATED, { file });
+      const roomIdentifier = project.roomId || String(projectId);
+      io.to(roomIdentifier).emit(ACTIONS.FILE_CREATED, { file });
     }
 
     logger.info(`File created: ${name} in project ${projectId}`);
@@ -64,7 +81,7 @@ const getFile = async (req, res, next) => {
 const updateFile = async (req, res, next) => {
   try {
     const { content, name } = req.body;
-    const file = await File.findById(req.params.id);
+    const file = await File.findById(req.params.id).populate("project");
 
     if (!file) {
       return res.status(404).json({ success: false, message: "File not found" });
@@ -97,7 +114,8 @@ const updateFile = async (req, res, next) => {
     if (name) {
       const io = req.app.get("io");
       if (io) {
-        io.to(String(file.project)).emit(ACTIONS.FILE_RENAMED, {
+        const roomIdentifier = file.project?.roomId || String(file.project?._id || file.project);
+        io.to(roomIdentifier).emit(ACTIONS.FILE_RENAMED, {
           fileId: file._id,
           newName: file.name,
         });
@@ -185,10 +203,12 @@ const restoreVersion = async (req, res, next) => {
 // Delete a file
 const deleteFile = async (req, res, next) => {
   try {
-    const file = await File.findByIdAndDelete(req.params.id);
+    const file = await File.findById(req.params.id).populate("project");
     if (!file) {
       return res.status(404).json({ success: false, message: "File not found" });
     }
+    
+    await File.findByIdAndDelete(req.params.id);
 
     // Clean up versions
     await Version.deleteMany({ file: file._id });
@@ -205,7 +225,8 @@ const deleteFile = async (req, res, next) => {
     // Emit FILE_DELETED to all users in the room
     const io = req.app.get("io");
     if (io) {
-      io.to(String(file.project)).emit(ACTIONS.FILE_DELETED, {
+      const roomIdentifier = file.project?.roomId || String(file.project?._id || file.project);
+      io.to(roomIdentifier).emit(ACTIONS.FILE_DELETED, {
         fileId: file._id,
       });
     }

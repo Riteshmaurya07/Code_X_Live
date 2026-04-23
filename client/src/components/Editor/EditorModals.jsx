@@ -1,10 +1,8 @@
 import React from 'react';
+import { Slash, Octagon, LoaderCircle } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 
-/**
- * Handles all administrative modals for the Editor (Kicked, Banned, Rejoin Requests)
- */
 const EditorModals = ({
   kickedModal,
   bannedModal,
@@ -15,28 +13,22 @@ const EditorModals = ({
 }) => {
   return (
     <>
-      {/* ===== KICKED MODAL ===== */}
       <Modal 
         isOpen={!!kickedModal}
-        variant="kicked"
-        icon="🚫"
+        icon={<Slash size={24} />}
         title="Removed from Session"
       >
-        <p>{kickedModal?.message}</p>
-        <p className="admin-modal-sub">Redirecting to home in 3 seconds...</p>
+        <p className="text-base">{kickedModal?.message}</p>
+        <p className="mt-4 text-sm text-[var(--text-muted)] italic">Redirecting to home in 3 seconds...</p>
       </Modal>
 
-      {/* ===== BANNED MODAL ===== */}
       <Modal 
         isOpen={!!bannedModal}
-        variant="banned"
-        icon="⛔"
+        icon={<Octagon size={24} />}
         title="Access Denied"
         footer={
           <>
-            <Button variant="outline" onClick={() => navigate("/")}>
-              Go Home
-            </Button>
+            <Button variant="outline" onClick={() => navigate("/")}>Go Home</Button>
             <Button onClick={onRejoinRequest} disabled={rejoinPending}>
               {rejoinPending ? "Request Sent..." : "Request to Rejoin"}
             </Button>
@@ -46,21 +38,13 @@ const EditorModals = ({
         <p>{bannedModal?.message}</p>
       </Modal>
 
-      {/* ===== WAITING APPROVAL MODAL (Guest only) ===== */}
       <Modal 
         isOpen={!!waitingApproval}
-        variant="approval"
-        icon="⏳"
+        icon={<LoaderCircle size={24} className="animate-spin text-[var(--accent)]" />}
         title="Waiting Room"
-        footer={
-          <Button variant="outline" onClick={() => navigate("/")}>
-            Cancel
-          </Button>
-        }
+        footer={<Button variant="outline" onClick={() => navigate("/")}>Cancel</Button>}
       >
-        <p>
-          {waitingApproval?.message || "Waiting for the room admin to approve your request..."}
-        </p>
+        <p>{waitingApproval?.message || "Waiting for the room admin to approve your request..."}</p>
       </Modal>
     </>
   );

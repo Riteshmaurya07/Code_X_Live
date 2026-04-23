@@ -1,16 +1,16 @@
 import React from 'react';
 
 /**
- * Reusable Input component with label support
+ * Reusable Textarea component
  */
-const Input = ({ 
+const Textarea = ({ 
   label, 
-  type = 'text', 
   placeholder, 
   value, 
   onChange, 
   className = '', 
   required = false,
+  rows = 3,
   error,
   ...props 
 }) => {
@@ -21,12 +21,12 @@ const Input = ({
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      <input
-        type={type}
+      <textarea
         placeholder={placeholder}
         value={value}
         onChange={onChange}
         required={required}
+        rows={rows}
         className={`w-full rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none transition-all focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent-soft)] disabled:opacity-50 disabled:cursor-not-allowed ${error ? 'border-red-500 ring-red-500/20' : ''} ${className}`.trim()}
         {...props}
       />
@@ -35,4 +35,4 @@ const Input = ({
   );
 };
 
-export default Input;
+export default Textarea;

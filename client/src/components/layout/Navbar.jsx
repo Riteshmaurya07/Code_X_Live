@@ -83,11 +83,6 @@ const SearchWidget = ({ mobile = false, onResultClick }) => {
             !mobile ? "pl-9" : ""
           }`}
         />
-        {!mobile && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]">
-            
-          </span>
-        )}
       </div>
 
       {isOpen && (
@@ -210,7 +205,7 @@ const Navbar = () => {
 
   return (
     <nav className="sticky top-0 z-[100] border-b border-[var(--border)] bg-[var(--bg-glass)] backdrop-blur-md">
-      <div className="mx-auto w-full max-w-[1400px] px-4 py-3">
+      <div className="mx-auto w-full max-w-7xl px-[5%] py-3">
 
         <div className="flex w-full items-center">
 

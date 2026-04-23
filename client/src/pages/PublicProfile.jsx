@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { LoaderCircle, Camera, MessageSquare } from "lucide-react";
 import {
   getUserProfile, followUser, unfollowUser,
   getActivityDashboard, uploadAvatar,
@@ -42,12 +43,7 @@ function PublicProfile() {
         setProfileData(profData);
         setDashboardData(dashData);
         setAvatarUrl(profData?.profile?.avatar || '');
-        if (currentUser && profData?.profile?.followers) {
-          setIsFollowing(profData.profile.followers.some(follower => 
-            (follower._id || follower) === currentUser.id 
-            || (follower._id || follower) === currentUser._id
-          ));
-        }
+        setIsFollowing(!!profData?.profile?.isFollowing);
       } catch (err) {
         toast.error(err.response?.data?.error || "Failed to load profile");
         navigate("/dashboard");
@@ -67,17 +63,17 @@ function PublicProfile() {
         setIsFollowing(false);
         setProfileData(prev => ({
           ...prev, 
-          profile: { ...prev.profile, followers: prev.profile.followers.filter(id => id !== currentUser.id) }
+          profile: { ...prev.profile, followersCount: Math.max(0, (prev.profile.followersCount || 0) - 1) }
         }));
       } else {
         await followUser(profileData.profile.id);
         setIsFollowing(true);
         setProfileData(prev => ({
           ...prev, 
-          profile: { ...prev.profile, followers: [...prev.profile.followers, currentUser.id] }
+          profile: { ...prev.profile, followersCount: (prev.profile.followersCount || 0) + 1 }
         }));
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to update follow status");
     } finally {
       setIsFollowingPending(false);
@@ -108,7 +104,7 @@ function PublicProfile() {
     <div className="dashboard-page profile-page">
       <Navbar variant="dashboard" />
       
-      <div className="dashboard-content">
+      <div className="dashboard-content container-padding">
         {loading ? (
           <div className="loading-state">Loading profile...</div>
         ) : profileData ? (
@@ -125,7 +121,7 @@ function PublicProfile() {
                 }
                 {isOwnProfile && (
                   <div className="profile-avatar-overlay">
-                    {isUploadingAvatar ? '⏳' : '📷'}
+                    {isUploadingAvatar ? <LoaderCircle size={24} className="animate-spin" /> : <Camera size={24} />}
                   </div>
                 )}
               </div>
@@ -140,17 +136,48 @@ function PublicProfile() {
                 />
               )}
               <div className="profile-info flex-1">
-                <h1 className="profile-name">
-                  {profileData.profile.fullName || `@${profileData.profile.username}`}
-                </h1>
-                <p className="profile-meta">@{profileData.profile.username}</p>
+                <div className="flex flex-col gap-1">
+                  <h1 className="profile-name">
+                    {profileData.profile.fullName || profileData.profile.username}
+                  </h1>
+                  {profileData.profile.fullName && (
+                    <p className="profile-meta text-[var(--text-muted)] text-sm">@{profileData.profile.username}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-sm text-[var(--text-secondary)]">
+                  {profileData.profile.firstName && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[var(--accent)] text-xs font-semibold uppercase tracking-wider">First Name:</span>
+                      <span>{profileData.profile.firstName}</span>
+                    </div>
+                  )}
+                  {profileData.profile.lastName && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[var(--accent)] text-xs font-semibold uppercase tracking-wider">Last Name:</span>
+                      <span>{profileData.profile.lastName}</span>
+                    </div>
+                  )}
+                  {profileData.profile.email && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[var(--accent)] text-xs font-semibold uppercase tracking-wider">Email:</span>
+                      <span>{profileData.profile.email}</span>
+                    </div>
+                  )}
+                  {profileData.profile.createdAt && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[var(--accent)] text-xs font-semibold uppercase tracking-wider">Joined:</span>
+                      <span>{new Date(profileData.profile.createdAt).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' })}</span>
+                    </div>
+                  )}
+                </div>
                 
-                <div className="profile-stats">
+                <div className="profile-stats mt-6">
                   <span className="profile-stat-link" onClick={() => navigate(`/profile/${username}/followers`)}>
-                    <strong>{profileData.profile.followers?.length || 0}</strong> Followers
+                    <strong>{profileData.profile.followersCount || 0}</strong> Followers
                   </span>
                   <span className="profile-stat-link" onClick={() => navigate(`/profile/${username}/following`)}>
-                    <strong>{profileData.profile.following?.length || 0}</strong> Following
+                    <strong>{profileData.profile.followingCount || 0}</strong> Following
                   </span>
                 </div>
               </div>
@@ -176,7 +203,7 @@ function PublicProfile() {
                       })}
                       title={`Message @${profileData.profile.username}`}
                     >
-                      💬 Message
+                      <MessageSquare size={16} className="inline mr-1" /> Message
                     </button>
                   </>
                 )}
@@ -185,7 +212,7 @@ function PublicProfile() {
 
             <ActivityDashboard data={dashboardData} isOwnProfile={isOwnProfile} />
 
-            <h2 className="my-8 mb-4 text-2xl font-semibold text-[var(--text-primary)]">Public Projects</h2>
+            <h2 className="mt-section mb-6 text-2xl font-bold text-[var(--text-primary)]">Public Projects</h2>
 
             {profileData.publicProjects.length === 0 ? (
               <div className="empty-state">

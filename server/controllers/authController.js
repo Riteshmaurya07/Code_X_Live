@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const User = require("../models/User");
 const { verifyFirebaseToken } = require("../config/firebaseAdmin");
+const { sendMail } = require("../config/mailer");
+const { passwordResetEmail } = require("../utils/emailTemplates");
 const logger = require("../utils/logger");
 
 const generateToken = (userId) => {
@@ -166,4 +169,84 @@ const getProfile = async (req, res) => {
   res.json(req.user);
 };
 
-module.exports = { register, login, firebaseLogin, getProfile };
+// Forgot Password — sends reset link
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return res.json({ message: "If an account exists with that email, a reset link has been sent." });
+    }
+
+    if (user.authProvider !== "local") {
+      return res.status(400).json({ error: `This account uses ${user.authProvider} sign-in. Password reset is not available.` });
+    }
+
+    // Cooldown check (2 minutes)
+    if (user.resetPasswordExpire && (user.resetPasswordExpire - Date.now() > 3600000 - 120000)) {
+      const remainingSecs = Math.ceil((user.resetPasswordExpire - Date.now() - (3600000 - 120000)) / 1000);
+      return res.status(429).json({ 
+        error: `Please wait ${remainingSecs}s before requesting another reset link.` 
+      });
+    }
+
+    // Generate token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpire = Date.now() + 3600000; // 1 hour
+    await user.save();
+
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+    const html = passwordResetEmail(resetUrl);
+
+    try {
+      await sendMail(user.email, "Password Reset Request", html);
+      res.json({ message: "Reset link sent to your email." });
+    } catch (err) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save();
+      logger.error(`Reset email failed: ${err.message}`);
+      res.status(500).json({ error: "Failed to send reset email. Please try again later." });
+    }
+  } catch (err) {
+    logger.error(`Forgot password error: ${err.message}`);
+    res.status(500).json({ error: "An error occurred. Please try again." });
+  }
+};
+
+// Reset Password — verifies token and updates password
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: "Invalid or expired reset token" });
+    }
+
+    // Update password
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.json({ message: "Password reset successful! You can now log in." });
+  } catch (err) {
+    logger.error(`Reset password error: ${err.message}`);
+    res.status(500).json({ error: "Failed to reset password" });
+  }
+};
+
+module.exports = { register, login, firebaseLogin, getProfile, forgotPassword, resetPassword };

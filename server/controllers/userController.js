@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Follow = require("../models/Follow");
 const Project = require("../models/Project");
 const { createNotification } = require("./notificationController");
 const { logActivity } = require("./activityController");
@@ -11,11 +12,16 @@ const getUserProfile = async (req, res) => {
     const { username } = req.params;
 
     // Find the user by username to get their ID and profile details
-    // Find the user by username to get their ID and profile details
-    const user = await User.findOne({ username })
-      .select("-password")
-      .populate("followers", "username avatar")
-      .populate("following", "username avatar");
+    const user = await User.findOne({ username }).select("-password");
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const [followersCount, followingCount, isFollowing] = await Promise.all([
+      Follow.countDocuments({ following: user._id }),
+      Follow.countDocuments({ follower: user._id }),
+      req.user ? Follow.exists({ follower: req.user._id, following: user._id }) : false,
+    ]);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -38,8 +44,9 @@ const getUserProfile = async (req, res) => {
         email: user.email,
         avatar: user.avatar || "",
         createdAt: user.createdAt,
-        followers: user.followers,
-        following: user.following,
+        followersCount,
+        followingCount,
+        isFollowing: !!isFollowing,
       },
       publicProjects: projects,
     });
@@ -58,35 +65,28 @@ const followUser = async (req, res) => {
       return res.status(400).json({ error: "You cannot follow yourself" });
     }
 
-    const targetUser = await User.findById(targetUserId);
-    const currentUser = await User.findById(currentUserId);
+    const existingFollow = await Follow.findOne({ follower: currentUserId, following: targetUserId });
 
-    if (!targetUser) return res.status(404).json({ error: "User not found" });
+    if (!existingFollow) {
+      const targetUser = await User.findById(targetUserId);
+      if (!targetUser) return res.status(404).json({ error: "User not found" });
 
-    // Ensure no duplicates
-    if (!targetUser.followers.includes(currentUserId)) {
-      targetUser.followers.push(currentUserId);
-      await targetUser.save();
-    }
-    
-    if (!currentUser.following.includes(targetUserId)) {
-      currentUser.following.push(targetUserId);
-      await currentUser.save();
+      await Follow.create({ follower: currentUserId, following: targetUserId });
       
       // Notify target user
       await createNotification(req, {
         recipient: targetUserId,
         type: "follow",
-        message: `${currentUser.username} started following you`,
+        message: `${req.user.username} started following you`,
         relatedUser: currentUserId,
-        actionUrl: `/profile/${currentUser.username}`,
+        actionUrl: `/profile/${req.user.username}`,
       });
 
       // Log global activity for the heatmap
       await logActivity(
         null,
         currentUserId,
-        currentUser.username,
+        req.user.username,
         "user_followed",
         `Followed user ${targetUser.username}`
       );
@@ -104,16 +104,7 @@ const unfollowUser = async (req, res) => {
     const targetUserId = req.params.id;
     const currentUserId = req.user._id;
 
-    const targetUser = await User.findById(targetUserId);
-    const currentUser = await User.findById(currentUserId);
-
-    if (!targetUser) return res.status(404).json({ error: "User not found" });
-
-    targetUser.followers = targetUser.followers.filter(id => id.toString() !== currentUserId.toString());
-    await targetUser.save();
-
-    currentUser.following = currentUser.following.filter(id => id.toString() !== targetUserId.toString());
-    await currentUser.save();
+    await Follow.findOneAndDelete({ follower: currentUserId, following: targetUserId });
 
     res.json({ success: true, message: "User unfollowed successfully" });
   } catch (err) {
@@ -155,24 +146,26 @@ const getFollowers = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
 
-    const targetUser = await User.findOne({ username })
-      .populate({
-        path: "followers",
-        select: "username fullName avatar",
-        options: { skip: (page - 1) * limit, limit }
-      });
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (!targetUser) return res.status(404).json({ error: "User not found" });
+    const followers = await Follow.find({ following: user._id })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate("follower", "username fullName avatar");
 
-    const currentUser = await User.findById(req.user._id);
-
-    const followersData = targetUser.followers.map(f => ({
-      _id: f._id,
-      username: f.username,
-      fullName: f.fullName,
-      avatar: f.avatar,
-      isMutual: currentUser.following.includes(f._id),
-      isFollowing: currentUser.following.includes(f._id),
+    const followersData = await Promise.all(followers.map(async (f) => {
+      const isMutual = await Follow.exists({ follower: user._id, following: f.follower._id });
+      const isFollowing = await Follow.exists({ follower: req.user._id, following: f.follower._id });
+      return {
+        _id: f.follower._id,
+        username: f.follower.username,
+        fullName: f.follower.fullName,
+        avatar: f.follower.avatar,
+        isMutual: !!isMutual,
+        isFollowing: !!isFollowing,
+      };
     }));
 
     res.json(followersData);
@@ -188,24 +181,26 @@ const getFollowing = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
 
-    const targetUser = await User.findOne({ username })
-      .populate({
-        path: "following",
-        select: "username fullName avatar",
-        options: { skip: (page - 1) * limit, limit }
-      });
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (!targetUser) return res.status(404).json({ error: "User not found" });
+    const following = await Follow.find({ follower: user._id })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate("following", "username fullName avatar");
 
-    const currentUser = await User.findById(req.user._id);
-
-    const followingData = targetUser.following.map(f => ({
-      _id: f._id,
-      username: f.username,
-      fullName: f.fullName,
-      avatar: f.avatar,
-      isMutual: currentUser.followers.includes(f._id),
-      isFollowing: currentUser.following.includes(f._id),
+    const followingData = await Promise.all(following.map(async (f) => {
+      const isMutual = await Follow.exists({ follower: f.following._id, following: user._id });
+      const isFollowing = await Follow.exists({ follower: req.user._id, following: f.following._id });
+      return {
+        _id: f.following._id,
+        username: f.following.username,
+        fullName: f.following.fullName,
+        avatar: f.following.avatar,
+        isMutual: !!isMutual,
+        isFollowing: !!isFollowing,
+      };
     }));
 
     res.json(followingData);

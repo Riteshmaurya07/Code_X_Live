@@ -1,4 +1,5 @@
 const Notification = require("../models/Notification");
+const User = require("../models/User");
 const { getSocketIdByUserId } = require("../sockets/socketHandler");
 const logger = require("../utils/logger");
 
@@ -21,7 +22,6 @@ exports.getNotifications = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 20;
 
     const notifications = await Notification.find({ recipient: userId })
-      .populate("relatedUser", "username avatar")
       .populate("relatedProject", "name")
       .sort({ createdAt: -1 })
       .limit(limit);
@@ -70,17 +70,29 @@ exports.createNotification = async (req, { recipient, type, message, relatedUser
     });
     if (exists) return exists;
 
+    // Fetch user details for denormalization if available
+    let relatedUserName = "";
+    let relatedUserAvatar = "";
+    if (relatedUser) {
+      const user = await User.findById(relatedUser).select("username avatar");
+      if (user) {
+        relatedUserName = user.username;
+        relatedUserAvatar = user.avatar;
+      }
+    }
+
     const notification = await Notification.create({
       recipient,
       type,
       message,
       relatedUser,
+      relatedUserName,
+      relatedUserAvatar,
       relatedProject,
       actionUrl
     });
 
     const populated = await Notification.findById(notification._id)
-      .populate("relatedUser", "username avatar")
       .populate("relatedProject", "name");
 
     pushRealTimeNotification(req, recipient, populated);

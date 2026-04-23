@@ -46,7 +46,6 @@ export const useRoomSocket = ({
 
     const init = async () => {
       const handleErrors = (err) => {
-        console.log("Socket error:", err);
         // Extract exact message if middleware fails validation
         const msg = err?.message || err || "Try again later";
         toast.error(`Socket connection failed: ${msg}`);
@@ -147,11 +146,11 @@ export const useRoomSocket = ({
           setClients(updatedClients);
         }
         if (kickedUser) {
-          toast(`${kickedUser} was removed from the session`, { icon: "🚫" });
+          toast(`${kickedUser} was removed from the session`);
         }
         if (newAdmin) {
           setAdminUsername(newAdmin);
-          toast(`${newAdmin} is now the room admin`, { icon: "👑" });
+          toast(`${newAdmin} is now the room admin`);
         }
       });
 
@@ -212,12 +211,12 @@ export const useRoomSocket = ({
 
       s.on(ACTIONS.ROLE_UPDATED, ({ targetUsername, newRole, message }) => {
         if (targetUsername === username) {
-          toast(message, { icon: newRole === "editor" ? "🚀" : "🔒" });
+          toast(message);
         }
       });
 
       s.on(ACTIONS.PERMISSION_DENIED, ({ message }) => {
-        toast.error(message || "Permission Denied", { icon: "👁" });
+        toast.error(message || "Permission Denied");
       });
 
       s.on(ACTIONS.FILE_CREATED, ({ file }) => {
@@ -273,7 +272,7 @@ export const useRoomSocket = ({
     if (!socketRef.current) return;
     setRejoinPending(true);
     socketRef.current.emit(ACTIONS.REJOIN_REQUEST, { roomId, username });
-    toast("Rejoin request sent to admin...", { icon: "⏳" });
+    toast("Rejoin request sent to admin...");
   }, [roomId, username, setRejoinPending]);
 
   const approveRejoin = useCallback((approvalRequest) => {
@@ -295,7 +294,7 @@ export const useRoomSocket = ({
       requesterSocketId: approvalRequest.requesterSocketId,
     });
     setApprovalRequests(prev => prev.filter(req => req.username !== approvalRequest.username));
-    toast(`Denied ${approvalRequest.username}`, { icon: "🚫" });
+    toast(`Denied ${approvalRequest.username}`);
   }, [setApprovalRequests]);
 
   const sendMessage = useCallback((messageText, targetTab) => {

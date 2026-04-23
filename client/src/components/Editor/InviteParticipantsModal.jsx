@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import Modal from "../ui/Modal";
+import Button from "../ui/Button";
+import { Users } from "lucide-react";
 import ParticipantPicker from "./ParticipantPicker";
 import { inviteMeetingParticipants } from "../../services/meetingService";
 import { toast } from "react-hot-toast";
@@ -17,15 +19,8 @@ const InviteParticipantsModal = ({ isOpen, onClose, meeting, projectMembers = []
     [projectMembers, alreadyInvited]
   );
 
-  const handleToggle = (id) => {
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-  };
-
   const handleInvite = async () => {
-    if (!meeting?._id || selectedIds.length === 0) {
-      toast.error("Select at least one collaborator");
-      return;
-    }
+    if (!meeting?._id || selectedIds.length === 0) return toast.error("Select at least one collaborator");
     try {
       setIsSubmitting(true);
       await inviteMeetingParticipants(meeting._id, selectedIds);
@@ -44,19 +39,24 @@ const InviteParticipantsModal = ({ isOpen, onClose, meeting, projectMembers = []
       isOpen={isOpen}
       onClose={() => onClose(false)}
       title="Invite More People"
-      icon="👥"
+      icon={<Users size={24} />}
       footer={
         <>
-          <button className="admin-modal-btn secondary" onClick={() => onClose(false)} disabled={isSubmitting}>
-            Cancel
-          </button>
-          <button className="admin-modal-btn primary" onClick={handleInvite} disabled={isSubmitting}>
+          <Button variant="outline" onClick={() => onClose(false)} disabled={isSubmitting}>Cancel</Button>
+          <Button onClick={handleInvite} disabled={isSubmitting}>
             {isSubmitting ? "Inviting..." : "Send Invite"}
-          </button>
+          </Button>
         </>
       }
     >
-      <ParticipantPicker members={selectableMembers} selectedIds={selectedIds} onToggle={handleToggle} />
+      <div className="flex flex-col gap-4">
+        <p className="text-sm text-[var(--text-secondary)]">Select additional collaborators to join this meeting.</p>
+        <ParticipantPicker 
+          members={selectableMembers} 
+          selectedIds={selectedIds} 
+          onToggle={(id) => setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])} 
+        />
+      </div>
     </Modal>
   );
 };

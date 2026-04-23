@@ -1,4 +1,5 @@
 import React from 'react';
+import { ShieldCheck } from 'lucide-react';
 import Client from '../Client';
 
 /**
@@ -20,7 +21,7 @@ const MembersList = ({
         Members
         {isAdmin && (
           <span className="admin-badge-label">
-            👑 Admin
+            <ShieldCheck size={14} className="inline mr-1" /> Admin
           </span>
         )}
       </span>

@@ -15,21 +15,26 @@ const createProject = async (req, res) => {
       return res.status(400).json({ error: "Project name is required" });
     }
 
+    logger.info(`Attempting to create project: ${name} for user ${req.user._id}`);
     const project = await Project.create({
       name,
-      language: language || "javascript",
+      language: language || "nodejs",
       owner: req.user._id,
     });
+    logger.info(`Project document created: ${project._id}`);
 
     // Create a default file
+    logger.info(`Creating default file for project ${project._id}`);
     await File.create({
       name: language === "python3" ? "main.py" : "index.js",
       project: project._id,
-      content: "// Start coding here\n",
-      language: language || "javascript",
+      content: language === "python3" ? "# Start coding here\n" : "// Start coding here\n",
+      language: language || "nodejs",
     });
+    logger.info(`Default file created.`);
 
     // Log activity
+    logger.info(`Logging activity for project creation`);
     await logActivity(
       project._id,
       req.user._id,
@@ -37,11 +42,16 @@ const createProject = async (req, res) => {
       "project_created",
       `Created project "${name}"`
     );
+    logger.info(`Activity logged.`);
 
     res.status(201).json(project);
   } catch (err) {
     logger.error(`Create project error: ${err.message}`);
-    res.status(500).json({ error: "Failed to create project" });
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to create project", 
+      message: err.message 
+    });
   }
 };
 

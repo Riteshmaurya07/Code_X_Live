@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import Avatar from "react-avatar";
+import { Pencil, Eye, UserMinus, MessageSquare, MoreVertical } from "lucide-react";
 
 function Client({ username, isAdmin, isCurrentUser, isAdminUser, permission, onKick, onSetPermission, onMessageUser }) {
   const [showMenu, setShowMenu] = useState(false);
@@ -64,20 +65,20 @@ function Client({ username, isAdmin, isCurrentUser, isAdminUser, permission, onK
                 className={`permission-menu-item ${permission === 'editor' ? 'active' : ''}`}
                 onClick={(e) => { e.stopPropagation(); handleSetEditor(); }}
               >
-                <span>✏️</span> Make Editor
+                <span><Pencil size={14} /></span> Make Editor
               </button>
               <button
                 className={`permission-menu-item ${permission === 'viewer' ? 'active' : ''}`}
                 onClick={(e) => { e.stopPropagation(); handleSetViewer(); }}
               >
-                <span>👁</span> Make Viewer
+                <span><Eye size={14} /></span> Make Viewer
               </button>
               <div className="permission-menu-divider" />
               <button
                 className="permission-menu-item danger"
                 onClick={(e) => { e.stopPropagation(); handleKickClick(); }}
               >
-                <span>🚫</span> Remove
+                <span><UserMinus size={14} /></span> Remove
               </button>
             </div>
           )}
@@ -98,7 +99,7 @@ function Client({ username, isAdmin, isCurrentUser, isAdminUser, permission, onK
               onClick={(e) => { e.stopPropagation(); if (onMessageUser) onMessageUser(username); }}
               title={`Direct Message ${username}`}
             >
-              💬
+              <MessageSquare size={16} />
             </button>
           )}
           {canManage && (
@@ -107,7 +108,7 @@ function Client({ username, isAdmin, isCurrentUser, isAdminUser, permission, onK
               onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
               title={`Manage ${username}`}
             >
-              ⋮
+              <MoreVertical size={16} />
             </button>
           )}
         </div>
@@ -116,7 +117,7 @@ function Client({ username, isAdmin, isCurrentUser, isAdminUser, permission, onK
       {showConfirm && (
         <div className="kick-confirm-overlay" onClick={handleCancel}>
           <div className="kick-confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="kick-confirm-icon">🚫</div>
+            <div className="kick-confirm-icon"><UserMinus size={32} /></div>
             <h4>Remove User</h4>
             <p>
               Remove <strong>{username}</strong> from this session?
