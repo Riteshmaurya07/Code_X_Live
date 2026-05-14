@@ -1,135 +1,76 @@
-# 🖥️ CodeXLive — Frontend (React + Vite)
+# 🖥️ CodeXAlive Frontend — Premium Developer Experience
 
-The CodeXLive frontend is a high-performance real-time interface built with **React 18 + Vite**. It features a glassmorphic design system, a full-featured CodeMirror collaborative editor, live cursor tracking, and a rich developer social dashboard.
+[![React](https://img.shields.io/badge/UI-React%2018-blue?style=flat-square&logo=react)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Build-Vite-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
+[![CodeMirror](https://img.shields.io/badge/Editor-CodeMirror%206-black?style=flat-square&logo=codemirror)](https://codemirror.net/)
+[![Tailwind](https://img.shields.io/badge/Styling-Vanilla%20CSS-38B2AC?style=flat-square&logo=css3)](https://developer.mozilla.org/en-US/docs/Web/CSS)
+
+The CodeXAlive frontend is a high-performance, real-time interface engineered for seamless collaboration. Built with **React 18** and **Vite**, it delivers a glassmorphic, premium UI/UX optimized for productivity and developer social engagement.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Key Modules & Features
 
-### Install Dependencies
+### 🛠️ Professional Collaborative Editor
+- **Real-Time Sync**: Powered by Socket.io for millisecond-latency code propagation.
+- **Live Cursors**: Visual presence with throttled movement tracking and peer synchronization.
+- **20+ Languages**: Full syntax highlighting and intelligent indentation.
+- **Multi-File Interface**: VS Code-style file management with persistent tab states.
+
+### 🤖 AI-Integrated Workflow
+- **Gemini Assistant**: Contextual code analysis and debugging within the editor.
+- **One-Click Fixes**: Directly apply AI-suggested code improvements to your source.
+
+### 📊 Social & Analytical Hub
+- **Contribution Matrix**: GitHub-style heatmap visualization of coding activity.
+- **Developer Metrics**: Comprehensive stats on collaboration, streaks, and streaks.
+- **Follower Ecosystem**: Interactive networking with real-time push notifications.
+
+### 💬 Integrated Communication
+- **Unified Chat**: Centralized room chat with thread-based private DMs.
+- **Notification Center**: Real-time alerts for invitations, follows, and assignments.
+
+---
+
+## 📁 Frontend Directory Structure
+
+```text
+client/src/
+├── components/          # Reusable UI and complex page modules
+│   ├── Editor/          # Collaborative editor and workspace tools
+│   ├── Dashboard/       # User project management and analytics
+│   └── layout/          # Global navigation and notification systems
+├── hooks/               # Custom React logic (Auth, Sockets, Theme)
+├── services/            # API abstraction and interceptor logic
+├── utils/               # Constants, formatters, and helper functions
+└── styles/              # Design tokens and global CSS system
+```
+
+---
+
+## ⚙️ Setup & Installation
+
+### 1. Installation
 ```bash
 npm install
 ```
 
-### Configure Environment
-Create a `.env` file in the `client/` directory:
-
+### 2. Environment Variables
+Create a `.env` file in the `client/` root:
 ```env
-# Backend URL — used by Vite proxy at config-load time (via loadEnv)
 VITE_BACKEND_URL=http://localhost:5000
-
-# Firebase (Social Auth)
-VITE_FIREBASE_API_KEY=your_firebase_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_API_KEY=your_key
+# ... other Firebase configuration
 ```
 
-> **Important:** `VITE_BACKEND_URL` is read by `vite.config.js` via `loadEnv` at startup — **not** via `process.env` — so the dev proxy always has a valid target. If you change `.env`, restart the dev server.
-
-### Development Server
+### 3. Development
 ```bash
-npm run dev    # http://localhost:3000
-```
-
-Vite proxies:
-- `/api/*` → `VITE_BACKEND_URL` (REST API)
-- `/socket.io/*` → `VITE_BACKEND_URL` with `ws: true` (WebSocket upgrade)
-
----
-
-## ✨ Feature Modules
-
-### 🛠️ Collaborative Editor (`/src/components/Editor.jsx`)
-- **Real-Time Code Sync** — Socket.io `CODE_CHANGE` events keep all participants in sync.
-- **Live Cursor Tracking** — `cursorActivity` listener emits `cursor-move` to the socket (throttled to **50 ms**). Peers' cursors render as colour-coded bookmarks with name labels via CodeMirror `setBookmark`.
-- **Cursor Sync on Join** — when a new user joins, `cursor-sync-request` is emitted and the server replies with all current cursor positions, so late joiners immediately see where everyone is.
-- **20+ Languages** — syntax highlighting via CodeMirror mode modules.
-- **Autocomplete** — `anyword-hint` + `javascript-hint` on `Ctrl+Space` / input.
-- **Theme Toggle** — Dracula (dark) / Eclipse (light).
-- **Read-Only Mode** — viewers cannot edit; the readonly banner is shown.
-
-### ⬇️ Download Project as ZIP (`EditorToolbar` + `EditorPage`)
-- The **⬇️ button** in the toolbar (only visible for persisted DB projects) calls `handleDownloadProject`.
-- Uses `fetch` with `Authorization: Bearer <token>` to call `GET /api/projects/:id/download`.
-- Response is streamed into a `Blob`, converted to an object URL, and a hidden `<a>` click triggers the browser's save-file dialog.
-- URL is immediately revoked after download to free memory.
-
-### 🗂️ File Explorer & Multi-File Editing
-- Create, rename, and delete files within a project.
-- Tab bar shows all open files with active state highlight.
-- Auto-saves to MongoDB with debounce; manual save with 💾.
-
-### 📊 Developer Social Dashboard
-- **Activity Heatmap** — 365-day GitHub-style contribution matrix.
-- **Stats** — streak counting, active days, collaboration count.
-- **Follower Network** — interactive follow/unfollow with real-time notification.
-- **Project Invitations** — accept or decline collaboration invites.
-
-### 🔔 Notification System
-- Navbar bell icon with real-time unread badge via global socket.
-- Deep links to user profiles and project dashboards.
-
-### 💬 Team Chat
-- In-editor room chat panel with `Everyone` broadcast and private DMs.
-- Unread badge per conversation thread.
-
-### 📅 Meeting Scheduler
-- Schedule, edit, view, and cancel project meetings.
-- Invite specific project members to meetings.
-- Real-time meeting events synced across room participants.
-
-### 🤖 AI Assistant
-- Gemini-powered code explanation, debugging, and boilerplate generation.
-- Apply AI-suggested fixes directly into the editor.
-
----
-
-## 📁 Folder Structure
-
-```
-client/src/
-├── components/
-│   ├── Editor.jsx              # CodeMirror instance + cursor tracking
-│   ├── EditorPage.jsx          # Top-level editor page, handleDownloadProject
-│   ├── Editor/
-│   │   ├── EditorToolbar.jsx   # Toolbar with ⬇️ download button
-│   │   ├── EditorSidebar.jsx   # File explorer + member list
-│   │   ├── CompilerOutput.jsx
-│   │   ├── MeetingPanel.jsx
-│   │   └── ...
-│   ├── Dashboard/
-│   ├── Landing/
-│   ├── layout/                 # Navbar, NotificationDropdown
-│   ├── profile/                # Heatmap, Stats, Timeline
-│   └── ui/                     # Button, shared UI primitives
-├── hooks/
-│   ├── useAuth.jsx
-│   ├── useTheme.jsx
-│   ├── useGlobalSocket.jsx
-│   └── editor/
-│       ├── useRoomSocket.js    # Socket lifecycle + cursor-sync-request on JOIN
-│       └── useFileTree.js
-├── services/
-│   ├── api.js                  # Axios instance with Bearer token interceptor
-│   ├── projectService.js
-│   ├── meetingService.js
-│   └── ...
-└── Actions.js                  # Shared socket event name constants
+npm run dev    # Launches dev server on http://localhost:5173
 ```
 
 ---
 
-## 🧩 Key Dependencies
-
-| Package | Purpose |
-|---|---|
-| `codemirror` (v5/classic) | Editor engine with mode plugins |
-| `socket.io-client` | Real-time WebSocket layer |
-| `react-router-dom` | Client-side routing |
-| `axios` | HTTP client with auth interceptor |
-| `firebase` | Social login (Google/GitHub) |
-| `react-hot-toast` | Accessible toast notifications |
-| `@tailwindcss/vite` | Utility CSS (selectively used) |
+## 🛠️ Build & Optimization
+- **Vite Proxy**: Configured to seamlessly bridge local development with the backend API.
+- **Lazy Loading**: Route-based code splitting for faster initial page loads.
+- **Asset Optimization**: Automated minification and bundling for production deployments.
