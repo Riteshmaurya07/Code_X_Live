@@ -1,152 +1,207 @@
-# 🚀 CodeXLive — Real-Time Collaborative Coding & Social Ecosystem
+# 🚀 CodeXAlive — The Ultimate Collaborative Coding & Social Hub
 
-**CodeXLive** is a production-grade, feature-rich collaborative IDE that merges professional project management with a robust developer social network. Inspired by GitHub and VS Code Live Share, it lets developers pair-program in real-time, track activity via contribution heatmaps, build a professional developer presence, and now — see each other's cursors live and download their entire codebase in one click.
+[![React](https://img.shields.io/badge/Frontend-React%2018-blue?style=flat-square&logo=react)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Backend-Node.js-green?style=flat-square&logo=node.js)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/Database-MongoDB-brightgreen?style=flat-square&logo=mongodb)](https://www.mongodb.com/)
+[![Socket.io](https://img.shields.io/badge/Real--time-Socket.io-black?style=flat-square&logo=socket.io)](https://socket.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
----
-
-## ✨ Feature Highlights
-
-### 📝 Real-Time Collaborative Editor
-- **Multi-File Synchronization** — instant code sync across all clients via Socket.io.
-- **Live Cursor Tracking** — every participant's cursor is rendered in real-time with a colour-coded bookmark and name label. New joiners immediately receive all existing cursor positions via `cursor-sync-request`.
-- **20+ Language Support** — full syntax highlighting, intelligent indentation, and auto-complete.
-- **In-Browser Code Execution** — compile and run code using the integrated JDoodle API.
-- **AI Assistant (Gemini)** — contextual debugging, boilerplate generation, and code explanation.
-- **Code Formatting** — one-click Prettier formatting for supported languages.
-- **Version History** — restore any previous snapshot of a file.
-- **Download Project as ZIP** — export the entire project codebase as a `.zip` archive with one click.
-
-### 👥 Collaborative Presence & Admin Controls
-- **Waiting Room** — project owners vet new joiners before granting workspace access.
-- **Role-Based Permissions** — promote/demote participants between Editor and Viewer roles in real-time.
-- **Kick & Ban** — remove or permanently block disruptive participants.
-- **Ownership Transfer** — seamlessly hand off admin rights to another participant.
-- **Team Chat** — in-editor room chat with private direct messages (DMs).
-- **Meeting Scheduler** — schedule, view, and manage project meetings with participant invites.
-
-### 📊 Developer Social Ecosystem
-- **Activity Heatmap** — GitHub-style 365-day contribution matrix (Project Creation, Edits, Joins).
-- **Follower Network** — follow other developers with real-time notification triggers.
-- **Rich Developer Profiles** — public projects, collaboration stats, streaks, and activity feed.
-- **Global Search** — find users by username, email, or unique ID.
-
-### 🔔 Smart Notifications & Sharing
-- **Real-Time Notifications** — instant alerts for invitations, new followers, and task assignments.
-- **Project Invitations** — invite specific users with role-based access (Editor/Viewer).
-- **Email Alerts** — transactional emails via Brevo (Sendinblue) for offline users.
-
-### 🛡️ Security & Infrastructure
-- **Hybrid Authentication** — JWT sessions + Firebase Social Auth (Google/GitHub).
-- **Rate Limiting & Helmet** — production-hardened Express with security headers.
-- **Response Compression** — gzip compression for all API responses.
-- **Environment Validation** — startup checks for all required environment variables.
+**CodeXAlive** is a high-performance, feature-complete collaborative IDE designed for the modern developer. It combines a professional-grade workspace with a rich social ecosystem, enabling real-time pair programming, seamless project management, and developer networking.
 
 ---
 
-## 🏗️ Technology Stack
+## 📖 Table of Contents
+
+- [✨ Key Features](#-key-features)
+- [🏗️ System Architecture](#️-system-architecture)
+- [🛠️ Technology Stack](#️-technology-stack)
+- [📁 Project Structure](#-project-structure)
+- [🧩 Components & Functionality](#-components--functionality)
+- [🚀 Getting Started](#-getting-started)
+- [💡 Use Cases](#-use-cases)
+- [🛡️ Security & Performance](#️-security--performance)
+- [🤝 Contributing](#-contributing)
+
+---
+
+## ✨ Key Features
+
+### 💻 The Ultimate Workspace
+- **Real-Time Synchronization**: Instant code updates across all participants powered by Socket.io.
+- **Live Cursor Tracking**: Visual presence with color-coded cursors and labels.
+- **Multi-File Explorer**: VS Code-inspired recursive file tree for complex project structures.
+- **AI-Powered Assistance**: Integrated Gemini AI for debugging, refactoring, and code generation.
+- **In-Browser Execution**: Compile and run code in 20+ languages using JDoodle integration.
+- **Advanced Editor Features**: Prettier formatting, syntax highlighting, and auto-complete.
+- **Version Control**: Built-in version history to track and restore code snapshots.
+- **Export Anywhere**: Download your entire project as a ZIP archive with one click.
+
+### 👥 Collaboration & Governance
+- **Waiting Rooms**: Secure workspace entry with owner-controlled access.
+- **Role-Based Access (RBAC)**: Manage permissions with Editor and Viewer roles in real-time.
+- **Admin Suite**: Kick, ban, or transfer project ownership seamlessly.
+- **Unified Chat**: Persistent room chat with private Direct Messaging (DM) support.
+- **Meeting Scheduler**: Integrated tool to coordinate and manage team meetings.
+
+### 🌐 Social Developer Hub
+- **Contribution Heatmap**: GitHub-style 365-day activity tracking.
+- **Developer Profiles**: Showcase public projects, collaboration stats, and activity feeds.
+- **Follower Network**: Build your network with real-time follow/unfollow notifications.
+- **Global Search**: Discover developers by username, email, or unique ID.
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    Client[React Frontend] <-->|Socket.io| Server[Node.js/Express Backend]
+    Client <-->|REST API| Server
+    Server <-->|Mongoose| DB[(MongoDB)]
+    Server <-->|Auth| Firebase[Firebase/JWT]
+    Server <-->|Compile| JDoodle[JDoodle API]
+    Server <-->|AI| Gemini[Google Gemini AI]
+    Server <-->|Email| Brevo[Brevo SMTP]
+```
+
+---
+
+## 🛠️ Technology Stack
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 18, Vite, CodeMirror (classic), Socket.io-client, Axios, Vanilla CSS |
-| **Backend** | Node.js 18+, Express, Socket.io 4, MongoDB (Mongoose), Archiver |
-| **Authentication** | JWT, Firebase Admin SDK (Google/GitHub), Bcrypt.js |
-| **Integrations** | JDoodle API (Compiler), Google Gemini AI, Brevo (Email), GitHub API |
-| **DevOps** | Docker, docker-compose, Nginx (client), Render (backend), Vercel (frontend) |
-
----
-
-## ⚙️ Installation & Setup
-
-### Prerequisites
-- Node.js v18+
-- MongoDB Atlas (or local MongoDB)
-- Firebase project (for Social Auth)
-- JDoodle API credentials
-- Google Gemini API key *(optional)*
-- Brevo API key *(optional, for email)*
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/your-username/CodeXLive.git
-cd CodeXLive
-```
-
-### 2. Backend Setup
-```bash
-cd server
-npm install
-```
-
-Create `server/.env`:
-```env
-PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-JDOODLE_CLIENT_ID=your_jdoodle_client_id
-JDOODLE_CLIENT_SECRET=your_jdoodle_client_secret
-GEMINI_API_KEY=your_gemini_key
-SMTP_API_KEY=your_brevo_api_key
-CLIENT_URL=http://localhost:3000
-NODE_ENV=development
-```
-
-Start the backend:
-```bash
-npm run dev          # nodemon (development)
-npm start            # node index.js (production)
-```
-
-### 3. Frontend Setup
-```bash
-cd ../client
-npm install
-```
-
-Create `client/.env`:
-```env
-VITE_BACKEND_URL=http://localhost:5000
-VITE_FIREBASE_API_KEY=your_firebase_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-```
-
-Start the frontend:
-```bash
-npm run dev          # Vite dev server on http://localhost:3000
-```
-
-> **Note:** `VITE_BACKEND_URL` is read at Vite config-load time via `loadEnv` so the dev proxy always resolves correctly.
-
-### 4. Docker (Full Stack)
-```bash
-docker-compose up --build
-```
+| **Frontend** | React 18, Vite, CodeMirror 6, Socket.io-client, Axios, Vanilla CSS |
+| **Backend** | Node.js, Express, Socket.io 4, MongoDB (Mongoose), Archiver |
+| **Auth** | JWT (Stateless), Firebase Admin SDK (Social Auth), Bcrypt.js |
+| **AI/Integrations** | Google Gemini AI, JDoodle Compiler API, Brevo (Email), GitHub API |
+| **DevOps** | Docker, Docker Compose, Nginx, Render (Backend), Vercel (Frontend) |
 
 ---
 
 ## 📁 Project Structure
 
-```
-CodeXLive/
-├── client/                  # React + Vite frontend
+```text
+CodeXAlive/
+├── client/                  # React + Vite Frontend
 │   ├── src/
-│   │   ├── components/      # Editor, Dashboard, Landing, layout, UI
-│   │   ├── hooks/           # useAuth, useTheme, useRoomSocket, useFileTree
-│   │   └── services/        # API abstraction (projectService, meetingService…)
-│   └── vite.config.js       # Proxy config using loadEnv
+│   │   ├── components/      # UI, Layout, and Workspace components (Editor, Chat, AI)
+│   │   ├── pages/           # Application views (Dashboard, Editor, Profile, Login)
+│   │   ├── hooks/           # Custom React hooks (Auth, Socket, Theme, FileTree)
+│   │   ├── services/        # API communication layers (Axios interceptors)
+│   │   ├── utils/           # Helper functions, constants, and Actions.js
+│   │   └── index.css        # Global styles and design tokens
+│   └── vite.config.js       # Build and Proxy configuration
 │
-└── server/                  # Node.js + Express backend
-    ├── controllers/         # REST controllers incl. downloadController
-    ├── models/              # Mongoose schemas
-    ├── routes/              # Express routers incl. /:id/download
-    ├── sockets/
-    │   ├── roomState.js     # Shared ephemeral state (cursors, room maps)
-    │   └── handlers/        # codeHandlers, roomHandlers, chatHandlers…
-    └── middleware/          # auth.js (JWT), rate limiting
+└── server/                  # Node.js + Express Backend
+    ├── controllers/         # Business logic (Project, File, Auth, AI, Social)
+    ├── models/              # MongoDB (Mongoose) schemas (User, Project, File, Message)
+    ├── routes/              # Express API endpoints
+    ├── sockets/             # Socket.io events and room state management
+    │   ├── handlers/        # Specific event handlers (Code, Room, Chat, Permissions)
+    │   └── roomState.js     # In-memory ephemeral store for cursors and active users
+    ├── middleware/          # Auth, Rate-limiting, and Security headers
+    ├── utils/               # Backend helpers (Email, AI, Compiler, Logger)
+    └── index.js             # Server entry point and Socket.io bootstrap
 ```
+
+---
+
+## 🧩 Components & Functionality
+
+### Frontend Core Components
+- **`EditorPage.jsx`**: The main orchestration component for the collaborative workspace.
+- **`Editor.jsx`**: CodeMirror implementation with live cursor and selection tracking.
+- **`AIPanel.jsx`**: Interface for interacting with the Gemini AI assistant.
+- **`FileExplorer.jsx`**: Recursive file tree management with CRUD operations and context menus.
+- **`ChatPanel.jsx`**: Real-time communication hub for room participants with DM support.
+- **`ShareModal.jsx`**: Project invitation and permission management system.
+- **`Dashboard.jsx`**: Centralized hub for user projects and collaboration stats.
+- **`PublicProfile.jsx`**: Social hub displaying activity heatmaps and networking stats.
+
+### Backend Logic
+- **`socketHandler.js`**: Orchestrates all real-time events and handshakes.
+- **`roomState.js`**: Manages ephemeral room data (cursors, active members) for performance.
+- **`projectController.js`**: Handles persistence and management of collaborative projects.
+- **`downloadController.js`**: Manages the streaming of project files into a ZIP archive.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18 or higher)
+- MongoDB Atlas or Local Instance
+- Firebase Project (for Social Auth)
+- API Keys: JDoodle, Google Gemini, Brevo (Optional)
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/Riteshmaurya07/Code_X_Live.git
+cd Code_X_Live
+```
+
+### 2. Configure Environment
+**Server (`/server/.env`):**
+```env
+PORT=5000
+MONGODB_URI=your_mongo_url
+JWT_SECRET=your_jwt_secret
+JDOODLE_CLIENT_ID=your_id
+JDOODLE_CLIENT_SECRET=your_secret
+GEMINI_API_KEY=your_key
+SMTP_API_KEY=your_brevo_key
+CLIENT_URL=http://localhost:5173
+```
+
+**Client (`/client/.env`):**
+```env
+VITE_BACKEND_URL=http://localhost:5000
+VITE_FIREBASE_API_KEY=...
+# Add other Firebase config vars
+```
+
+### 3. Run Locally
+**Start Backend:**
+```bash
+cd server && npm install && npm run dev
+```
+
+**Start Frontend:**
+```bash
+cd client && npm install && npm run dev
+```
+
+---
+
+## 💡 Use Cases
+
+- **Pair Programming**: Collaborate on complex features with real-time feedback and shared cursors.
+- **Technical Interviews**: Conduct coding assessments in a live, interactive environment with AI debugging.
+- **Education & Mentorship**: Teach coding concepts by sharing a live workspace and conducting meetings.
+- **Open Source Collaboration**: Rapidly prototype and brainstorm with global teams using integrated chat.
+- **Project Showcasing**: Build a professional developer profile and highlight your contributions via heatmaps.
+
+---
+
+## 🛡️ Security & Performance
+
+- **Rate Limiting**: Protection against brute-force and DDoS attacks on expensive endpoints.
+- **Security Headers**: Production-hardened with `helmet.js`.
+- **Stateless Auth**: Secure JWT-based authentication with social fallbacks via Firebase.
+- **Compression**: Gzip-compressed responses for faster data transfer.
+- **Validation**: Strict environment and Mongoose schema validation at startup.
+
+---
+
+## 🤝 Contributing
+
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
