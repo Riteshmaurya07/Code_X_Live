@@ -6,6 +6,7 @@ const ACTIONS = require("../../Actions");
 const logger = require("../../utils/logger");
 const Message = require("../../models/Message");
 const User = require("../../models/User");
+const Follow = require("../../models/Follow");
 const {
   userSocketMap,
   globalUserSockets,
@@ -56,14 +57,22 @@ const registerChatHandlers = (io, socket) => {
       const senderId = socket.user.id;
       if (!senderId || !recipientId) return;
 
-      const recipientDoc = await User.findById(recipientId).select("following");
       let isRequest = true;
 
-      if (recipientDoc && recipientDoc.following.includes(senderId)) {
+      // Check if recipient is following the sender
+      const isFollowing = await Follow.findOne({
+        follower: recipientId,
+        following: senderId,
+      });
+
+      if (isFollowing) {
         isRequest = false;
       } else {
+        // Check if there's an existing non-request conversation
         const existing = await Message.findOne({
-          sender: recipientId, receiver: senderId, isRequest: false,
+          sender: recipientId,
+          receiver: senderId,
+          isRequest: false,
         });
         if (existing) isRequest = false;
       }
