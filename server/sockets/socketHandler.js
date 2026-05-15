@@ -23,6 +23,7 @@ const { registerPermissionHandlers } = require("./handlers/permissionHandlers");
 const { registerCodeHandlers }       = require("./handlers/codeHandlers");
 const { registerChatHandlers }       = require("./handlers/chatHandlers");
 const { registerDisconnectHandlers } = require("./handlers/disconnectHandlers");
+const { registerVideoHandlers }      = require("./handlers/videoHandlers");
 
 const setupSocket = (io) => {
 
@@ -50,6 +51,7 @@ const setupSocket = (io) => {
     registerCodeHandlers(io, socket);
     registerChatHandlers(io, socket);
     registerDisconnectHandlers(io, socket);
+    registerVideoHandlers(io, socket);
   });
 };
 

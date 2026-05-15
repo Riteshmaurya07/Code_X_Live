@@ -1,9 +1,10 @@
 # 🚀 CodeXAlive — The Ultimate Collaborative Coding & Social Hub
 
-[![React](https://img.shields.io/badge/Frontend-React%2018-blue?style=flat-square&logo=react)](https://reactjs.org/)
+[![React](https://img.shields.io/badge/Frontend-React%2019-blue?style=flat-square&logo=react)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Backend-Node.js-green?style=flat-square&logo=node.js)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/Database-MongoDB-brightgreen?style=flat-square&logo=mongodb)](https://www.mongodb.com/)
 [![Socket.io](https://img.shields.io/badge/Real--time-Socket.io-black?style=flat-square&logo=socket.io)](https://socket.io/)
+[![WebRTC](https://img.shields.io/badge/Calling-WebRTC-orange?style=flat-square&logo=webrtc)](https://webrtc.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 **CodeXAlive** is a high-performance, feature-complete collaborative IDE designed for the modern developer. It combines a professional-grade workspace with a rich social ecosystem, enabling real-time pair programming, seamless project management, and developer networking.
@@ -36,6 +37,16 @@
 - **Version Control**: Built-in version history to track and restore code snapshots.
 - **Export Anywhere**: Download your entire project as a ZIP archive with one click.
 
+### 📞 Real-Time Audio & Video Calling
+- **WhatsApp-Style Calls**: Initiate audio-only or video calls directly from the editor toolbar.
+- **Group Calls**: Full mesh WebRTC topology supporting up to 8 simultaneous participants.
+- **In-Call Controls**: Mute/unmute microphone, enable/disable camera, and end call.
+- **Participant Tiles**: Dynamic grid layout showing live video streams or avatar fallbacks.
+- **Incoming Call Notifications**: Toast-style modals with accept/decline actions and auto-dismiss.
+- **Late Join Support**: Users joining a room with an active call can join instantly.
+- **Floating Draggable Panel**: Non-intrusive call UI with minimize/expand and a live duration timer.
+- **Graceful Degradation**: Falls back to audio-only if camera permission is denied.
+
 ### 👥 Collaboration & Governance
 - **Waiting Rooms**: Secure workspace entry with owner-controlled access.
 - **Role-Based Access (RBAC)**: Manage permissions with Editor and Viewer roles in real-time.
@@ -57,11 +68,14 @@
 graph TD
     Client[React Frontend] <-->|Socket.io| Server[Node.js/Express Backend]
     Client <-->|REST API| Server
+    Client <-->|WebRTC P2P| Client2[Other Participants]
+    Server <-->|Signaling| Client
     Server <-->|Mongoose| DB[(MongoDB)]
     Server <-->|Auth| Firebase[Firebase/JWT]
     Server <-->|Compile| JDoodle[JDoodle API]
     Server <-->|AI| Gemini[Google Gemini AI]
     Server <-->|Email| Brevo[Brevo SMTP]
+    Client -.->|STUN| Google[Google STUN Servers]
 ```
 
 ---
@@ -70,9 +84,10 @@ graph TD
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 18, Vite, CodeMirror 6, Socket.io-client, Axios, Vanilla CSS |
+| **Frontend** | React 19, Vite 7, CodeMirror 6, Socket.io-client, Axios, Tailwind CSS |
 | **Backend** | Node.js, Express, Socket.io 4, MongoDB (Mongoose), Archiver |
 | **Auth** | JWT (Stateless), Firebase Admin SDK (Social Auth), Bcrypt.js |
+| **WebRTC** | simple-peer (Full Mesh), Google STUN Servers, Socket.io Signaling |
 | **AI/Integrations** | Google Gemini AI, JDoodle Compiler API, Brevo (Email), GitHub API |
 | **DevOps** | Docker, Docker Compose, Nginx, Render (Backend), Vercel (Frontend) |
 
@@ -84,21 +99,26 @@ graph TD
 CodeXAlive/
 ├── client/                  # React + Vite Frontend
 │   ├── src/
-│   │   ├── components/      # UI, Layout, and Workspace components (Editor, Chat, AI)
+│   │   ├── components/      # UI, Layout, and Workspace components
+│   │   │   ├── Editor/      # EditorToolbar, Sidebar, Modals, StatusBar
+│   │   │   └── video/       # CallPanel, ParticipantTile, IncomingCallModal
 │   │   ├── pages/           # Application views (Dashboard, Editor, Profile, Login)
-│   │   ├── hooks/           # Custom React hooks (Auth, Socket, Theme, FileTree)
+│   │   ├── hooks/           # Custom React hooks (Auth, Socket, Theme, FileTree, WebRTC)
+│   │   │   └── useWebRTC.js # Full mesh WebRTC calling hook (simple-peer)
 │   │   ├── services/        # API communication layers (Axios interceptors)
+│   │   ├── styles/          # CSS modules (editor.css, video.css, etc.)
 │   │   ├── utils/           # Helper functions, constants, and Actions.js
 │   │   └── index.css        # Global styles and design tokens
-│   └── vite.config.js       # Build and Proxy configuration
+│   └── vite.config.js       # Build, Proxy, and Node polyfill configuration
 │
 └── server/                  # Node.js + Express Backend
     ├── controllers/         # Business logic (Project, File, Auth, AI, Social)
     ├── models/              # MongoDB (Mongoose) schemas (User, Project, File, Message)
     ├── routes/              # Express API endpoints
     ├── sockets/             # Socket.io events and room state management
-    │   ├── handlers/        # Specific event handlers (Code, Room, Chat, Permissions)
-    │   └── roomState.js     # In-memory ephemeral store for cursors and active users
+    │   ├── handlers/        # Event handlers (Code, Room, Chat, Permissions, Video)
+    │   │   └── videoHandlers.js  # WebRTC signaling (offer, answer, ICE, call lifecycle)
+    │   └── roomState.js     # In-memory store (cursors, active users, active calls)
     ├── middleware/          # Auth, Rate-limiting, and Security headers
     ├── utils/               # Backend helpers (Email, AI, Compiler, Logger)
     └── index.js             # Server entry point and Socket.io bootstrap
@@ -118,9 +138,16 @@ CodeXAlive/
 - **`Dashboard.jsx`**: Centralized hub for user projects and collaboration stats.
 - **`PublicProfile.jsx`**: Social hub displaying activity heatmaps and networking stats.
 
+### Video Calling Components
+- **`useWebRTC.js`**: Custom hook managing full mesh WebRTC state, peer lifecycle, and Socket.io signaling.
+- **`CallPanel.jsx`**: Floating, draggable panel with participant grid and call controls (custom pointer-event drag, no library dependency).
+- **`ParticipantTile.jsx`**: Renders live video stream or avatar fallback with mute/video status indicators.
+- **`IncomingCallModal.jsx`**: Toast-style incoming call notification with accept/decline actions.
+
 ### Backend Logic
 - **`socketHandler.js`**: Orchestrates all real-time events and handshakes.
-- **`roomState.js`**: Manages ephemeral room data (cursors, active members) for performance.
+- **`videoHandlers.js`**: WebRTC signaling relay — forwards SDP offers, answers, and ICE candidates between peers. Manages `activeCallRooms` state with an 8-participant cap.
+- **`roomState.js`**: Manages ephemeral room data (cursors, active members, active calls) for performance.
 - **`projectController.js`**: Handles persistence and management of collaborative projects.
 - **`downloadController.js`**: Manages the streaming of project files into a ZIP archive.
 
@@ -175,10 +202,11 @@ cd client && npm install && npm run dev
 
 ## 💡 Use Cases
 
-- **Pair Programming**: Collaborate on complex features with real-time feedback and shared cursors.
-- **Technical Interviews**: Conduct coding assessments in a live, interactive environment with AI debugging.
-- **Education & Mentorship**: Teach coding concepts by sharing a live workspace and conducting meetings.
-- **Open Source Collaboration**: Rapidly prototype and brainstorm with global teams using integrated chat.
+- **Pair Programming**: Collaborate on complex features with real-time feedback, shared cursors, and voice/video calling.
+- **Technical Interviews**: Conduct coding assessments in a live, interactive environment with AI debugging and screen presence.
+- **Education & Mentorship**: Teach coding concepts by sharing a live workspace with audio/video and conducting meetings.
+- **Remote Team Standups**: Jump into a quick group video call without leaving the IDE.
+- **Open Source Collaboration**: Rapidly prototype and brainstorm with global teams using integrated chat and calling.
 - **Project Showcasing**: Build a professional developer profile and highlight your contributions via heatmaps.
 
 ---
@@ -188,6 +216,8 @@ cd client && npm install && npm run dev
 - **Rate Limiting**: Protection against brute-force and DDoS attacks on expensive endpoints.
 - **Security Headers**: Production-hardened with `helmet.js`.
 - **Stateless Auth**: Secure JWT-based authentication with social fallbacks via Firebase.
+- **Room-Scoped Signaling**: All WebRTC events are verified server-side to be room-scoped — no cross-room leakage.
+- **Ephemeral Calls**: No server-side recording; all media streams are peer-to-peer and never touch the server.
 - **Compression**: Gzip-compressed responses for faster data transfer.
 - **Validation**: Strict environment and Mongoose schema validation at startup.
 

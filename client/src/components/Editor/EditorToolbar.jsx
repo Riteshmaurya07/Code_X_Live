@@ -1,6 +1,6 @@
 import React from 'react';
 import Button from '../ui/Button';
-import { Menu, Sun, Moon, Save, Download, Paintbrush, History, Calendar, MessageSquare, Bot, LoaderCircle, Play } from 'lucide-react';
+import { Menu, Sun, Moon, Save, Download, Paintbrush, History, Calendar, MessageSquare, Bot, LoaderCircle, Play, Phone, Video } from 'lucide-react';
 
 const EditorToolbar = ({
   theme, onToggleTheme,
@@ -10,7 +10,8 @@ const EditorToolbar = ({
   onToggleChat, showChatPanel, onRun, isCompiling,
   unreadChatCount, showAIPanel, onToggleAI,
   showMeetingPanel, onToggleMeetings,
-  onToggleSidebar, onDownloadProject
+  onToggleSidebar, onDownloadProject,
+  callStatus, onStartCall, onJoinCall
 }) => {
   return (
     <div className="editor-toolbar">
@@ -98,6 +99,42 @@ const EditorToolbar = ({
         >
           <Bot size={18} />
         </Button>
+
+        {/* Video/Audio Call Buttons */}
+        <div className="call-toolbar-group">
+          {callStatus === 'idle' ? (
+            <>
+              <Button
+                variant="outline"
+                className="toolbar-btn chip call-btn"
+                onClick={() => onStartCall('audio')}
+                title="Start Audio Call"
+              >
+                <Phone size={18} className="text-green-500" />
+              </Button>
+              <Button
+                variant="outline"
+                className="toolbar-btn chip call-btn"
+                onClick={() => onStartCall('video')}
+                title="Start Video Call"
+              >
+                <Video size={18} className="text-green-500" />
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="outline"
+              className="toolbar-btn chip call-btn active"
+              onClick={onJoinCall}
+              disabled={callStatus === 'active'}
+              title={callStatus === 'active' ? "Call in progress" : "Join Call"}
+            >
+              <Phone size={18} className="text-green-500" />
+              <span className="active-indicator"></span>
+            </Button>
+          )}
+        </div>
+
         <Button variant="primary" className="toolbar-btn chip run-btn" onClick={onRun} disabled={isCompiling} title="Run Code">
           {isCompiling ? <LoaderCircle size={16} className="animate-spin" /> : <><Play size={16} fill="currentColor" /> Run</>}
         </Button>
