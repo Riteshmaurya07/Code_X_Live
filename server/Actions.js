@@ -53,6 +53,20 @@ const ACTIONS = {
   MEETING_CREATED: "meeting-created",
   MEETING_UPDATED: "meeting-updated",
   MEETING_DELETED: "meeting-deleted",
+
+  // Video/Audio Calling events
+  CALL_INITIATE: "call-initiate",
+  INCOMING_CALL: "incoming-call",
+  CALL_ANSWER: "call-answer",
+  JOIN_CALL: "join-call",
+  LEAVE_CALL: "leave-call",
+  WEBRTC_OFFER: "webrtc-offer",
+  WEBRTC_ANSWER: "webrtc-answer",
+  WEBRTC_ICE_CANDIDATE: "webrtc-ice-candidate",
+  TOGGLE_MEDIA: "toggle-media",
+  PARTICIPANT_JOINED_CALL: "participant-joined-call",
+  PARTICIPANT_LEFT_CALL: "participant-left-call",
+  PARTICIPANT_MEDIA_TOGGLE: "participant-media-toggle",
 };
 
 module.exports = ACTIONS;

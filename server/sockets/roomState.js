@@ -21,6 +21,7 @@ const MAX_ROOM_MESSAGES = 50;
 const cursorPositions = {};                // roomId    → { socketId: { username, line, ch } }
 const cursorThrottle = {};                 // socketId  → lastEmitTimestamp
 const CURSOR_THROTTLE_MS = 50;
+const activeCallRooms = new Map();         // roomId    → Set<socketId>
 
 const getAllConnectedClients = (io, roomId) =>
   Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => ({
@@ -44,5 +45,6 @@ module.exports = {
   cursorPositions,
   cursorThrottle,
   CURSOR_THROTTLE_MS,
+  activeCallRooms,
   getAllConnectedClients,
 };

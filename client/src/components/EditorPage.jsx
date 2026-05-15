@@ -13,6 +13,8 @@ import MeetingDetailsModal from "./Editor/MeetingDetailsModal";
 import InviteParticipantsModal from "./Editor/InviteParticipantsModal";
 import StatusBar from "./Editor/StatusBar";
 import Breadcrumbs from "./Editor/Breadcrumbs";
+import CallPanel from "./video/CallPanel";
+import IncomingCallModal from "./video/IncomingCallModal";
 import { ACTIONS } from "../Actions";
 import {
   useNavigate,
@@ -30,6 +32,7 @@ import { getProject, formatCode as formatCodeAPI } from "../services/projectServ
 import { getProjectMeetings, deleteMeeting } from "../services/meetingService";
 import { useFileTree } from "../hooks/editor/useFileTree";
 import { useRoomSocket } from "../hooks/editor/useRoomSocket";
+import { useWebRTC } from "../hooks/useWebRTC";
 
 const LANGUAGES = [
   "python3", "java", "cpp", "nodejs", "c", "ruby", "go", "scala", 
@@ -123,6 +126,14 @@ function EditorPage() {
       if (proj._id) setProjectId(proj._id);
     }
   });
+
+  // --- WebRTC Hook ---
+  const {
+    localStream, remoteStreams, callStatus, callType,
+    isAudioEnabled, isVideoEnabled, incomingCall, activeParticipants,
+    startCall, acceptCall, declineCall, joinCall, endCall,
+    toggleAudio, toggleVideo
+  } = useWebRTC(socketRef.current, projectObj?._id || roomId, username);
 
   const isAdmin = adminUsername === username;
   const isReadOnly = !isAdmin && permissions[username] === 'viewer';
@@ -446,6 +457,9 @@ function EditorPage() {
           onToggleAI={() => { setShowAIPanel(!showAIPanel); setShowHistory(false); setShowChatPanel(false); setShowMeetingPanel(false); }}
           onToggleSidebar={() => setSidebarOpen(prev => !prev)}
           onDownloadProject={handleDownloadProject}
+          callStatus={callStatus}
+          onStartCall={startCall}
+          onJoinCall={joinCall}
         />
 
         {isReadOnly && <div className="readonly-banner"><Eye size={14} className="inline mr-1" /> View Only</div>}
@@ -538,6 +552,29 @@ function EditorPage() {
           clientsCount={clients.length} 
           status={socketRef.current?.connected ? "connected" : "disconnected"} 
         />
+        
+        {/* WebRTC Calling UI */}
+        {callStatus === 'active' && (
+          <CallPanel 
+            localStream={localStream}
+            remoteStreams={remoteStreams}
+            isAudioEnabled={isAudioEnabled}
+            isVideoEnabled={isVideoEnabled}
+            toggleAudio={toggleAudio}
+            toggleVideo={toggleVideo}
+            endCall={endCall}
+            username={username}
+            activeParticipants={activeParticipants}
+          />
+        )}
+
+        {callStatus === 'incoming' && (
+          <IncomingCallModal 
+            incomingCall={incomingCall}
+            acceptCall={acceptCall}
+            declineCall={declineCall}
+          />
+        )}
       </div>
     </div>
   );

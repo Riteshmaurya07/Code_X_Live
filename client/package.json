@@ -14,14 +14,18 @@
     "codemirror": "^5.65.16",
     "dotenv": "^17.2.3",
     "firebase": "^12.11.0",
+    "howler": "^2.2.4",
     "lucide-react": "^1.8.0",
     "react": "^19.2.1",
     "react-avatar": "^5.0.4",
     "react-dom": "^19.2.1",
+    "react-draggable": "^4.5.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.10.1",
+    "simple-peer": "^9.11.1",
     "socket.io-client": "^4.8.1",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "vite-plugin-node-polyfills": "^0.26.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

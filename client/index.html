@@ -14,6 +14,11 @@
     <link rel="apple-touch-icon" href="/logo192.png" />
     <link rel="manifest" href="/manifest.json" />
     <title>CodeXLive</title>
+    <script>
+      if (typeof global === 'undefined') {
+        window.global = window;
+      }
+    </script>
   </head>
   <body style="background-color: #0f1117;">
     <noscript>You need to enable JavaScript to run this app.</noscript>

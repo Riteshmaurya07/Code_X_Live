@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 export default defineConfig(({ mode }) => {
   // loadEnv reads .env files at config time (Node context), where
@@ -10,7 +11,18 @@ export default defineConfig(({ mode }) => {
   const backendUrl = env.VITE_BACKEND_URL || "http://localhost:5000";
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      nodePolyfills({
+        globals: {
+          Buffer: true,
+          global: true,
+          process: true,
+        },
+        protocolImports: true,
+      }),
+    ],
     server: {
       port: 3000,
       headers: {

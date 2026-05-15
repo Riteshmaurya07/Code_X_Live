@@ -17,6 +17,8 @@ const {
   roomMessages,
   cursorPositions,
   cursorThrottle,
+  CURSOR_THROTTLE_MS,
+  activeCallRooms,
   getAllConnectedClients,
 } = require("../roomState");
 
@@ -39,6 +41,19 @@ const registerDisconnectHandlers = (io, socket) => {
       // Clean up cursor store
       if (cursorPositions[roomId]) {
         delete cursorPositions[roomId][socket.id];
+      }
+
+      // Clean up active calls
+      const callParticipants = activeCallRooms.get(roomId);
+      if (callParticipants && callParticipants.has(socket.id)) {
+        callParticipants.delete(socket.id);
+        socket.to(roomId).emit(ACTIONS.PARTICIPANT_LEFT_CALL, {
+          socketId: socket.id,
+          username,
+        });
+        if (callParticipants.size === 0) {
+          activeCallRooms.delete(roomId);
+        }
       }
 
       // Admin promotion if admin disconnects
