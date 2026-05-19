@@ -31,12 +31,17 @@ const register = async (req, res) => {
       return res.status(400).json({ error: "Email is already registered" });
     }
 
-    const user = await User.create({ username, email, password, authProvider: "local" });
+    const user = await User.create({
+      username, email, password,
+      authProvider: "local",
+      providers: ["local"],
+    });
 
     res.status(201).json({
       _id: user._id,
       username: user.username,
       email: user.email,
+      providers: user.providers,
       token: generateToken(user._id),
     });
   } catch (err) {
@@ -59,7 +64,7 @@ const login = async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // If user signed up via OAuth, they can't login with password
+    // If user signed up via OAuth and has no password
     if (user.authProvider !== "local" && !user.password) {
       return res.status(401).json({
         error: `This account uses ${user.authProvider} sign-in. Please use the ${user.authProvider} button to log in.`,
@@ -77,6 +82,7 @@ const login = async (req, res) => {
       email: user.email,
       avatar: user.avatar,
       authProvider: user.authProvider,
+      providers: user.providers,
       token: generateToken(user._id),
     });
   } catch (err) {
@@ -85,7 +91,18 @@ const login = async (req, res) => {
   }
 };
 
-// Firebase/OAuth Login — verifies Firebase ID token, finds or creates user
+/**
+ * Firebase/OAuth Login — verifies Firebase ID token, finds or creates user.
+ *
+ * Account linking strategy:
+ *   1. Look up by firebaseUid first (fastest, most reliable).
+ *   2. If not found, look up by email.
+ *   3. If email match found, link the Firebase UID and add the new provider.
+ *   4. If no match at all, create a new user.
+ *
+ * This ensures a single MongoDB user document per email, regardless of how
+ * many OAuth providers (Google, GitHub) are linked on the Firebase side.
+ */
 const firebaseLogin = async (req, res) => {
   try {
     const { idToken } = req.body;
@@ -99,29 +116,61 @@ const firebaseLogin = async (req, res) => {
     const { uid, email, name, picture } = decoded;
     const provider = decoded.firebase?.sign_in_provider || "google.com";
 
-    // Determine auth provider
+    // Determine auth provider label
     let authProvider = "google";
     if (provider.includes("github")) authProvider = "github";
 
     // Provide a fallback email if OAuth (like GitHub) doesn't return one
     const safeEmail = email || `${uid}@github.local`;
 
-    // Try to find existing user by Firebase UID
+    // ── Step 1: Try to find by Firebase UID ──
     let user = await User.findOne({ firebaseUid: uid });
 
-    if (!user) {
-      // Check if a user with this email already exists (account linking)
+    if (user) {
+      // User exists — ensure this provider is in the providers array
+      let updated = false;
+
+      if (!user.providers.includes(authProvider)) {
+        user.providers.push(authProvider);
+        updated = true;
+      }
+
+      // Update avatar if missing
+      if (picture && !user.avatar) {
+        user.avatar = picture;
+        updated = true;
+      }
+
+      if (updated) await user.save();
+
+    } else {
+      // ── Step 2: Try to find by email ──
       user = await User.findOne({ email: safeEmail });
 
       if (user) {
-        // Link the Firebase UID to the existing account
+        // Email match — link Firebase UID and add provider
         user.firebaseUid = uid;
+
+        if (!user.providers.includes(authProvider)) {
+          user.providers.push(authProvider);
+        }
+
+        // Keep authProvider as the original one, unless it was "local"
+        // and now they're linking an OAuth provider
+        if (user.authProvider === "local") {
+          // User originally registered locally, now linking OAuth
+          // Keep authProvider as "local" but add the new provider
+        } else if (user.authProvider !== authProvider) {
+          // Already has a different OAuth provider, just add to array
+        }
+
         if (picture && !user.avatar) user.avatar = picture;
         await user.save();
-        logger.info(`Linked Firebase UID to existing user: ${user.username}`);
+
+        logger.info(`Linked Firebase UID to existing user: ${user.username} (added ${authProvider})`);
+
       } else {
-        // Create a brand new user
-        // Generate a unique username from display name or email fallback
+        // ── Step 3: Create a brand new user ──
         let baseName = name || safeEmail.split("@")[0];
         let username = baseName.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase();
 
@@ -141,8 +190,10 @@ const firebaseLogin = async (req, res) => {
           email: safeEmail,
           firebaseUid: uid,
           authProvider,
+          providers: [authProvider],
           avatar: picture || "",
         });
+
         logger.info(`New OAuth user created: ${user.username} (${authProvider})`);
       }
     }
@@ -153,6 +204,7 @@ const firebaseLogin = async (req, res) => {
       email: user.email,
       avatar: user.avatar,
       authProvider: user.authProvider,
+      providers: user.providers,
       token: generateToken(user._id),
     });
   } catch (err) {

@@ -13,8 +13,8 @@ const auth = require("../middleware/auth");
 
 router.use(auth);
 
-router.post("/:projectId", createFile);
 router.post("/autosave", autosaveFile);
+router.post("/:projectId", createFile);
 router.get("/:id", getFile);
 router.get("/:id/versions", getFileVersions);
 router.post("/versions/:versionId/restore", restoreVersion);

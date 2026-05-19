@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { getProfile } from "../services/authService";
+import { getProfile, checkRedirectResult } from "../services/authService";
 
 const AuthContext = createContext(null);
 
@@ -8,17 +8,34 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    const init = async () => {
+      const token = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
 
-    if (token && storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("user");
+      if (token && storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch {
+          localStorage.removeItem("user");
+        }
       }
-    }
-    setLoading(false);
+
+      // Check if returning from a signInWithRedirect flow (popup was blocked)
+      try {
+        const redirectData = await checkRedirectResult();
+        if (redirectData) {
+          localStorage.setItem("token", redirectData.token);
+          localStorage.setItem("user", JSON.stringify(redirectData));
+          setUser(redirectData);
+        }
+      } catch (err) {
+        console.error("Redirect auth error:", err);
+      }
+
+      setLoading(false);
+    };
+
+    init();
   }, []);
 
   const login = (userData) => {

@@ -52,12 +52,31 @@ function Register() {
     setIsLoading(true);
     try {
       const userData = provider === "google" ? await loginWithGoogle() : await loginWithGitHub();
+      
+      // null means signInWithRedirect was used (popup blocked) — page will navigate away
+      if (!userData) return;
+
       login(userData);
       toast.success("Login successful!");
       const returnUrl = searchParams.get("returnUrl") || "/dashboard";
       navigate(returnUrl);
     } catch (err) {
-      toast.error(err.response?.data?.error || "Social login failed");
+      console.error("Social login error:", err);
+      
+      // Don't show a toast for user-cancelled actions
+      if (err.message === "Account linking cancelled." ||
+          err.code === "auth/popup-closed-by-user" ||
+          err.code === "auth/cancelled-popup-request") {
+        setIsLoading(false);
+        return;
+      }
+
+      const message =
+        err.response?.data?.error ||
+        err.message ||
+        err.code?.replace("auth/", "").replace(/-/g, " ") ||
+        "Social login failed";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
