@@ -1,11 +1,11 @@
-# 🖥️ CodeXAlive Frontend — Premium Developer Experience
+# 🖥️ CodeXLive Frontend — Premium Developer Experience
 
 [![React](https://img.shields.io/badge/UI-React%2018-blue?style=flat-square&logo=react)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Build-Vite-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
 [![CodeMirror](https://img.shields.io/badge/Editor-CodeMirror%206-black?style=flat-square&logo=codemirror)](https://codemirror.net/)
 [![Tailwind](https://img.shields.io/badge/Styling-Vanilla%20CSS-38B2AC?style=flat-square&logo=css3)](https://developer.mozilla.org/en-US/docs/Web/CSS)
 
-The CodeXAlive frontend is a high-performance, real-time interface engineered for seamless collaboration. Built with **React 18** and **Vite**, it delivers a glassmorphic, premium UI/UX optimized for productivity and developer social engagement.
+The CodeXLive frontend is a high-performance, real-time interface engineered for seamless collaboration. Built with **React 18** and **Vite**, it delivers a glassmorphic, premium UI/UX optimized for productivity and developer social engagement.
 
 ---
 

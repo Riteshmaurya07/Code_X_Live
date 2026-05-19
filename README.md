@@ -1,4 +1,4 @@
-# 🚀 CodeXAlive — The Ultimate Collaborative Coding & Social Hub
+# 🚀 CodeXLive — The Ultimate Collaborative Coding & Social Hub
 
 [![React](https://img.shields.io/badge/Frontend-React%2019-blue?style=flat-square&logo=react)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Backend-Node.js-green?style=flat-square&logo=node.js)](https://nodejs.org/)
@@ -7,7 +7,7 @@
 [![WebRTC](https://img.shields.io/badge/Calling-WebRTC-orange?style=flat-square&logo=webrtc)](https://webrtc.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-**CodeXAlive** is a high-performance, feature-complete collaborative IDE designed for the modern developer. It combines a professional-grade workspace with a rich social ecosystem, enabling real-time pair programming, seamless project management, and developer networking.
+**CodeXLive** is a high-performance, feature-complete collaborative IDE designed for the modern developer. It combines a professional-grade workspace with a rich social ecosystem, enabling real-time pair programming, seamless project management, and developer networking.
 
 ---
 
@@ -96,7 +96,7 @@ graph TD
 ## 📁 Project Structure
 
 ```text
-CodeXAlive/
+CodeXLive/
 ├── client/                  # React + Vite Frontend
 │   ├── src/
 │   │   ├── components/      # UI, Layout, and Workspace components

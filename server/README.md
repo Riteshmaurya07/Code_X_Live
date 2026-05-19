@@ -1,11 +1,11 @@
-# ⚙️ CodeXAlive Backend — Professional Infrastructure
+# ⚙️ CodeXLive Backend — Professional Infrastructure
 
 [![Node.js](https://img.shields.io/badge/Runtime-Node.js-green?style=flat-square&logo=node.js)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Framework-Express-lightgrey?style=flat-square&logo=express)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/Database-MongoDB-brightgreen?style=flat-square&logo=mongodb)](https://www.mongodb.com/)
 [![Socket.io](https://img.shields.io/badge/Real--time-Socket.io-black?style=flat-square&logo=socket.io)](https://socket.io/)
 
-The CodeXAlive backend is a production-hardened **Node.js** and **Socket.io** server. It orchestrates real-time collaboration, complex project lifecycles, social dynamics, and secure code execution environments.
+The CodeXLive backend is a production-hardened **Node.js** and **Socket.io** server. It orchestrates real-time collaboration, complex project lifecycles, social dynamics, and secure code execution environments.
 
 ---
 
@@ -35,7 +35,7 @@ Powered by **Socket.io 4**, this layer handles all high-frequency events with mi
 ---
 
 ## ⚡ Live Cursor Synchronization
-CodeXAlive implements a sophisticated cursor tracking system:
+CodeXLive implements a sophisticated cursor tracking system:
 
 1. **Emission**: Client sends `cursor-move` events (throttled at 50ms).
 2. **State Management**: Server maintains an in-memory `roomState` for high-speed access.

@@ -81,6 +81,10 @@ export const useFileTree = (projectId, selectedLanguage) => {
     try {
       if (projectId && (isDbFile(projectId) || projectId.length === 24)) {
         const newFile = await createFileAPI(projectId, name, selectedLanguage, normalizedPath);
+        setFiles((prev) => {
+          if (prev.some((f) => f._id === newFile._id)) return prev;
+          return [...prev, newFile];
+        });
         setActiveFileId(newFile._id);
         return newFile;
       } else {

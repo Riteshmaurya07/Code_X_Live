@@ -158,14 +158,32 @@ const registerRoomHandlers = (io, socket) => {
     }
 
     if (!roomPermissions.has(cleanRoomId)) roomPermissions.set(cleanRoomId, new Map());
-    if (!roomPermissions.get(cleanRoomId).has(username)) {
-      const admin = roomAdmins.get(cleanRoomId);
-      const defaultRole = admin && admin.username === username ? "editor" : "viewer";
-      roomPermissions.get(cleanRoomId).set(username, defaultRole);
+    
+    // Resolve user role from Project collaborators list or owner check, or default to viewer
+    const admin = roomAdmins.get(cleanRoomId);
+    let assignedRole = "viewer";
+
+    if (project) {
+      const userId = socket.user?.id ? socket.user.id.toString() : null;
+      if (project.owner && userId && project.owner.toString() === userId) {
+        assignedRole = "editor";
+      } else if (userId) {
+        const collab = project.collaborators.find(
+          (c) => c.user && c.user.toString() === userId
+        );
+        if (collab) {
+          assignedRole = collab.role;
+        }
+      }
+    } else {
+      if (admin && admin.username === username) {
+        assignedRole = "editor";
+      }
     }
 
+    roomPermissions.get(cleanRoomId).set(username, assignedRole);
+
     const clients = getAllConnectedClients(io, cleanRoomId);
-    const admin = roomAdmins.get(cleanRoomId);
 
     clients.forEach(({ socketId }) => {
       io.to(socketId).emit(ACTIONS.JOINED, {

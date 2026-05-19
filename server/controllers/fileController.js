@@ -47,10 +47,10 @@ const createFile = async (req, res, next) => {
       details: `Created file: ${name}`,
     });
 
-    // Emit FILE_CREATED to all users in the room (use roomId if available, fallback to ObjectId)
+    // Emit FILE_CREATED to all users in the room (standardized to MongoDB ObjectId string)
     const io = req.app.get("io");
     if (io) {
-      const roomIdentifier = project.roomId || String(projectId);
+      const roomIdentifier = String(projectId);
       io.to(roomIdentifier).emit(ACTIONS.FILE_CREATED, { file });
     }
 
@@ -114,7 +114,7 @@ const updateFile = async (req, res, next) => {
     if (name) {
       const io = req.app.get("io");
       if (io) {
-        const roomIdentifier = file.project?.roomId || String(file.project?._id || file.project);
+        const roomIdentifier = String(file.project?._id || file.project);
         io.to(roomIdentifier).emit(ACTIONS.FILE_RENAMED, {
           fileId: file._id,
           newName: file.name,
@@ -225,7 +225,7 @@ const deleteFile = async (req, res, next) => {
     // Emit FILE_DELETED to all users in the room
     const io = req.app.get("io");
     if (io) {
-      const roomIdentifier = file.project?.roomId || String(file.project?._id || file.project);
+      const roomIdentifier = String(file.project?._id || file.project);
       io.to(roomIdentifier).emit(ACTIONS.FILE_DELETED, {
         fileId: file._id,
       });

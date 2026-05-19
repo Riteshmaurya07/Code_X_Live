@@ -43,6 +43,12 @@ const userSchema = new mongoose.Schema(
       enum: ["local", "google", "github"],
       default: "local",
     },
+    // All linked OAuth providers for this account
+    providers: {
+      type: [String],
+      enum: ["local", "google", "github"],
+      default: ["local"],
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
   },
