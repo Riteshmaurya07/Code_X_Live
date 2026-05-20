@@ -152,4 +152,4 @@ const EditorToolbar = ({
   );
 };
 
-export default EditorToolbar;
+export default React.memo(EditorToolbar);

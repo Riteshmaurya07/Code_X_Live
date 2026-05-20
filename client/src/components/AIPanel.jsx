@@ -8,6 +8,8 @@ import {
 } from "../services/aiService";
 import toast from "react-hot-toast";
 import { Bot, Lightbulb, CircleCheck, MessageSquare, ListChecks } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 function AIPanel({ code, language, onApplyFix }) {
   const [activeTab, setActiveTab] = useState("chat");
@@ -166,7 +168,13 @@ function AIPanel({ code, language, onApplyFix }) {
 
     // Generic text result (explain, tests, raw review)
     const text = typeof result.data === "string" ? result.data : JSON.stringify(result.data, null, 2);
-    return <pre className="ai-text-result">{text}</pre>;
+    return (
+      <div className="ai-markdown-result">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {text}
+        </ReactMarkdown>
+      </div>
+    );
   };
 
   return (
@@ -222,8 +230,10 @@ function AIPanel({ code, language, onApplyFix }) {
                   <span className="msg-role">
                     {msg.role === "user" ? "You" : "AI"}
                   </span>
-                  <div className="msg-content">
-                    {msg.content}
+                  <div className="msg-content ai-markdown-result">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    </ReactMarkdown>
                   </div>
                 </div>
               ))}

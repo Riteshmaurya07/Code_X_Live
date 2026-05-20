@@ -30,6 +30,7 @@ export const LANGUAGE_MAP = {
   html:       { monacoId: "html",       ext: ".html", label: "HTML" },
   css:        { monacoId: "css",        ext: ".css", label: "CSS" },
   json:       { monacoId: "json",       ext: ".json", label: "JSON" },
+  plaintext:  { monacoId: "plaintext",  ext: ".txt", label: "Plain Text" },
 };
 
 /**
@@ -71,6 +72,40 @@ export const getLanguageFromFilename = (filename) => {
     ".xml": "xml",
     ".yaml": "yaml", ".yml": "yaml",
   };
+  return extMap[ext] || "plaintext";
+};
+
+/**
+ * Get internal JDoodle language identifier from file extension.
+ * This is used to sync the compiler runtime and snippets when switching files.
+ */
+export const getInternalLanguageFromFilename = (filename) => {
+  if (!filename) return "plaintext";
+  const ext = filename.slice(filename.lastIndexOf(".")).toLowerCase();
+  
+  const extMap = {
+    ".js": "nodejs", ".jsx": "nodejs", ".mjs": "nodejs", ".cjs": "nodejs",
+    ".ts": "typescript", ".tsx": "typescript",
+    ".py": "python3",
+    ".java": "java",
+    ".cpp": "cpp", ".cc": "cpp", ".cxx": "cpp", ".hpp": "cpp",
+    ".c": "c", ".h": "c",
+    ".cs": "csharp",
+    ".rb": "ruby",
+    ".go": "go",
+    ".rs": "rust",
+    ".php": "php",
+    ".swift": "swift",
+    ".r": "r", ".R": "r",
+    ".sh": "bash", ".bash": "bash",
+    ".sql": "sql",
+    ".scala": "scala",
+    ".pas": "pascal",
+    ".html": "html", ".htm": "html",
+    ".css": "css", ".scss": "css", ".less": "css",
+    ".json": "json"
+  };
+  
   return extMap[ext] || "plaintext";
 };
 

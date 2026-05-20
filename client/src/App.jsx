@@ -1,14 +1,11 @@
 import "./App.css";
-import { useEffect } from "react";
+import { useEffect, Suspense, lazy } from "react";
 import { Routes, Route, Navigate, useParams, useSearchParams, useNavigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
-import EditorPage from "./components/EditorPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import Dashboard from "./pages/Dashboard";
-import PublicProfile from "./pages/PublicProfile";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/useTheme";
@@ -17,16 +14,24 @@ import { DMProvider } from "./hooks/useDM";
 import toast from "react-hot-toast";
 import api from "./services/api";
 
+// Lazy loaded components
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const EditorPage = lazy(() => import("./components/EditorPage"));
+const PublicProfile = lazy(() => import("./pages/PublicProfile"));
+
+// Fallback loader
+const FallbackLoader = () => (
+  <div className="loading-screen">
+    <div className="spinner"></div>
+  </div>
+);
+
 // Protected route wrapper
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="loading-screen">
-        <div className="spinner"></div>
-      </div>
-    );
+    return <FallbackLoader />;
   }
 
   if (!user) {
@@ -77,61 +82,63 @@ function JoinHandler() {
 
 function AppRoutes() {
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password/:token" element={<ResetPassword />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route 
-        path="/join/:roomId" 
-        element={
-          <ProtectedRoute>
-            <JoinHandler />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/editor/:roomId" 
-        element={
-          <ProtectedRoute>
-            <EditorPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/profile/:username" 
-        element={
-          <ProtectedRoute>
-            <PublicProfile />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/profile/:username/followers" 
-        element={
-          <ProtectedRoute>
-            <PublicProfile />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/profile/:username/following" 
-        element={
-          <ProtectedRoute>
-            <PublicProfile />
-          </ProtectedRoute>
-        } 
-      />
-    </Routes>
+    <Suspense fallback={<FallbackLoader />}>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route 
+          path="/join/:roomId" 
+          element={
+            <ProtectedRoute>
+              <JoinHandler />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/editor/:roomId" 
+          element={
+            <ProtectedRoute>
+              <EditorPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/profile/:username" 
+          element={
+            <ProtectedRoute>
+              <PublicProfile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/profile/:username/followers" 
+          element={
+            <ProtectedRoute>
+              <PublicProfile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/profile/:username/following" 
+          element={
+            <ProtectedRoute>
+              <PublicProfile />
+            </ProtectedRoute>
+          } 
+        />
+      </Routes>
+    </Suspense>
   );
 }
 

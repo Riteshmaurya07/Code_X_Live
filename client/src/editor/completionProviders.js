@@ -102,6 +102,31 @@ const BUILTIN_MAP = {
 // ── Disposable tracking ────────────────────────────────────────────────
 const disposables = [];
 
+// ── Helper functions for dynamic prefix replacement ──────────────────────
+function extractPlainText(insertText) {
+  if (!insertText) return "";
+  let text = insertText.replace(/\$\{\d+:([^\}]+)\}/g, '$1');
+  text = text.replace(/\$\{\d+\}/g, '');
+  text = text.replace(/\$\d+/g, '');
+  return text;
+}
+
+function getOverlap(prefix, plainText) {
+  if (!prefix || !plainText) return 0;
+  const maxOverlap = Math.min(prefix.length, plainText.length);
+  for (let i = maxOverlap; i > 0; i--) {
+    if (prefix.substring(prefix.length - i) === plainText.substring(0, i)) {
+      // Reject partial word overlaps to avoid eating characters accidentally
+      const charBefore = prefix.length - i - 1 >= 0 ? prefix[prefix.length - i - 1] : null;
+      if (charBefore && /[a-zA-Z0-9_]/.test(charBefore)) {
+        continue;
+      }
+      return i;
+    }
+  }
+  return 0;
+}
+
 /**
  * Register all completion providers for all supported languages.
  */
@@ -118,7 +143,11 @@ export const registerCompletionProviders = () => {
       triggerCharacters: [".", "(", "'", '"', "<", "/", "@", "{", " "],
       provideCompletionItems(model, position) {
         const word = model.getWordUntilPosition(position);
-        const range = {
+        const lineContent = model.getLineContent(position.lineNumber);
+        const textBeforeCursor = lineContent.substring(0, position.column - 1);
+        const prefixBeforeWord = textBeforeCursor.substring(0, textBeforeCursor.length - word.word.length);
+
+        const defaultRange = {
           startLineNumber: position.lineNumber,
           endLineNumber: position.lineNumber,
           startColumn: word.startColumn,
@@ -128,24 +157,38 @@ export const registerCompletionProviders = () => {
         const suggestions = [];
         let sortPriority = 0;
 
+        const processSuggestion = (item, typePrefix) => {
+          let range = { ...defaultRange };
+          try {
+            if (typeof item.insertText === 'string') {
+              const plainText = extractPlainText(item.insertText);
+              const overlap = getOverlap(prefixBeforeWord, plainText);
+              if (overlap > 0) {
+                // Ensure startColumn never goes below 1
+                const newStart = word.startColumn - overlap;
+                range.startColumn = Math.max(1, newStart);
+              }
+            }
+          } catch (e) {
+            console.error("Error processing suggestion:", e);
+          }
+          return {
+            ...item,
+            range,
+            sortText: `${typePrefix}${String(sortPriority++).padStart(4, "0")}`,
+          };
+        };
+
         // 1. Snippets (highest priority)
         const snippets = SNIPPET_MAP[lang] || [];
         for (const snip of snippets) {
-          suggestions.push({
-            ...snip,
-            range,
-            sortText: `0${String(sortPriority++).padStart(4, "0")}`,
-          });
+          suggestions.push(processSuggestion(snip, "0"));
         }
 
         // 2. Built-in completions
         const builtins = BUILTIN_MAP[lang] || [];
         for (const bi of builtins) {
-          suggestions.push({
-            ...bi,
-            range,
-            sortText: `1${String(sortPriority++).padStart(4, "0")}`,
-          });
+          suggestions.push(processSuggestion(bi, "1"));
         }
 
         // 3. Extract identifiers from current document for word-based completions
@@ -157,14 +200,12 @@ export const registerCompletionProviders = () => {
           const id = match[0];
           if (id.length < 2 || seen.has(id)) continue;
           seen.add(id);
-          suggestions.push({
+          suggestions.push(processSuggestion({
             label: id,
             kind: CompletionKind.Variable,
             detail: "Document word",
             insertText: id,
-            range,
-            sortText: `2${String(sortPriority++).padStart(4, "0")}`,
-          });
+          }, "2"));
         }
 
         return { suggestions };

@@ -35,6 +35,7 @@ import { getProjectMeetings, deleteMeeting } from "../services/meetingService";
 import { useFileTree } from "../hooks/editor/useFileTree";
 import { useRoomSocket } from "../hooks/editor/useRoomSocket";
 import { useWebRTC } from "../hooks/useWebRTC";
+import { getInternalLanguageFromFilename } from "../editor/languageConfig";
 
 const LANGUAGES = [
   "python3", "java", "cpp", "nodejs", "javascript", "typescript",
@@ -100,6 +101,17 @@ function EditorPage() {
     createFile, deleteFile, renameFile, saveFileExplicitly,
     knownFolders, setKnownFolders, createFolder, deleteFolder,
   } = useFileTree(projectId, selectedLanguage);
+
+  // --- Auto-Sync Language on File Switch ---
+  useEffect(() => {
+    const activeFile = files.find((f) => f._id === activeFileId);
+    if (activeFile && activeFile.name) {
+      const newLang = getInternalLanguageFromFilename(activeFile.name);
+      if (newLang !== "plaintext") {
+        setSelectedLanguage(newLang);
+      }
+    }
+  }, [activeFileId, files]);
 
   // --- Member & Room State ---
   const [clients, setClients] = useState([]);
@@ -347,7 +359,7 @@ function EditorPage() {
     }
   };
 
-  const handleDownloadProject = async () => {
+  const handleDownloadProject = useCallback(async () => {
     if (!projectId) return;
     try {
       const token = localStorage.getItem("token");
@@ -371,7 +383,54 @@ function EditorPage() {
     } catch {
       toast.error("Download failed");
     }
-  };
+  }, [projectId, projectObj?.name]);
+
+  const handleToggleHistory = useCallback(() => {
+    setShowHistory(p => !p);
+    setShowAIPanel(false);
+    setShowChatPanel(false);
+    setShowMeetingPanel(false);
+  }, []);
+
+  const handleToggleChat = useCallback(() => {
+    setShowChatPanel(p => !p);
+    setShowAIPanel(false);
+    setShowHistory(false);
+    setShowMeetingPanel(false);
+  }, []);
+
+  const handleToggleMeetings = useCallback(() => {
+    setShowMeetingPanel(p => !p);
+    setShowAIPanel(false);
+    setShowHistory(false);
+    setShowChatPanel(false);
+  }, []);
+
+  const handleToggleAI = useCallback(() => {
+    setShowAIPanel(p => !p);
+    setShowHistory(false);
+    setShowChatPanel(false);
+    setShowMeetingPanel(false);
+  }, []);
+
+  const handleToggleAIAutocomplete = useCallback(() => {
+    setAiAutocompleteEnabled(prev => !prev);
+  }, []);
+
+  const handleToggleSidebar = useCallback(() => {
+    setSidebarOpen(prev => !prev);
+  }, []);
+
+  const handleCloseSidebar = useCallback(() => setSidebarOpen(false), []);
+
+  const handleCopyRoomId = useCallback(() => {
+    const url = new URL(window.location.href);
+    const inviteLink = url.origin + url.pathname + url.search;
+    navigator.clipboard.writeText(inviteLink);
+    toast.success("Invite link copied!");
+  }, []);
+
+  const handleLeaveRoom = useCallback(() => navigate("/dashboard"), [navigate]);
 
   // Command palette commands
   const commandPaletteCommands = [
@@ -380,9 +439,9 @@ function EditorPage() {
     { id: "run", label: "Run Code", keybinding: "Ctrl+Enter", action: runCode },
     { id: "toggleTheme", label: `Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Theme`, action: toggleTheme },
     { id: "toggleProblems", label: "Toggle Problems Panel", keybinding: "Ctrl+Shift+M", action: () => setShowProblemsPanel(p => !p) },
-    { id: "toggleAI", label: "Toggle AI Assistant", action: () => { setShowAIPanel(p => !p); setShowHistory(false); setShowChatPanel(false); setShowMeetingPanel(false); } },
-    { id: "toggleChat", label: "Toggle Team Chat", action: () => { setShowChatPanel(p => !p); setShowAIPanel(false); setShowHistory(false); setShowMeetingPanel(false); } },
-    { id: "toggleHistory", label: "Toggle Version History", action: () => { setShowHistory(p => !p); setShowAIPanel(false); setShowChatPanel(false); setShowMeetingPanel(false); } },
+    { id: "toggleAI", label: "Toggle AI Assistant", action: handleToggleAI },
+    { id: "toggleChat", label: "Toggle Team Chat", action: handleToggleChat },
+    { id: "toggleHistory", label: "Toggle Version History", action: handleToggleHistory },
     { id: "download", label: "Download Project as ZIP", action: handleDownloadProject },
     ...LANGUAGES.map(lang => ({
       id: `lang-${lang}`, label: `Change Language: ${lang}`, category: "Language", action: () => setSelectedLanguage(lang)
@@ -431,7 +490,7 @@ function EditorPage() {
 
       <EditorSidebar
         isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+        onClose={handleCloseSidebar}
         files={files}
         knownFolders={knownFolders}
         activeFileId={activeFileId}
@@ -452,14 +511,8 @@ function EditorPage() {
         onKick={kickUser}
         onSetPermission={setRole}
         onMessageUser={handleJoinDM}
-        onCopyRoomId={() => {
-          const url = new URL(window.location.href);
-          // Ensure we copy the current editor URL which includes the token if present
-          const inviteLink = url.origin + url.pathname + url.search;
-          navigator.clipboard.writeText(inviteLink);
-          toast.success("Invite link copied!");
-        }}
-        onLeaveRoom={() => navigate("/dashboard")}
+        onCopyRoomId={handleCopyRoomId}
+        onLeaveRoom={handleLeaveRoom}
       />
 
       <div className="editor-main">
@@ -477,19 +530,19 @@ function EditorPage() {
           onSave={saveFileExplicitly}
           onFormat={handleFormat}
           showHistory={showHistory}
-          onToggleHistory={() => { setShowHistory(!showHistory); setShowAIPanel(false); setShowChatPanel(false); setShowMeetingPanel(false); }}
+          onToggleHistory={handleToggleHistory}
           showChatPanel={showChatPanel}
-          onToggleChat={() => { setShowChatPanel(!showChatPanel); setShowAIPanel(false); setShowHistory(false); setShowMeetingPanel(false); }}
+          onToggleChat={handleToggleChat}
           showMeetingPanel={showMeetingPanel}
-          onToggleMeetings={() => { setShowMeetingPanel(!showMeetingPanel); setShowAIPanel(false); setShowHistory(false); setShowChatPanel(false); }}
+          onToggleMeetings={handleToggleMeetings}
           onRun={runCode}
           isCompiling={isCompiling}
           unreadChatCount={Object.values(unreadChatCounts).reduce((a, b) => a + b, 0)}
           showAIPanel={showAIPanel}
-          onToggleAI={() => { setShowAIPanel(!showAIPanel); setShowHistory(false); setShowChatPanel(false); setShowMeetingPanel(false); }}
+          onToggleAI={handleToggleAI}
           aiAutocompleteEnabled={aiAutocompleteEnabled}
-          onToggleAIAutocomplete={() => setAiAutocompleteEnabled(prev => !prev)}
-          onToggleSidebar={() => setSidebarOpen(prev => !prev)}
+          onToggleAIAutocomplete={handleToggleAIAutocomplete}
+          onToggleSidebar={handleToggleSidebar}
           onDownloadProject={handleDownloadProject}
           callStatus={callStatus}
           onStartCall={startCall}
