@@ -382,11 +382,11 @@ const Editor = forwardRef(function Editor(
     if (!editorRef.current) return;
     const model = editorRef.current.getModel();
     if (!model) return;
-    const currentVal = model.getValue();
-    if (initialValue != null && initialValue !== currentVal) {
+    // Only set value from props when switching files to avoid cursor jumping
+    if (initialValue != null) {
       editorRef.current.setValue(initialValue);
     }
-  }, [initialValue]);
+  }, [fileId]);
 
   // ── ReadOnly toggle ───────────────────────────────────────────────
   useEffect(() => {
@@ -404,4 +404,4 @@ const Editor = forwardRef(function Editor(
   );
 });
 
-export default Editor;
+export default React.memo(Editor);

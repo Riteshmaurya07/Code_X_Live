@@ -70,15 +70,23 @@ app.options("*", cors());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again after 15 minutes",
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 1000, // limit each IP to 1000 requests per windowMs
+  message: "Too many requests from this IP, please try again after 5 minutes",
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
 // Apply rate limiting to all requests
 app.use(limiter);
+
+// Stricter rate limit for AI routes to protect Gemini API quotas
+const aiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 50, // Limit each IP to 50 AI requests per hour
+  message: "AI request limit reached. Please try again later.",
+});
+app.use("/api/ai", aiLimiter);
 
 // Stricter rate limit for authentication routes
 const authLimiter = rateLimit({

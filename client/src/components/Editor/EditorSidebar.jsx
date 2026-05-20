@@ -77,4 +77,4 @@ const EditorSidebar = ({
   );
 };
 
-export default EditorSidebar;
+export default React.memo(EditorSidebar);

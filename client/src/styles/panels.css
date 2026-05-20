@@ -51,10 +51,36 @@
   font-family: var(--font-mono); font-size: var(--text-xs); overflow-x: auto; margin: var(--sp-2) 0; white-space: pre-wrap;
 }
 .change-item { font-size: 0.82rem; color: var(--success); margin-top: 6px; }
-.ai-text-result {
+.ai-text-result, .ai-markdown-result {
   background: var(--bg-tertiary); padding: var(--sp-3); border-radius: var(--radius-sm);
-  font-size: 0.82rem; white-space: pre-wrap; word-break: break-word; color: var(--text-secondary); line-height: 1.6;
+  font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;
 }
+.ai-markdown-result p { margin-bottom: 0.75rem; word-break: break-word; }
+.ai-markdown-result h1, .ai-markdown-result h2, .ai-markdown-result h3, .ai-markdown-result h4 {
+  color: var(--text-primary); margin: 1.2rem 0 0.5rem; font-weight: 600;
+}
+.ai-markdown-result h1 { font-size: 1.2rem; }
+.ai-markdown-result h2 { font-size: 1.1rem; }
+.ai-markdown-result h3 { font-size: 1rem; }
+.ai-markdown-result ul, .ai-markdown-result ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+.ai-markdown-result li { margin-bottom: 0.25rem; }
+.ai-markdown-result code {
+  background: var(--bg-primary); padding: 0.15rem 0.35rem; border-radius: 3px;
+  font-family: var(--font-mono); font-size: 0.9em; color: var(--accent-glow);
+}
+.ai-markdown-result pre {
+  background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm);
+  overflow-x: auto; margin: 1rem 0; border: 1px solid var(--border);
+}
+.ai-markdown-result pre code {
+  background: transparent; padding: 0; color: inherit; font-size: 0.85rem;
+}
+.ai-markdown-result blockquote {
+  border-left: 3px solid var(--accent); padding-left: 1rem; margin: 1rem 0;
+  color: var(--text-muted); font-style: italic;
+}
+.ai-markdown-result a { color: var(--info); text-decoration: none; }
+.ai-markdown-result a:hover { text-decoration: underline; }
 
 /* ===================== Chat ===================== */
 .ai-chat { display: flex; flex-direction: column; height: 100%; }
