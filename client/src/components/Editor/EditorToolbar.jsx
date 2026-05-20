@@ -1,6 +1,6 @@
 import React from 'react';
 import Button from '../ui/Button';
-import { Menu, Sun, Moon, Save, Download, Paintbrush, History, Calendar, MessageSquare, Bot, LoaderCircle, Play, Phone, Video } from 'lucide-react';
+import { Menu, Sun, Moon, Save, Download, Paintbrush, History, Calendar, MessageSquare, Bot, LoaderCircle, Play, Phone, Video, Sparkles } from 'lucide-react';
 
 const EditorToolbar = ({
   theme, onToggleTheme,
@@ -10,6 +10,7 @@ const EditorToolbar = ({
   onToggleChat, showChatPanel, onRun, isCompiling,
   unreadChatCount, showAIPanel, onToggleAI,
   showMeetingPanel, onToggleMeetings,
+  aiAutocompleteEnabled, onToggleAIAutocomplete,
   onToggleSidebar, onDownloadProject,
   callStatus, onStartCall, onJoinCall
 }) => {
@@ -98,6 +99,14 @@ const EditorToolbar = ({
           title="AI Assistant"
         >
           <Bot size={18} />
+        </Button>
+        <Button
+          variant="outline"
+          className={`toolbar-btn chip ${aiAutocompleteEnabled ? "active" : ""}`}
+          onClick={onToggleAIAutocomplete}
+          title={aiAutocompleteEnabled ? "Disable AI Autocomplete" : "Enable AI Autocomplete"}
+        >
+          <Sparkles size={18} />
         </Button>
 
         {/* Video/Audio Call Buttons */}

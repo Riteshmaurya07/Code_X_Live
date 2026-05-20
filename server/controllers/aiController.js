@@ -262,4 +262,58 @@ const chat = async (req, res, next) => {
   }
 };
 
-module.exports = { reviewCode, explainCode, fixCode, generateTests, chat };
+// AI Autocomplete
+const autocomplete = async (req, res, next) => {
+  try {
+    const { prefix, suffix, language, maxTokens = 150 } = req.body;
+
+    if (!prefix) {
+      return res.status(400).json({ success: false, message: "Prefix is required" });
+    }
+
+    const cacheKey = `${language}:${prefix}`;
+    const cached = aiCache.get(cacheKey, "autocomplete");
+    if (cached) {
+      return res.json({ completion: cached });
+    }
+
+    const model = getModel();
+    const prompt = `You are a highly advanced AI code completion engine.
+Your task is to provide ONLY the code that should be inserted exactly at the cursor position.
+Do NOT include any markdown formatting, do NOT include explanations, and do NOT repeat the prefix or suffix unless necessary for the completion.
+The completion should flow naturally from the prefix and connect smoothly to the suffix if possible.
+
+Language: ${language || "plaintext"}
+
+Code before cursor:
+${prefix}
+
+Code after cursor:
+${suffix}
+
+Provide the code completion:`;
+
+    // Timeout the request after 5 seconds to prevent hanging the editor
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("AI Autocomplete timeout")), 5000)
+    );
+
+    const resultPromise = model.generateContent(prompt);
+    const result = await Promise.race([resultPromise, timeoutPromise]);
+    
+    let completion = result.response.text();
+    
+    // Clean up any markdown blocks that Gemini might try to add despite instructions
+    completion = completion.replace(/^```[a-zA-Z]*\n/g, "").replace(/\n```$/g, "");
+    
+    aiCache.set(cacheKey, "autocomplete", completion);
+
+    res.json({ completion });
+  } catch (err) {
+    // We don't want to throw an error 500 for autocomplete timeouts, just return empty
+    logger.warn(`AI Autocomplete failed: ${err.message}`);
+    res.json({ completion: "" });
+  }
+};
+
+module.exports = { reviewCode, explainCode, fixCode, generateTests, chat, autocomplete };

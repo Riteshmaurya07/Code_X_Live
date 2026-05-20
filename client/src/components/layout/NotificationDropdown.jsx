@@ -124,6 +124,7 @@ const NotificationDropdown = ({ onOpen }) => {
 
       {isOpen &&
         (isMobile ? (
+          /* MOBILE PORTAL */
           createPortal(
             <>
               {/* BACKDROP */}
@@ -153,7 +154,7 @@ const NotificationDropdown = ({ onOpen }) => {
                 </div>
 
                 {/* LIST */}
-                <div className="notification-list">
+                <div className="notification-list overflow-y-auto">
                   {notifications.length === 0 ? (
                     <div className="notification-empty">
                       No notifications
@@ -182,7 +183,7 @@ const NotificationDropdown = ({ onOpen }) => {
           )
         ) : (
           /* DESKTOP */
-          <div className="notification-dropdown glass-panel">
+          <div className="absolute top-[calc(100%+15px)] right-0 w-[380px] z-[9999] bg-black/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl flex flex-col overflow-hidden max-h-[70vh]">
             {/* HEADER */}
             <div className="notification-header">
               <h4 className="dm-panel-title">Notifications</h4>
@@ -198,7 +199,7 @@ const NotificationDropdown = ({ onOpen }) => {
             </div>
 
             {/* LIST */}
-            <div className="notification-list">
+            <div className="flex flex-col gap-1 p-2 overflow-y-auto custom-scrollbar flex-1">
               {notifications.length === 0 ? (
                 <div className="notification-empty">
                   No notifications

@@ -25,13 +25,11 @@ const registerCodeHandlers = (io, socket) => {
     const admin = roomAdmins.get(targetRoom);
     const isAdmin = admin && admin.socketId === socket.id;
 
-    // Permission check for non-admins
-    if (!isAdmin) {
-      const perm = roomPermissions.get(targetRoom)?.get(username);
-      if (perm === "viewer") {
-        socket.emit(ACTIONS.PERMISSION_DENIED, { message: "You have view-only access" });
-        return;
-      }
+    // Permission check for EVERYONE (including admins)
+    const perm = roomPermissions.get(targetRoom)?.get(username);
+    if (perm === "viewer") {
+      socket.emit(ACTIONS.PERMISSION_DENIED, { message: "You have view-only access" });
+      return;
     }
 
     // Persist in room state
