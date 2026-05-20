@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import monacoEditorPlugin from "vite-plugin-monaco-editor";
 
 export default defineConfig(({ mode }) => {
   // loadEnv reads .env files at config time (Node context), where
@@ -21,6 +22,11 @@ export default defineConfig(({ mode }) => {
           process: true,
         },
         protocolImports: true,
+      }),
+      monacoEditorPlugin.default ? monacoEditorPlugin.default({
+        languageWorkers: ["editorWorkerService", "css", "html", "json", "typescript"],
+      }) : monacoEditorPlugin({
+        languageWorkers: ["editorWorkerService", "css", "html", "json", "typescript"],
       }),
     ],
     server: {

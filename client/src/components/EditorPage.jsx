@@ -13,6 +13,8 @@ import MeetingDetailsModal from "./Editor/MeetingDetailsModal";
 import InviteParticipantsModal from "./Editor/InviteParticipantsModal";
 import StatusBar from "./Editor/StatusBar";
 import Breadcrumbs from "./Editor/Breadcrumbs";
+import ProblemsPanel from "./Editor/ProblemsPanel";
+import CommandPalette from "./Editor/CommandPalette";
 import CallPanel from "./video/CallPanel";
 import IncomingCallModal from "./video/IncomingCallModal";
 import { ACTIONS } from "../Actions";
@@ -35,8 +37,9 @@ import { useRoomSocket } from "../hooks/editor/useRoomSocket";
 import { useWebRTC } from "../hooks/useWebRTC";
 
 const LANGUAGES = [
-  "python3", "java", "cpp", "nodejs", "c", "ruby", "go", "scala", 
-  "bash", "sql", "pascal", "csharp", "php", "swift", "rust", "r"
+  "python3", "java", "cpp", "nodejs", "javascript", "typescript",
+  "c", "ruby", "go", "scala", "bash", "sql", "pascal", "csharp",
+  "php", "swift", "rust", "r", "html", "css", "json"
 ];
 
 function EditorPage() {
@@ -65,6 +68,18 @@ function EditorPage() {
   const [executionTime, setExecutionTime] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("python3");
   const [cursor, setCursor] = useState({ line: 0, ch: 0 });
+
+  // --- IntelliSense State ---
+  const [markers, setMarkers] = useState([]);
+  const [showProblemsPanel, setShowProblemsPanel] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [aiAutocompleteEnabled, setAiAutocompleteEnabled] = useState(() => {
+    return localStorage.getItem("aiAutocompleteEnabled") !== "false";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("aiAutocompleteEnabled", aiAutocompleteEnabled);
+  }, [aiAutocompleteEnabled]);
 
   // --- Project State ---
   const [projectId, setProjectId] = useState(() => {
@@ -136,7 +151,7 @@ function EditorPage() {
   } = useWebRTC(socketRef.current, projectObj?._id || roomId, username);
 
   const isAdmin = adminUsername === username;
-  const isReadOnly = !isAdmin && permissions[username] === 'viewer';
+  const isReadOnly = permissions[username] === 'viewer';
 
   // Load project on mount
   useEffect(() => {
@@ -312,16 +327,11 @@ function EditorPage() {
       const { formatted, supported } = await formatCodeAPI(codeRef.current || "", selectedLanguage);
 
       if (editorRef.current) {
-        // Preserve cursor/scroll position across the format replace
         editorRef.current.setValue(formatted);
       }
 
-      // Update local code ref and autosave pipeline — setValue bypasses onCodeChange
       handleCodeChange(formatted);
 
-      // Broadcast formatted code to all other room participants.
-      // We can't rely on the editor's "change" listener because it intentionally
-      // ignores origin==="setValue" to prevent remote-update loops.
       if (socketRef.current && roomId && activeFileId) {
         socketRef.current.emit(ACTIONS.CODE_CHANGE, {
           roomId,
@@ -362,6 +372,28 @@ function EditorPage() {
       toast.error("Download failed");
     }
   };
+
+  // Command palette commands
+  const commandPaletteCommands = [
+    { id: "format", label: "Format Document", keybinding: "Shift+Alt+F", action: handleFormat },
+    { id: "save", label: "Save File", keybinding: "Ctrl+S", action: saveFileExplicitly },
+    { id: "run", label: "Run Code", keybinding: "Ctrl+Enter", action: runCode },
+    { id: "toggleTheme", label: `Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Theme`, action: toggleTheme },
+    { id: "toggleProblems", label: "Toggle Problems Panel", keybinding: "Ctrl+Shift+M", action: () => setShowProblemsPanel(p => !p) },
+    { id: "toggleAI", label: "Toggle AI Assistant", action: () => { setShowAIPanel(p => !p); setShowHistory(false); setShowChatPanel(false); setShowMeetingPanel(false); } },
+    { id: "toggleChat", label: "Toggle Team Chat", action: () => { setShowChatPanel(p => !p); setShowAIPanel(false); setShowHistory(false); setShowMeetingPanel(false); } },
+    { id: "toggleHistory", label: "Toggle Version History", action: () => { setShowHistory(p => !p); setShowAIPanel(false); setShowChatPanel(false); setShowMeetingPanel(false); } },
+    { id: "download", label: "Download Project as ZIP", action: handleDownloadProject },
+    ...LANGUAGES.map(lang => ({
+      id: `lang-${lang}`, label: `Change Language: ${lang}`, category: "Language", action: () => setSelectedLanguage(lang)
+    })),
+  ];
+
+  const handleNavigateToProblem = useCallback((line, col) => {
+    editorRef.current?.revealLine(line, col);
+  }, []);
+
+
 
   const handleJoinDM = (target) => {
     if (target === username) return;
@@ -455,6 +487,8 @@ function EditorPage() {
           unreadChatCount={Object.values(unreadChatCounts).reduce((a, b) => a + b, 0)}
           showAIPanel={showAIPanel}
           onToggleAI={() => { setShowAIPanel(!showAIPanel); setShowHistory(false); setShowChatPanel(false); setShowMeetingPanel(false); }}
+          aiAutocompleteEnabled={aiAutocompleteEnabled}
+          onToggleAIAutocomplete={() => setAiAutocompleteEnabled(prev => !prev)}
           onToggleSidebar={() => setSidebarOpen(prev => !prev)}
           onDownloadProject={handleDownloadProject}
           callStatus={callStatus}
@@ -473,13 +507,26 @@ function EditorPage() {
               socket={socketRef.current}
               roomId={roomId}
               fileId={activeFileId}
+              fileName={activeFile?.name}
               initialValue={fileCodeCache.current[activeFileId]?.code ?? activeFile?.content ?? ""}
               onCodeChange={handleCodeChange}
               onCursorChange={setCursor}
               theme={theme}
               language={selectedLanguage}
               readOnly={isReadOnly}
+              aiAutocompleteEnabled={aiAutocompleteEnabled}
+              onFormat={handleFormat}
+              onSave={saveFileExplicitly}
+              onRun={runCode}
+              onMarkersChange={setMarkers}
             />
+            {showProblemsPanel && (
+              <ProblemsPanel
+                markers={markers}
+                onNavigate={handleNavigateToProblem}
+                onClose={() => setShowProblemsPanel(false)}
+              />
+            )}
           </div>
 
           {showAIPanel && <AIPanel code={codeRef.current} language={selectedLanguage} onApplyFix={c => editorRef.current?.setValue(c)} />}
@@ -550,7 +597,16 @@ function EditorPage() {
           language={selectedLanguage} 
           cursor={cursor} 
           clientsCount={clients.length} 
-          status={socketRef.current?.connected ? "connected" : "disconnected"} 
+          status={socketRef.current?.connected ? "connected" : "disconnected"}
+          markers={markers}
+          onToggleProblems={() => setShowProblemsPanel(p => !p)}
+          showProblemsPanel={showProblemsPanel}
+        />
+
+        <CommandPalette
+          isOpen={showCommandPalette}
+          onClose={() => setShowCommandPalette(false)}
+          commands={commandPaletteCommands}
         />
         
         {/* WebRTC Calling UI */}

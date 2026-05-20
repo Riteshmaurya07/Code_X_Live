@@ -1,0 +1,138 @@
+/**
+ * editorThemes.js — Custom Monaco Editor themes.
+ */
+import { monaco } from "./monacoSetup";
+
+const darkRules = [
+  { token: "comment", foreground: "6272a4", fontStyle: "italic" },
+  { token: "keyword", foreground: "ff79c6" },
+  { token: "string", foreground: "f1fa8c" },
+  { token: "string.escape", foreground: "ffb86c" },
+  { token: "number", foreground: "bd93f9" },
+  { token: "constant", foreground: "bd93f9" },
+  { token: "type", foreground: "8be9fd", fontStyle: "italic" },
+  { token: "type.identifier", foreground: "8be9fd" },
+  { token: "function", foreground: "50fa7b" },
+  { token: "variable", foreground: "dee5ff" },
+  { token: "variable.predefined", foreground: "bd93f9" },
+  { token: "parameter", foreground: "ffb86c" },
+  { token: "operator", foreground: "8be9fd" },
+  { token: "delimiter", foreground: "dee5ff" },
+  { token: "tag", foreground: "ff79c6" },
+  { token: "attribute.name", foreground: "50fa7b" },
+  { token: "attribute.value", foreground: "f1fa8c" },
+  { token: "string.key.json", foreground: "8be9fd" },
+  { token: "string.value.json", foreground: "f1fa8c" },
+  { token: "annotation", foreground: "ffb86c" },
+  { token: "invalid", foreground: "ff5555" },
+  { token: "regexp", foreground: "f1fa8c" },
+];
+
+const darkColors = {
+  "editor.background": "#0f1117",
+  "editor.foreground": "#dee5ff",
+  "editor.lineHighlightBackground": "#1a1d2e",
+  "editor.lineHighlightBorder": "#00000000",
+  "editor.selectionBackground": "#8b5cf633",
+  "editor.selectionHighlightBackground": "#8b5cf622",
+  "editor.wordHighlightBackground": "#8b5cf622",
+  "editor.findMatchBackground": "#f1fa8c33",
+  "editor.findMatchHighlightBackground": "#f1fa8c22",
+  "editorCursor.foreground": "#8b5cf6",
+  "editorLineNumber.foreground": "#44475a",
+  "editorLineNumber.activeForeground": "#8b5cf6",
+  "editorGutter.background": "#0f1117",
+  "editorIndentGuide.background": "#282a36",
+  "editorIndentGuide.activeBackground": "#44475a",
+  "editorBracketMatch.background": "#44475a",
+  "editorBracketMatch.border": "#8b5cf6",
+  "editorBracketHighlight.foreground1": "#8be9fd",
+  "editorBracketHighlight.foreground2": "#50fa7b",
+  "editorBracketHighlight.foreground3": "#ffb86c",
+  "editorBracketHighlight.foreground4": "#ff79c6",
+  "editorBracketHighlight.foreground5": "#bd93f9",
+  "scrollbarSlider.background": "#44475a66",
+  "scrollbarSlider.hoverBackground": "#44475a99",
+  "minimap.background": "#0f1117",
+  "editorWidget.background": "#1a1d2e",
+  "editorWidget.border": "#2a2d3e",
+  "editorWidget.foreground": "#dee5ff",
+  "editorHoverWidget.background": "#1a1d2e",
+  "editorHoverWidget.border": "#2a2d3e",
+  "editorSuggestWidget.background": "#1a1d2e",
+  "editorSuggestWidget.border": "#2a2d3e",
+  "editorSuggestWidget.foreground": "#dee5ff",
+  "editorSuggestWidget.selectedBackground": "#8b5cf633",
+  "editorSuggestWidget.highlightForeground": "#8b5cf6",
+  "editorSuggestWidget.focusHighlightForeground": "#a78bfa",
+  "editorOverviewRuler.border": "#00000000",
+  "editorError.foreground": "#ff5555",
+  "editorWarning.foreground": "#ffb86c",
+  "editorInfo.foreground": "#8be9fd",
+  "editorStickyScroll.background": "#0f1117",
+  "input.background": "#1a1d2e",
+  "input.border": "#2a2d3e",
+  "input.foreground": "#dee5ff",
+  "input.placeholderForeground": "#6272a4",
+  "focusBorder": "#8b5cf6",
+  "list.hoverBackground": "#1e2130",
+  "list.activeSelectionBackground": "#8b5cf633",
+  "list.activeSelectionForeground": "#dee5ff",
+  "list.highlightForeground": "#8b5cf6",
+  "editorGhostText.foreground": "#6272a488",
+  "peekView.border": "#8b5cf6",
+  "peekViewEditor.background": "#1a1d2e",
+  "peekViewResult.background": "#0f1117",
+};
+
+const lightColors = {
+  "editor.background": "#ffffff",
+  "editor.foreground": "#24292e",
+  "editor.lineHighlightBackground": "#f6f8fa",
+  "editor.selectionBackground": "#0366d622",
+  "editorCursor.foreground": "#8b5cf6",
+  "editorLineNumber.foreground": "#babbbd",
+  "editorLineNumber.activeForeground": "#8b5cf6",
+  "editorWidget.background": "#ffffff",
+  "editorWidget.border": "#e1e4e8",
+  "editorSuggestWidget.background": "#ffffff",
+  "editorSuggestWidget.border": "#e1e4e8",
+  "editorSuggestWidget.selectedBackground": "#8b5cf611",
+  "editorSuggestWidget.highlightForeground": "#8b5cf6",
+  "scrollbarSlider.background": "#e1e4e866",
+  "editorGhostText.foreground": "#babbbd88",
+  "editorBracketMatch.background": "#0366d611",
+  "editorBracketMatch.border": "#8b5cf6",
+  "input.background": "#ffffff",
+  "input.border": "#e1e4e8",
+  "focusBorder": "#8b5cf6",
+  "list.hoverBackground": "#f6f8fa",
+  "list.activeSelectionBackground": "#8b5cf611",
+  "list.highlightForeground": "#8b5cf6",
+};
+
+const lightRules = [
+  { token: "comment", foreground: "6a737d", fontStyle: "italic" },
+  { token: "keyword", foreground: "d73a49" },
+  { token: "string", foreground: "032f62" },
+  { token: "number", foreground: "005cc5" },
+  { token: "type", foreground: "6f42c1" },
+  { token: "function", foreground: "6f42c1" },
+  { token: "variable", foreground: "24292e" },
+  { token: "operator", foreground: "d73a49" },
+  { token: "tag", foreground: "22863a" },
+  { token: "attribute.name", foreground: "6f42c1" },
+  { token: "attribute.value", foreground: "032f62" },
+];
+
+export const registerThemes = () => {
+  monaco.editor.defineTheme("codexlive-dark", {
+    base: "vs-dark", inherit: true, rules: darkRules, colors: darkColors,
+  });
+  monaco.editor.defineTheme("codexlive-light", {
+    base: "vs", inherit: true, rules: lightRules, colors: lightColors,
+  });
+};
+
+export const getThemeId = (theme) =>
+  theme === "light" ? "codexlive-light" : "codexlive-dark";

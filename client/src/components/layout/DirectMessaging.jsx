@@ -218,7 +218,7 @@ const DirectMessaging = () => {
       </button>
 
       {isOpen && (
-        <div className="dm-panel glass-panel">
+        <div className="absolute top-[calc(100%+15px)] right-[-80px] w-[380px] z-[9999] bg-black/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl flex flex-col overflow-hidden max-h-[70vh] min-h-[500px]">
           {!activeChat ? (
             <>
               {/* Overlay for mobile backdrop */}
@@ -254,7 +254,7 @@ const DirectMessaging = () => {
               </div>
 
               {/* Conversation List */}
-              <div className="dm-conversations">
+              <div className="flex-1 overflow-y-auto p-2 custom-scrollbar flex flex-col gap-1">
                 {(activeTab === 'primary' ? primaryConvos : requestConvos).length === 0 ? (
                   <div className="dm-empty">
                       {activeTab === 'primary' ? <MessageSquare size={32} className="text-muted" /> : <Inbox size={32} className="text-muted" />}
@@ -349,7 +349,7 @@ const DirectMessaging = () => {
               )}
 
               {/* Messages */}
-              <div className="dm-messages">
+              <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar">
                 {isLoadingMessages ? (
                   <div className="dm-empty">Loading messages...</div>
                 ) : messages.length === 0 ? (
