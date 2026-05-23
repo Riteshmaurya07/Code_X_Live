@@ -75,7 +75,7 @@ function JoinHandler() {
 
   return (
     <div className="loading-screen">
-      <p className="text-[var(--text-muted)]">Joining project...</p>
+      <p className="text-(--text-muted)">Joining project...</p>
     </div>
   );
 }

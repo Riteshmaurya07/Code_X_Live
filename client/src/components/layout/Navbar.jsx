@@ -19,7 +19,7 @@ const navActionButtonClass =
 /* ---------- MOBILE MENU ---------- */
 
 const mobileMenuPanelClass = (open) =>
-  `fixed top-0 left-0 z-50 flex h-screen w-[min(85vw,22rem)] flex-col 
+  `fixed top-0 left-0 z-50 flex h-[100dvh] w-[85vw] max-w-[22rem] flex-col justify-between 
   bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-2xl 
   transform transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] 
   ${open ? "translate-x-0 opacity-100 scale-100" : "-translate-x-full opacity-0 scale-95"}`;
@@ -169,14 +169,12 @@ const MobileMenuShell = ({ mobileOpen, setMobileOpen, children }) => (
     />
 
     <div className={mobileMenuPanelClass(mobileOpen)}>
-      <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--border)]">
+      <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--border)] shrink-0">
         <span className="text-lg font-semibold">Menu</span>
         <button onClick={() => setMobileOpen(false)}>✕</button>
       </div>
 
-      <div className="flex flex-col h-full p-4 overflow-y-auto overflow-x-hidden">
-        {children}
-      </div>
+      {children}
     </div>
   </>
 );
@@ -264,7 +262,7 @@ const Navbar = () => {
       {/* MOBILE MENU */}
       <MobileMenuShell mobileOpen={mobileOpen} setMobileOpen={setMobileOpen}>
 
-        <div className="flex flex-col gap-5 flex-1">
+        <div className="flex flex-col gap-5 flex-1 overflow-y-auto overflow-x-hidden p-4">
 
           {/* Search (Mobile) */}
           <SearchWidget mobile={true} onResultClick={() => setMobileOpen(false)} />
@@ -306,7 +304,7 @@ const Navbar = () => {
         </div>
 
         {/* Bottom */}
-        <div className="flex flex-col gap-2 pt-6 mt-auto">
+        <div className="flex flex-col gap-3 p-4 shrink-0 border-t border-[var(--border)] pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
           {user ? (
             <>
               <Link to="/dashboard">
