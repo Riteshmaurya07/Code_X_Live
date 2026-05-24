@@ -69,32 +69,38 @@ exports.createMeeting = async (req, res, next) => {
     await meeting.save();
 
     const populatedMeeting = await populateMeeting(meeting._id);
-
     const creator = await User.findById(userId);
-
-    if (participantIds.length > 0) {
-      const invitees = await User.find({ _id: { $in: participantIds, $ne: userId } });
-      const startTimeStr = start.toLocaleString();
-      
-      for (const invitee of invitees) {
-        try {
-          const html = meetingInviteTemplate(
-            creator.username,
-            project.name,
-            title,
-            startTimeStr,
-            meeting.meetingLink
-          );
-          await sendMail(invitee.email, `Meeting Invitation: ${title}`, html);
-        } catch (e) {
-          logger.error(`Could not send meeting invite to ${invitee.email}:`, e);
-        }
-      }
-    }
 
     emitMeetingEvent(req, projectId, ACTIONS.MEETING_CREATED, { meeting: populatedMeeting });
 
     res.status(201).json(populatedMeeting);
+
+    // Send email invitations in the background
+    (async () => {
+      if (participantIds.length > 0) {
+        try {
+          const invitees = await User.find({ _id: { $in: participantIds, $ne: userId } });
+          const startTimeStr = start.toLocaleString();
+          
+          for (const invitee of invitees) {
+            try {
+              const html = meetingInviteTemplate(
+                creator.username,
+                project.name,
+                title,
+                startTimeStr,
+                meeting.meetingLink
+              );
+              await sendMail(invitee.email, `Meeting Invitation: ${title}`, html);
+            } catch (e) {
+              logger.error(`Could not send meeting invite to ${invitee.email}:`, e);
+            }
+          }
+        } catch (err) {
+          logger.error(`Failed to process background meeting invites:`, err);
+        }
+      }
+    })();
   } catch (error) {
     next(error);
   }
