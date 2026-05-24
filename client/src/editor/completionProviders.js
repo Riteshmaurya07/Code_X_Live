@@ -89,6 +89,80 @@ const CPP_BUILTINS = [
   { label: "scanf", kind: CompletionKind.Function, detail: "Formatted scan", insertText: 'scanf("${1:%d}", &${2:var});', insertTextRules: 4 },
 ];
 
+const GO_BUILTINS = [
+  { label: "fmt.Println", kind: CompletionKind.Function, detail: "Print with newline", insertText: "fmt.Println(${1:message})", insertTextRules: 4 },
+  { label: "fmt.Printf", kind: CompletionKind.Function, detail: "Formatted print", insertText: "fmt.Printf(\"${1:%s}\\n\", ${2:var})", insertTextRules: 4 },
+  { label: "fmt.Sprintf", kind: CompletionKind.Function, detail: "Format to string", insertText: "fmt.Sprintf(\"${1:%s}\", ${2:var})", insertTextRules: 4 },
+  { label: "append", kind: CompletionKind.Function, detail: "Append to slice", insertText: "append(${1:slice}, ${2:value})", insertTextRules: 4 },
+  { label: "make", kind: CompletionKind.Function, detail: "Initialize slice/map/chan", insertText: "make(${1:Type}, ${2:size})", insertTextRules: 4 },
+  { label: "len", kind: CompletionKind.Function, detail: "Length of collection", insertText: "len(${1:v})", insertTextRules: 4 },
+  { label: "panic", kind: CompletionKind.Function, detail: "Raise panic", insertText: "panic(${1:err})", insertTextRules: 4 },
+  { label: "recover", kind: CompletionKind.Function, detail: "Recover from panic", insertText: "recover()" },
+];
+
+const RUST_BUILTINS = [
+  { label: "println!", kind: CompletionKind.Function, detail: "Print line to stdout", insertText: "println!(\"${1:{}}\", ${2:var});", insertTextRules: 4 },
+  { label: "print!", kind: CompletionKind.Function, detail: "Print to stdout", insertText: "print!(\"${1:{}}\", ${2:var});", insertTextRules: 4 },
+  { label: "format!", kind: CompletionKind.Function, detail: "Format to String", insertText: "format!(\"${1:{}}\", ${2:var})", insertTextRules: 4 },
+  { label: "vec!", kind: CompletionKind.Function, detail: "Create vector slice", insertText: "vec![${1:elements}]", insertTextRules: 4 },
+  { label: "Option::Some", kind: CompletionKind.EnumMember, detail: "Option wrapper", insertText: "Some(${1:val})", insertTextRules: 4 },
+  { label: "Option::None", kind: CompletionKind.EnumMember, detail: "Option empty", insertText: "None" },
+  { label: "Result::Ok", kind: CompletionKind.EnumMember, detail: "Result success", insertText: "Ok(${1:val})", insertTextRules: 4 },
+  { label: "Result::Err", kind: CompletionKind.EnumMember, detail: "Result error", insertText: "Err(${1:err})", insertTextRules: 4 },
+];
+
+const SQL_BUILTINS = [
+  { label: "SELECT", kind: CompletionKind.Keyword, detail: "SQL Keyword", insertText: "SELECT ${1:columns} FROM ${2:table}", insertTextRules: 4 },
+  { label: "INSERT INTO", kind: CompletionKind.Keyword, detail: "SQL Keyword", insertText: "INSERT INTO ${1:table} (${2:columns}) VALUES (${3:values})", insertTextRules: 4 },
+  { label: "UPDATE", kind: CompletionKind.Keyword, detail: "SQL Keyword", insertText: "UPDATE ${1:table} SET ${2:column} = ${3:value} WHERE ${4:condition}", insertTextRules: 4 },
+  { label: "DELETE FROM", kind: CompletionKind.Keyword, detail: "SQL Keyword", insertText: "DELETE FROM ${1:table} WHERE ${2:condition}", insertTextRules: 4 },
+  { label: "WHERE", kind: CompletionKind.Keyword, detail: "SQL Keyword", insertText: "WHERE " },
+  { label: "JOIN", kind: CompletionKind.Keyword, detail: "SQL Keyword", insertText: "JOIN ${1:table} ON ${2:condition}", insertTextRules: 4 },
+  { label: "ORDER BY", kind: CompletionKind.Keyword, detail: "SQL Keyword", insertText: "ORDER BY ${1:column} ${2:ASC}", insertTextRules: 4 },
+  { label: "GROUP BY", kind: CompletionKind.Keyword, detail: "SQL Keyword", insertText: "GROUP BY ${1:column}", insertTextRules: 4 },
+];
+
+const HTML_BUILTINS = [
+  { label: "div", kind: CompletionKind.Class, detail: "HTML Element", insertText: "div" },
+  { label: "span", kind: CompletionKind.Class, detail: "HTML Element", insertText: "span" },
+  { label: "a", kind: CompletionKind.Class, detail: "HTML Element", insertText: "a" },
+  { label: "img", kind: CompletionKind.Class, detail: "HTML Element", insertText: "img" },
+  { label: "input", kind: CompletionKind.Class, detail: "HTML Element", insertText: "input" },
+  { label: "button", kind: CompletionKind.Class, detail: "HTML Element", insertText: "button" },
+  { label: "p", kind: CompletionKind.Class, detail: "HTML Element", insertText: "p" },
+  { label: "script", kind: CompletionKind.Class, detail: "HTML Element", insertText: "script" },
+  { label: "style", kind: CompletionKind.Class, detail: "HTML Element", insertText: "style" },
+];
+
+const CSS_BUILTINS = [
+  { label: "display: flex", kind: CompletionKind.Property, detail: "CSS Layout", insertText: "display: flex;" },
+  { label: "display: grid", kind: CompletionKind.Property, detail: "CSS Layout", insertText: "display: grid;" },
+  { label: "position: absolute", kind: CompletionKind.Property, detail: "CSS Position", insertText: "position: absolute;" },
+  { label: "position: relative", kind: CompletionKind.Property, detail: "CSS Position", insertText: "position: relative;" },
+  { label: "margin", kind: CompletionKind.Property, detail: "CSS Margin", insertText: "margin: ${1:0};", insertTextRules: 4 },
+  { label: "padding", kind: CompletionKind.Property, detail: "CSS Padding", insertText: "padding: ${1:0};", insertTextRules: 4 },
+  { label: "background", kind: CompletionKind.Property, detail: "CSS Background", insertText: "background: ${1:color};", insertTextRules: 4 },
+  { label: "color", kind: CompletionKind.Property, detail: "CSS Text Color", insertText: "color: ${1:color};", insertTextRules: 4 },
+  { label: "font-size", kind: CompletionKind.Property, detail: "CSS Font Size", insertText: "font-size: ${1:16px};", insertTextRules: 4 },
+];
+
+const PHP_BUILTINS = [
+  { label: "echo", kind: CompletionKind.Function, detail: "Output text", insertText: "echo ${1:message};", insertTextRules: 4 },
+  { label: "var_dump", kind: CompletionKind.Function, detail: "Dump variable details", insertText: "var_dump(${1:var});", insertTextRules: 4 },
+  { label: "isset", kind: CompletionKind.Function, detail: "Check if set", insertText: "isset(${1:var})", insertTextRules: 4 },
+  { label: "empty", kind: CompletionKind.Function, detail: "Check if empty", insertText: "empty(${1:var})", insertTextRules: 4 },
+  { label: "count", kind: CompletionKind.Function, detail: "Get element count", insertText: "count(${1:array})", insertTextRules: 4 },
+  { label: "array", kind: CompletionKind.Function, detail: "Create array", insertText: "array(${1:})", insertTextRules: 4 },
+];
+
+const SHELL_BUILTINS = [
+  { label: "echo", kind: CompletionKind.Function, detail: "Print string", insertText: "echo \"${1:message}\"", insertTextRules: 4 },
+  { label: "export", kind: CompletionKind.Keyword, detail: "Set env var", insertText: "export ${1:VAR}=\"${2:value}\"", insertTextRules: 4 },
+  { label: "if", kind: CompletionKind.Keyword, detail: "Conditional statement", insertText: "if [ ${1:condition} ]; then\n\t${2:# body}\nfi", insertTextRules: 4 },
+  { label: "for", kind: CompletionKind.Keyword, detail: "For loop", insertText: "for ${1:var} in ${2:list}; do\n\t${3:# body}\ndone", insertTextRules: 4 },
+  { label: "while", kind: CompletionKind.Keyword, detail: "While loop", insertText: "while [ ${1:condition} ]; do\n\t${2:# body}\ndone", insertTextRules: 4 },
+];
+
 const BUILTIN_MAP = {
   javascript: JS_BUILTINS,
   typescript: JS_BUILTINS,
@@ -97,6 +171,13 @@ const BUILTIN_MAP = {
   cpp:        CPP_BUILTINS,
   c:          CPP_BUILTINS,
   csharp:     JAVA_BUILTINS,
+  go:         GO_BUILTINS,
+  rust:       RUST_BUILTINS,
+  sql:        SQL_BUILTINS,
+  html:       HTML_BUILTINS,
+  css:        CSS_BUILTINS,
+  php:        PHP_BUILTINS,
+  shell:      SHELL_BUILTINS,
 };
 
 // ── Disposable tracking ────────────────────────────────────────────────
@@ -113,6 +194,8 @@ function extractPlainText(insertText) {
 
 function getOverlap(prefix, plainText) {
   if (!prefix || !plainText) return 0;
+  
+  // Standard exact match first (very fast)
   const maxOverlap = Math.min(prefix.length, plainText.length);
   for (let i = maxOverlap; i > 0; i--) {
     if (prefix.substring(prefix.length - i) === plainText.substring(0, i)) {
@@ -124,6 +207,24 @@ function getOverlap(prefix, plainText) {
       return i;
     }
   }
+
+  // If no exact match, try matching by ignoring whitespaces
+  const cleanString = (str) => str.replace(/\s+/g, "");
+  const cleanPlainText = cleanString(plainText);
+  
+  for (let i = prefix.length; i > 0; i--) {
+    const suffix = prefix.substring(prefix.length - i);
+    const cleanSuffix = cleanString(suffix);
+    if (cleanSuffix && cleanPlainText.startsWith(cleanSuffix)) {
+      // Reject partial word overlaps
+      const charBefore = prefix.length - i - 1 >= 0 ? prefix[prefix.length - i - 1] : null;
+      if (charBefore && /[a-zA-Z0-9_]/.test(charBefore)) {
+        continue;
+      }
+      return i;
+    }
+  }
+
   return 0;
 }
 
@@ -140,7 +241,7 @@ export const registerCompletionProviders = () => {
 
   for (const lang of languages) {
     const d = monaco.languages.registerCompletionItemProvider(lang, {
-      triggerCharacters: [".", "(", "'", '"', "<", "/", "@", "{", " "],
+      triggerCharacters: [".", ":", "<", "$", "@", "#", "/"],
       provideCompletionItems(model, position) {
         const word = model.getWordUntilPosition(position);
         const lineContent = model.getLineContent(position.lineNumber);

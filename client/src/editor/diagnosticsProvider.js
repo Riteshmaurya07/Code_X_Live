@@ -141,6 +141,11 @@ export const runDiagnostics = (model) => {
 export const clearDiagnostics = (model) => {
   if (model) {
     monaco.editor.setModelMarkers(model, OWNER, []);
+    monaco.editor.setModelMarkers(model, "javascript", []);
+    monaco.editor.setModelMarkers(model, "typescript", []);
+    monaco.editor.setModelMarkers(model, "json", []);
+    monaco.editor.setModelMarkers(model, "html", []);
+    monaco.editor.setModelMarkers(model, "css", []);
   }
 };
 

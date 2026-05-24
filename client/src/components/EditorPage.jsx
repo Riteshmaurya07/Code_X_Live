@@ -179,8 +179,14 @@ function EditorPage() {
         setProjectObj(data.project);
         if (data.files?.length > 0) {
           setFiles(data.files);
-          setActiveFileId(data.files[0]._id);
-          if (data.project?.language) setSelectedLanguage(data.project.language);
+          const firstFile = data.files[0];
+          setActiveFileId(firstFile._id);
+          const firstFileLang = firstFile.name ? getInternalLanguageFromFilename(firstFile.name) : null;
+          if (firstFileLang && firstFileLang !== "plaintext") {
+            setSelectedLanguage(firstFileLang);
+          } else if (data.project?.language) {
+            setSelectedLanguage(data.project.language);
+          }
         } else {
           setFiles([{ _id: "local-default", name: "main.py", content: "" }]);
           setActiveFileId("local-default");
@@ -476,6 +482,9 @@ function EditorPage() {
   }
 
   const activeFile = files.find(f => f._id === activeFileId);
+  const activeFileLanguage = activeFile?.name 
+    ? getInternalLanguageFromFilename(activeFile.name) 
+    : selectedLanguage;
 
   return (
     <div className="editor-page">
@@ -519,7 +528,7 @@ function EditorPage() {
         <EditorToolbar 
           theme={theme}
           onToggleTheme={toggleTheme}
-          selectedLanguage={selectedLanguage}
+          selectedLanguage={activeFileLanguage}
           onSelectLanguage={setSelectedLanguage}
           languages={LANGUAGES}
           files={files}
@@ -565,7 +574,7 @@ function EditorPage() {
               onCodeChange={handleCodeChange}
               onCursorChange={setCursor}
               theme={theme}
-              language={selectedLanguage}
+              language={activeFileLanguage}
               readOnly={isReadOnly}
               aiAutocompleteEnabled={aiAutocompleteEnabled}
               onFormat={handleFormat}
@@ -582,7 +591,7 @@ function EditorPage() {
             )}
           </div>
 
-          {showAIPanel && <AIPanel code={codeRef.current} language={selectedLanguage} onApplyFix={c => editorRef.current?.setValue(c)} />}
+          {showAIPanel && <AIPanel code={codeRef.current} language={activeFileLanguage} onApplyFix={c => editorRef.current?.setValue(c)} />}
           {showChatPanel && (
             <ChatPanel 
               roomMessages={roomMessages} privateMessages={privateMessages}
@@ -647,7 +656,7 @@ function EditorPage() {
         {isCompileWindowOpen && <CompilerOutput output={output} executionTime={executionTime} onClose={() => setIsCompileWindowOpen(false)} />}
         
         <StatusBar 
-          language={selectedLanguage} 
+          language={activeFileLanguage} 
           cursor={cursor} 
           clientsCount={clients.length} 
           status={socketRef.current?.connected ? "connected" : "disconnected"}
