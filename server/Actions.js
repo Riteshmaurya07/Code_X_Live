@@ -7,6 +7,12 @@ const ACTIONS = {
   SYNC_CODE: "sync-code",
   LEAVE: "leave",
 
+  // Yjs Collaboration
+  YJS_SYNC_STEP_1: "yjs-sync-step-1",
+  YJS_SYNC_STEP_2: "yjs-sync-step-2",
+  YJS_UPDATE: "yjs-update",
+  YJS_AWARENESS: "yjs-awareness",
+
   // Admin Room Control
   KICK_USER: "kick-user",
   KICKED: "kicked",

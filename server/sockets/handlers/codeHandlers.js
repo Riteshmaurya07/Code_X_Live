@@ -36,8 +36,47 @@ const registerCodeHandlers = (io, socket) => {
     if (!roomState.has(targetRoom)) roomState.set(targetRoom, new Map());
     roomState.get(targetRoom).set(fileId, { code, language });
 
-    // Broadcast to others (not back to sender)
+    // Broadcast to others (legacy)
     socket.to(targetRoom).emit(ACTIONS.CODE_CHANGE, { fileId, code, language });
+
+    // Compatibility Bridge: apply legacy CODE_CHANGE to the server Yjs doc and broadcast to Yjs clients
+    const { getOrCreateServerDoc } = require("./yjsHandlers");
+    getOrCreateServerDoc(fileId).then(entry => {
+      const text = entry.doc.getText("monaco");
+      if (text.toString() !== code) {
+        // Compute diff or just replace? Full replacement is safer for generic string changes
+        const Y = require("yjs");
+        const doc = entry.doc;
+        
+        // Listen to this specific transaction to capture the update buffer
+        let capturedUpdate = null;
+        const updateListener = (update, origin) => {
+          if (origin === "legacy-bridge") {
+            capturedUpdate = update;
+          }
+        };
+        doc.on("update", updateListener);
+        
+        doc.transact(() => {
+          text.delete(0, text.length);
+          text.insert(0, code);
+        }, "legacy-bridge");
+        
+        doc.off("update", updateListener);
+
+        if (capturedUpdate) {
+          // Durably persist this bridge update too
+          const File = require("../../models/File");
+          const crypto = require("crypto");
+          File.updateOne(
+            { _id: fileId },
+            { $push: { yjsUpdates: { id: crypto.randomUUID(), update: Buffer.from(capturedUpdate) } } }
+          ).catch(e => logger.error("Error persisting bridge update:", e));
+          
+          socket.to(targetRoom).emit(ACTIONS.YJS_UPDATE, { fileId, update: Array.from(capturedUpdate) });
+        }
+      }
+    }).catch(err => logger.error(`Bridge error: ${err}`));
   });
 
   // FILE_CHANGE: notify others which file a user is viewing
