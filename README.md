@@ -47,8 +47,14 @@
 *   **Graceful Fallbacks**: Automatically falls back to high-fidelity audio streams if webcam access is blocked or camera hardware is missing.
 
 ### 👥 Room Governance & RBAC
+*   **Secure API Endpoints**: Centralized, robust HTTP authorization using a custom `checkPermission` middleware that guards AI, Compiler, Project, and File endpoints against unauthorized data access (IDOR).
+*   **Strict Data Isolation**: All API actions dynamically verify that the logged-in user possesses valid access to the requested project scope.
+*   **Role-Based Access Control (RBAC)**: Support for three distinct user roles inside projects and sockets:
+    *   **Owner**: Full access. Can modify project settings, delete the project, manage collaborators, invite/remove users, and access AI/compiler tools.
+    *   **Editor**: Can read, write, autosave, and restore file versions, as well as utilize AI and compiler integrations.
+    *   **Viewer**: Read-only access. Can view project files and versions, but cannot edit code, autosave, or invoke modifications.
+*   **Automated Security Testing**: Integrated comprehensive Jest test suites enforcing the strict RBAC policies and avoiding regression on all project, file, and AI access points.
 *   **Secure Waiting Room**: Project owners are notified via Socket.io when a user requests entry, allowing them to approve or decline access dynamically.
-*   **Role-Based Access Control**: Assign `Editor` or `Viewer` roles to users in real time. Viewers get immediate read-only access with locked CodeMirror textareas.
 *   **Moderation Panel**: Allows project owners to kick, temporarily suspend, or permanently ban participants from collaborative rooms.
 *   **Shareable Invitation Tokens**: Generate secure, single-click access URLs or project tokens.
 

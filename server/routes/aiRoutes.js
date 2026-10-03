@@ -8,6 +8,18 @@ const {
   chat,
   autocomplete,
 } = require("../controllers/aiController");
+const auth = require("../middleware/auth");
+const checkPermission = require("../middleware/checkPermission");
+
+const aiProjectCheck = (req, res, next) => {
+  if (req.body.projectId) {
+    return checkPermission("owner", "editor", "viewer")(req, res, next);
+  }
+  next();
+};
+
+router.use(auth);
+router.use(aiProjectCheck);
 
 router.post("/review", reviewCode);
 router.post("/explain", explainCode);

@@ -9,14 +9,15 @@ const {
 } = require("../controllers/projectController");
 const { downloadProject } = require("../controllers/downloadController");
 const auth = require("../middleware/auth");
+const checkPermission = require("../middleware/checkPermission");
 
 router.use(auth); // All project routes are protected
 
 router.post("/", createProject);
 router.get("/", getProjects);
-router.get("/:id/download", downloadProject);
-router.get("/:id", getProject);
-router.put("/:id", updateProject);
-router.delete("/:id", deleteProject);
+router.get("/:id/download", checkPermission("owner", "editor", "viewer"), downloadProject);
+router.get("/:id", checkPermission("owner", "editor", "viewer"), getProject);
+router.put("/:id", checkPermission("owner"), updateProject);
+router.delete("/:id", checkPermission("owner"), deleteProject);
 
 module.exports = router;
