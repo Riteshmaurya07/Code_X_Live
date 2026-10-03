@@ -34,6 +34,10 @@ const fileSchema = new mongoose.Schema(
         update: { type: Buffer, required: true },
       }
     ],
+    compactionVersion: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

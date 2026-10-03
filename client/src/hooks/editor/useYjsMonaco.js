@@ -45,9 +45,12 @@ export const useYjsMonaco = ({
       // Don't send updates that originated from the server
       if (origin === 'server') return;
       
+      const updateId = self.crypto && self.crypto.randomUUID ? self.crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      
       socket.emit(ACTIONS.YJS_UPDATE, {
         roomId,
         fileId,
+        updateId,
         update: Array.from(update)
       }, (res) => {
         if (res && res.error) {

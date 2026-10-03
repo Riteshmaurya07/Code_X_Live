@@ -9,8 +9,7 @@ export const initSocket = async (inviteToken) => {
     reconnectionAttempts: 5,
     reconnectionDelay: 1000,
     timeout: 10000,
-    // Start with polling so HTTP proxies & cold-starts work, then upgrade to WS
-    transports: ["polling", "websocket"],
+    transports: ["websocket"], // WebSocket only per Phase 2B design
     auth: {
       token,
       inviteToken,

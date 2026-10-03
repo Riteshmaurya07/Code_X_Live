@@ -104,16 +104,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// Socket.io setup — mirror transports with client (polling first, then upgrade)
+// Socket.io setup
+const { createAdapter } = require("@socket.io/redis-adapter");
+const { redisClient, redisSubClient } = require("./config/redis");
+
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
-  transports: ["polling", "websocket"],
+  transports: ["websocket"], // WebSocket only per Phase 2B design
   pingTimeout: 60000,
   pingInterval: 25000,
+  adapter: createAdapter(redisClient, redisSubClient),
 });
 
 app.set("io", io);

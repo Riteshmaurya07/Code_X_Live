@@ -107,10 +107,19 @@ graph TD
 | :--- | :--- |
 | **Frontend** | React 19, Vite 7, CodeMirror 6, Yjs (y-monaco), Axios, Socket.io-client, simple-peer, Lucide Icons, Vanilla CSS |
 | **Backend** | Node.js, Express, Socket.io 4, Mongoose 8, Bcrypt.js, Archiver, Cloudinary Admin SDK |
-| **Databases** | MongoDB Atlas (Persistent store), In-Memory JS Maps (Ephemeral cursors, signaling nodes) |
+| **Databases** | MongoDB Atlas (Persistent store), Upstash Redis (Distributed cache & Pub/Sub) |
 | **Auth** | Firebase Admin SDK (OAuth integration), JWT (Stateless token exchange) |
 | **Integrations** | Google Gemini AI SDK, JDoodle Web compiler, Brevo (SMTP Transactional Mailer) |
 | **DevOps** | Docker, Docker Compose, Nginx, Vercel, Render |
+
+---
+
+## ⚡ Deployment & Architecture (Phase 2B)
+CodeXLive is built to run in a clustered, multi-node environment (e.g., Render background workers or horizontally scaled pods).
+
+*   **WebSocket Only:** To provide latency-free real-time sync, CodeXLive forces **WebSocket transport only**. HTTP long-polling is disabled, meaning you **do not** need to configure "Sticky Sessions" or Session Affinity on your load balancer.
+*   **Redis Infrastructure:** An Upstash Redis instance acts as the core message bus (`@socket.io/redis-adapter`) and provides a dedicated Pub/Sub channel (`yjs:updates`) to propagate Operational Transformation payloads safely between distributed Node instances without duplicating MongoDB persistence loops.
+*   **MongoDB Authority:** While Redis serves as an extremely fast permission cache (`room:<id>:permissions`), MongoDB Atlas remains the absolute authoritative source for Project roles. CodeXLive will "fail closed" if Redis goes offline, preserving strict Role-Based Access Controls.
 
 ---
 

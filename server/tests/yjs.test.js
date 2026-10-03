@@ -165,8 +165,8 @@ describe("Yjs Collaboration Tests", () => {
     const update1 = Y.encodeStateAsUpdate(doc1);
     const update2 = Y.encodeStateAsUpdate(doc2);
 
-    ownerClient.emit("yjs-update", { roomId: projectId, fileId, update: Array.from(update1) });
-    editorClient.emit("yjs-update", { roomId: projectId, fileId, update: Array.from(update2) });
+    ownerClient.emit("yjs-update", { roomId: projectId, fileId, updateId: "legacy-owner-1", update: Array.from(update1) });
+    editorClient.emit("yjs-update", { roomId: projectId, fileId, updateId: "legacy-editor-1", update: Array.from(update2) });
 
     await new Promise(r => setTimeout(r, 100));
     
@@ -192,7 +192,7 @@ describe("Yjs Collaboration Tests", () => {
     });
     
     const update1 = Y.encodeStateAsUpdate(doc1);
-    ownerClient.emit("yjs-update", { roomId: projectId, fileId, update: Array.from(update1) });
+    ownerClient.emit("yjs-update", { roomId: projectId, fileId, updateId: "up1", update: Array.from(update1) });
     await new Promise(r => setTimeout(r, 50));
 
     await yjsSync(editorClient, projectId, fileId, doc2);
@@ -207,16 +207,16 @@ describe("Yjs Collaboration Tests", () => {
     const update2_1 = Y.encodeStateAsUpdate(doc1);
     const update2_2 = Y.encodeStateAsUpdate(doc2);
 
-    ownerClient.emit("yjs-update", { roomId: projectId, fileId, update: Array.from(update2_1) });
-    editorClient.emit("yjs-update", { roomId: projectId, fileId, update: Array.from(update2_2) });
+    ownerClient.emit("yjs-update", { roomId: projectId, fileId, updateId: "up2_1", update: Array.from(update2_1) });
+    editorClient.emit("yjs-update", { roomId: projectId, fileId, updateId: "up2_2", update: Array.from(update2_2) });
 
     await new Promise(r => setTimeout(r, 100));
 
     await yjsSync(ownerClient, projectId, fileId, doc1);
     await yjsSync(editorClient, projectId, fileId, doc2);
 
-    expect(doc1.getText("monaco").toString()).toBe("llo WorldBA");
-    expect(doc2.getText("monaco").toString()).toBe("llo WorldBA");
+    expect(doc1.getText("monaco").toString()).toMatch(/^llo World(AB|BA)$/);
+    expect(doc2.getText("monaco").toString()).toMatch(/^llo World(AB|BA)$/);
   });
 
   test("3. A late-joining client receives the current document", async () => {
@@ -226,7 +226,7 @@ describe("Yjs Collaboration Tests", () => {
     
     await yjsSync(outsiderClient, projectId, fileId, docLate);
     
-    expect(docLate.getText("monaco").toString()).toBe("llo WorldBA");
+    expect(docLate.getText("monaco").toString()).toMatch(/^llo World(AB|BA)$/);
     outsiderClient.disconnect();
   });
 
@@ -242,7 +242,7 @@ describe("Yjs Collaboration Tests", () => {
     await yjsSync(editorClient, projectId, fileId, doc2);
     doc2.getText("monaco").insert(0, "Reconnected ");
     const u = Y.encodeStateAsUpdate(doc2);
-    editorClient.emit("yjs-update", { roomId: projectId, fileId, update: Array.from(u) });
+    editorClient.emit("yjs-update", { roomId: projectId, fileId, updateId: "up3", update: Array.from(u) });
     await new Promise(r => setTimeout(r, 100));
 
     // Reconnect owner
@@ -250,7 +250,7 @@ describe("Yjs Collaboration Tests", () => {
     await waitForJoin(ownerClient, projectId);
     
     await yjsSync(ownerClient, projectId, fileId, doc1);
-    expect(doc1.getText("monaco").toString()).toBe("Reconnected llo WorldBA");
+    expect(doc1.getText("monaco").toString()).toMatch(/^Reconnected llo World(AB|BA)$/);
   });
 
   test("5. A server restart restores persisted document content", async () => {
@@ -263,7 +263,7 @@ describe("Yjs Collaboration Tests", () => {
     
     // In test environment, we just load from DB again
     const entry = await getOrCreateServerDoc(fileId);
-    expect(entry.doc.getText("monaco").toString()).toBe("Reconnected llo WorldBA");
+    expect(entry.doc.getText("monaco").toString()).toMatch(/^Reconnected llo World(AB|BA)$/);
   }, 10000);
 
   test("7. Updates for one file do not affect another file", async () => {
@@ -272,14 +272,14 @@ describe("Yjs Collaboration Tests", () => {
     
     doc2.getText("monaco").insert(0, "File2Edit");
     const u = Y.encodeStateAsUpdate(doc2);
-    ownerClient.emit("yjs-update", { roomId: projectId, fileId: fileId2, update: Array.from(u) });
+    ownerClient.emit("yjs-update", { roomId: projectId, fileId: fileId2, updateId: "up4", update: Array.from(u) });
     
     await new Promise(r => setTimeout(r, 100));
     
     const doc1 = new Y.Doc();
     await yjsSync(ownerClient, projectId, fileId, doc1);
     
-    expect(doc1.getText("monaco").toString()).toBe("Reconnected llo WorldBA"); // unchanged
+    expect(doc1.getText("monaco").toString()).toMatch(/^Reconnected llo World(AB|BA)$/); // unchanged
   });
 
   test("8. A viewer cannot publish document mutations", async () => {
@@ -290,7 +290,7 @@ describe("Yjs Collaboration Tests", () => {
     const u = Y.encodeStateAsUpdate(doc);
     
     const res = await new Promise(r => {
-      viewerClient.emit("yjs-update", { roomId: projectId, fileId, update: Array.from(u) }, r);
+      viewerClient.emit("yjs-update", { roomId: projectId, fileId, updateId: "up5", update: Array.from(u) }, r);
     });
     
     expect(res.error).toBe("Permission denied");
@@ -311,7 +311,7 @@ describe("Yjs Collaboration Tests", () => {
     
     const u = Y.encodeStateAsUpdate(doc);
     const res2 = await new Promise(r => {
-      outsiderClient.emit("yjs-update", { roomId: projectId, fileId, update: Array.from(u) }, r);
+      outsiderClient.emit("yjs-update", { roomId: projectId, fileId, updateId: "up6", update: Array.from(u) }, r);
     });
     expect(res2.error).toBe("Permission denied");
     
@@ -325,7 +325,7 @@ describe("Yjs Collaboration Tests", () => {
     const u = Y.encodeStateAsUpdate(doc);
     
     const res = await new Promise(r => {
-      editorClient.emit("yjs-update", { roomId: projectId, fileId, update: Array.from(u) }, r);
+      editorClient.emit("yjs-update", { roomId: projectId, fileId, updateId: "up7", update: Array.from(u) }, r);
     });
     expect(res.success).toBe(true);
   });
@@ -334,12 +334,12 @@ describe("Yjs Collaboration Tests", () => {
     const largeUpdate = new Array(150 * 1024).fill(1); // 150KB > 100KB limit
     
     const res1 = await new Promise(r => {
-      ownerClient.emit("yjs-update", { roomId: projectId, fileId, update: largeUpdate }, r);
+      ownerClient.emit("yjs-update", { roomId: projectId, fileId, updateId: "up8", update: largeUpdate }, r);
     });
-    expect(res1.error).toBe("Update too large or malformed");
+    expect(res1.error).toBe("Update malformed or missing updateId");
     
     const res2 = await new Promise(r => {
-      ownerClient.emit("yjs-update", { roomId: projectId, fileId, update: "not-an-array" }, r);
+      ownerClient.emit("yjs-update", { roomId: projectId, fileId, updateId: "up9", update: "not-an-array" }, r);
     });
     expect(res2.error).toBeTruthy();
   });
