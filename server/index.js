@@ -145,7 +145,9 @@ app.get("/api/health", (req, res) => {
 });
 
 // Initialize Cron Jobs
-initMeetingCron();
+if (process.env.NODE_ENV !== "test") {
+  initMeetingCron();
+}
 
 // Centralized error handler (must be LAST middleware)
 app.use(errorHandler);
@@ -199,4 +201,8 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
-startServer();
+if (process.env.NODE_ENV !== "test") {
+  startServer();
+}
+
+module.exports = app;

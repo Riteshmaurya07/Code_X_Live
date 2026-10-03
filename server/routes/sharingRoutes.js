@@ -12,6 +12,7 @@ const {
   getProjectInvitations,
 } = require("../controllers/sharingController");
 const auth = require("../middleware/auth");
+const checkPermission = require("../middleware/checkPermission");
 
 router.use(auth);
 
@@ -21,11 +22,11 @@ router.post("/invitations/:invitationId/accept", acceptInvitation);  // Accept a
 router.post("/invitations/:invitationId/decline", declineInvitation); // Decline an invitation
 
 // ── Project collaboration ──
-router.post("/:projectId/invite", inviteCollaborator);
-router.delete("/:projectId/collaborator/:userId", removeCollaborator);
-router.post("/:projectId/share-link", generateShareLink);
-router.post("/join/:token", joinViaShareLink);
-router.get("/:projectId/collaborators", getCollaborators);
-router.get("/:projectId/invitations", getProjectInvitations);        // Get pending invitations for project
+router.post("/:projectId/invite", checkPermission("owner"), inviteCollaborator);
+router.delete("/:projectId/collaborator/:userId", checkPermission("owner"), removeCollaborator);
+router.post("/:projectId/share-link", checkPermission("owner"), generateShareLink);
+router.post("/join/:token", joinViaShareLink); // No checkPermission because they are joining
+router.get("/:projectId/collaborators", checkPermission("owner", "editor", "viewer"), getCollaborators);
+router.get("/:projectId/invitations", checkPermission("owner"), getProjectInvitations);        // Get pending invitations for project
 
 module.exports = router;
