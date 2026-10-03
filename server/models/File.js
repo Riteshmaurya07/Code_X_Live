@@ -24,6 +24,16 @@ const fileSchema = new mongoose.Schema(
       type: String,
       default: "/",
     },
+    yjsState: {
+      type: Buffer,
+      default: null,
+    },
+    yjsUpdates: [
+      {
+        id: { type: String, required: true },
+        update: { type: Buffer, required: true },
+      }
+    ],
   },
   { timestamps: true }
 );

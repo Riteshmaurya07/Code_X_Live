@@ -107,10 +107,12 @@ export const useRoomSocket = ({
         if (fileId === activeFileIdRef.current) {
           if (editorRef.current && code != null) {
             // Use applyRemoteChange to preserve local cursor position
-            if (editorRef.current.applyRemoteChange) {
-              editorRef.current.applyRemoteChange(code);
-            } else {
-              editorRef.current.setValue(code);
+            if (!editorRef.current.isYjsActive) {
+              if (editorRef.current.applyRemoteChange) {
+                editorRef.current.applyRemoteChange(code);
+              } else {
+                editorRef.current.setValue(code);
+              }
             }
           }
           codeRef.current = code;

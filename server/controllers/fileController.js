@@ -101,6 +101,41 @@ const updateFile = async (req, res, next) => {
     if (name) file.name = name;
     await file.save();
 
+    // Sync updated content into Yjs document if differs
+    try {
+      if (content !== undefined) {
+        const { getOrCreateServerDoc } = require("../sockets/handlers/yjsHandlers");
+        const entry = await getOrCreateServerDoc(file._id.toString());
+        const text = entry.doc.getText("monaco");
+        if (text.toString() !== content) {
+          const crypto = require("crypto");
+          let capturedUpdate = null;
+          const listener = (update) => { capturedUpdate = update; };
+          entry.doc.on("update", listener);
+          entry.doc.transact(() => {
+            text.delete(0, text.length);
+            text.insert(0, content);
+          }, "update");
+          entry.doc.off("update", listener);
+
+          if (capturedUpdate) {
+            await File.updateOne(
+              { _id: file._id },
+              { $push: { yjsUpdates: { id: crypto.randomUUID(), update: Buffer.from(capturedUpdate) } } }
+            );
+            const io = req.app.get("io");
+            if (io) {
+              const roomId = String(file.project._id || file.project);
+              io.to(roomId).emit(ACTIONS.YJS_UPDATE, { fileId: file._id, update: Array.from(capturedUpdate) });
+              io.to(roomId).emit(ACTIONS.CODE_CHANGE, { fileId: file._id, code: content, language: file.language });
+            }
+          }
+        }
+      }
+    } catch (err) {
+      logger.error(`Error syncing updateFile to Yjs: ${err}`);
+    }
+
     // Log activity
     await ActivityLog.create({
       project: file.project,
@@ -148,6 +183,40 @@ const autosaveFile = async (req, res, next) => {
       return res.status(404).json({ success: false, message: "File not found" });
     }
 
+    // Sync autosaved content into Yjs document if differs
+    try {
+      const { getOrCreateServerDoc } = require("../sockets/handlers/yjsHandlers");
+      const entry = await getOrCreateServerDoc(fileId.toString());
+      const text = entry.doc.getText("monaco");
+      if (text.toString() !== content) {
+        const crypto = require("crypto");
+        let capturedUpdate = null;
+        const listener = (update) => { capturedUpdate = update; };
+        entry.doc.on("update", listener);
+        entry.doc.transact(() => {
+          text.delete(0, text.length);
+          text.insert(0, content);
+        }, "autosave");
+        entry.doc.off("update", listener);
+
+        if (capturedUpdate) {
+          await File.updateOne(
+            { _id: fileId },
+            { $push: { yjsUpdates: { id: crypto.randomUUID(), update: Buffer.from(capturedUpdate) } } }
+          );
+          const io = req.app.get("io");
+          if (io) {
+            const roomId = String(file.project);
+            io.to(roomId).emit(ACTIONS.YJS_UPDATE, { fileId, update: Array.from(capturedUpdate) });
+            // also notify legacy clients just in case
+            io.to(roomId).emit(ACTIONS.CODE_CHANGE, { fileId, code: content, language: file.language });
+          }
+        }
+      }
+    } catch (err) {
+      logger.error(`Error syncing autosave to Yjs: ${err}`);
+    }
+
     res.json({ success: true, savedAt: new Date().toISOString() });
   } catch (err) {
     next(err);
@@ -192,6 +261,40 @@ const restoreVersion = async (req, res, next) => {
 
     file.content = version.content;
     await file.save();
+
+    // Sync the restored content into the active Yjs document
+    try {
+      const { getOrCreateServerDoc } = require("../sockets/handlers/yjsHandlers");
+      const entry = await getOrCreateServerDoc(file._id.toString());
+      const text = entry.doc.getText("monaco");
+      if (text.toString() !== version.content) {
+        const crypto = require("crypto");
+        let capturedUpdate = null;
+        const listener = (update) => { capturedUpdate = update; };
+        entry.doc.on("update", listener);
+        entry.doc.transact(() => {
+          text.delete(0, text.length);
+          text.insert(0, version.content);
+        }, "restore");
+        entry.doc.off("update", listener);
+
+        if (capturedUpdate) {
+          await File.updateOne(
+            { _id: file._id },
+            { $push: { yjsUpdates: { id: crypto.randomUUID(), update: Buffer.from(capturedUpdate) } } }
+          );
+
+          const io = req.app.get("io");
+          if (io) {
+            const roomId = String(file.project);
+            io.to(roomId).emit(ACTIONS.YJS_UPDATE, { fileId: file._id, update: Array.from(capturedUpdate) });
+            io.to(roomId).emit(ACTIONS.CODE_CHANGE, { fileId: file._id, code: version.content, language: file.language });
+          }
+        }
+      }
+    } catch (err) {
+      logger.error(`Error syncing restore to Yjs: ${err}`);
+    }
 
     logger.info(`Version restored for file ${file.name}`);
     res.json({ success: true, file });

@@ -8,6 +8,7 @@ import { registerAIAutocomplete, disposeAIAutocomplete } from "../editor/aiAutoc
 import { registerEditorCommands } from "../editor/editorCommands";
 import { runDiagnostics, clearDiagnostics, getMarkers } from "../editor/diagnosticsProvider";
 import { ACTIONS } from "../Actions";
+import { useYjsMonaco } from "../hooks/editor/useYjsMonaco";
 
 // ── One-time global initialization ────────────────────────────────────
 let globalProvidersRegistered = false;
@@ -56,6 +57,17 @@ const Editor = forwardRef(function Editor(
     }
     return cursorColorsRef.current[id];
   };
+
+  const [editorInstance, setEditorInstance] = React.useState(null);
+
+  // Initialize Yjs collaboration
+  const { isSynced } = useYjsMonaco({
+    socket,
+    roomId,
+    fileId,
+    editor: editorInstance,
+    readOnly
+  });
 
   // ── Imperative handle (same API as old CM editor) ─────────────────
   useImperativeHandle(ref, () => ({
@@ -134,7 +146,9 @@ const Editor = forwardRef(function Editor(
       theme: getThemeId(theme),
       readOnly: readOnly || false,
     });
+    editor.isYjsActive = true;
     editorRef.current = editor;
+    setEditorInstance(editor);
 
     // Register keyboard commands
     registerEditorCommands(editor, { onFormat, onSave, onRun });
@@ -217,9 +231,10 @@ const Editor = forwardRef(function Editor(
     // Monkey-patch executeEdits to detect remote origin
     const originalExecuteEdits = editor.executeEdits.bind(editor);
     editor.executeEdits = (source, edits, endCursorState) => {
-      if (source === "remote") isApplyingRemote = true;
+      const isRemoteSource = source === "remote" || (source && typeof source === "object" && source.constructor && source.constructor.name === "MonacoBinding");
+      if (isRemoteSource) isApplyingRemote = true;
       const result = originalExecuteEdits(source, edits, endCursorState);
-      if (source === "remote") isApplyingRemote = false;
+      if (isRemoteSource) isApplyingRemote = false;
       return result;
     };
 

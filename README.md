@@ -32,7 +32,7 @@
 ## ✨ Key Features
 
 ### 💻 The Professional Workspace
-*   **Operational-Sync Editor**: Built on **CodeMirror 6**, delivering latency-free character synchronization across all participants with real-time room cursors and highlighting.
+*   **Operational-Sync Editor (Yjs/CRDT)**: Built on **CodeMirror 6** and powered by **Yjs (CRDT)**. Delivers true conflict-free collaborative editing and latency-free character synchronization across all participants with real-time room cursors and highlighting.
 *   **Recursive File Tree**: A robust virtual filesystem in the browser allowing files/folders creation, renaming, deleting, and hierarchical nesting with instant database persistence.
 *   **Multilingual Compiler**: Compile and execute code in 20+ programming languages in real time powered by a backend **JDoodle API** integration.
 *   **Git-like Version Snapping**: Commit points and snapshots saved directly to the database, allowing users to browse full version histories and restore past codebases in one click.
@@ -87,10 +87,10 @@
 
 ```mermaid
 graph TD
-    Client[React 19 Frontend] <-->|Socket.io 4 Protocol| Server[Node.js/Express Backend]
+    Client[React 19 Frontend (Y.Doc)] <-->|Socket.io 4 (Yjs Sync)| Server[Node.js/Express Backend (Y.Doc)]
     Client <-->|REST API JSON| Server
     Client <-->|WebRTC P2P mesh| Client2[Other Callers]
-    Server <-->|Mongoose ODM| DB[(MongoDB Atlas)]
+    Server <-->|Mongoose ODM (Yjs Snapshot & Updates)| DB[(MongoDB Atlas)]
     Server <-->|OAuth Admin SDK| Firebase[Firebase Auth]
     Server <-->|Compile Sandbox| JDoodle[JDoodle Compiler]
     Server <-->|AI Prompts| Gemini[Google Gemini AI]
@@ -105,7 +105,7 @@ graph TD
 
 | Component | Technologies Used |
 | :--- | :--- |
-| **Frontend** | React 19, Vite 7, CodeMirror 6, Axios, Socket.io-client, simple-peer, Lucide Icons, Vanilla CSS (Premium Dark Mode) |
+| **Frontend** | React 19, Vite 7, CodeMirror 6, Yjs (y-monaco), Axios, Socket.io-client, simple-peer, Lucide Icons, Vanilla CSS |
 | **Backend** | Node.js, Express, Socket.io 4, Mongoose 8, Bcrypt.js, Archiver, Cloudinary Admin SDK |
 | **Databases** | MongoDB Atlas (Persistent store), In-Memory JS Maps (Ephemeral cursors, signaling nodes) |
 | **Auth** | Firebase Admin SDK (OAuth integration), JWT (Stateless token exchange) |

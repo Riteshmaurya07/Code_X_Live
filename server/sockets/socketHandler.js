@@ -24,6 +24,7 @@ const { registerCodeHandlers }       = require("./handlers/codeHandlers");
 const { registerChatHandlers }       = require("./handlers/chatHandlers");
 const { registerDisconnectHandlers } = require("./handlers/disconnectHandlers");
 const { registerVideoHandlers }      = require("./handlers/videoHandlers");
+const { registerYjsHandlers }        = require("./handlers/yjsHandlers");
 
 const setupSocket = (io) => {
 
@@ -52,6 +53,7 @@ const setupSocket = (io) => {
     registerChatHandlers(io, socket);
     registerDisconnectHandlers(io, socket);
     registerVideoHandlers(io, socket);
+    registerYjsHandlers(io, socket);
   });
 };
 
